@@ -1,3 +1,4 @@
+import datetime
 import json
 from urllib import request
 
@@ -16,31 +17,24 @@ def security_info(tickers):
     Returns
     -------
     pandas.DataFrame
-        В строках тикеры большими буквами
+        В строках тикеры (используется написание из выдачи ISS)
         В столбцах краткое наименование, размер лота и последняя цена
     """
 
     if isinstance(tickers, str):
-        tickers = [tickers.upper()]
-    elif isinstance(tickers, list):
-        tickers = [i.upper() for i in tickers]
-    else:
-        raise ValueError('Тикер должен быть строкой или списком строк')
+        tickers = [tickers]
 
     url = 'https://iss.moex.com/iss/engines/stock/markets/shares/boards/TQBR/securities.json?securities={tickers}'
     with request.urlopen(url.format(tickers=','.join(tickers))) as response:
         data = json.load(response)
 
-    # Полный ответ сервера - словарь с тремя ключами
+    # Ответ сервера - словарь со сложной многоуровневой структурой
     # По ключу securities - словарь с описанием инструментов
     # По ключу marketdata - словарь с последними котировками
     # В кажом из вложеных словарей есть ключи columns и data с масивами описания колонок и данными
     # В массиве данных содержатся массивы для каждого запрошенного тикера
 
-    if len(data) != 3:
-        print('Сервер вернул словарь с ', len(data), ' ключами')
-        raise ValueError('Неверное число ключей в словаре')
-    elif len(data['securities']['data']) != len(tickers):
+    if len(data['securities']['data']) != len(tickers):
         raise ValueError('Количество тикеров в ответе не соответсвует запросу - возможно ошибка в написании')
     elif len(data['marketdata']['data']) != len(tickers):
         raise ValueError('Количество тикеров в ответе не соответсвует запросу - возможно ошибка в написании')
@@ -55,6 +49,65 @@ def security_info(tickers):
     return result
 
 
+def quotes_history(ticker, first=None):
+    """
+    Возвращает историю котировок
+
+    Parameters
+    ----------
+    ticker : str
+        Тикер, для которого нужны котировки
+    first : datetime.date
+        Начальная дата котировок. Если None, то используется самая раняя дата на сервере IIS
+
+    Returns
+    -------
+    pandas.DataFrame
+        В строках даты
+        В столбца цена закрытия и оборот в штуках
+    """
+
+    url = ('https://iss.moex.com/iss/history/engines/stock/markets/shares/boards/TQBR/securities/{ticker}.json?'
+           + 'start={start}')
+
+    if isinstance(first, datetime.date):
+        url = url + '&from=' + str(first)
+
+    # Сервер возвращает историю порциями
+    # Параметр start указывает на начало выдачи
+    # Нумерация значений идет с 0
+
+    start = 0
+    counter = True
+    result = pd.DataFrame()
+
+    while counter:
+        with request.urlopen(url.format(ticker=ticker, start=start)) as response:
+            data = json.load(response)
+
+        # Ответ сервера - словарь
+        # По ключу history - словарь с историей котировок
+        # В кажом из вложеных словарей есть ключи columns и data с масивами описания колонок и данными
+
+        counter = len(data['history']['data'])
+        if (counter == 0) and (start == 0):
+            raise ValueError('Пустой ответ - возможно ошибка в написании')
+        else:
+            start += counter
+
+        quotes = pd.DataFrame(data=data['history']['data'], columns=data['history']['columns'])
+        quotes = quotes.set_index('TRADEDATE')[['CLOSE', 'VOLUME']]
+        result = pd.concat([result, quotes])
+
+    return result
+
+
 if __name__ == '__main__':
     data = security_info(['aKRN', 'gAZP', 'LKOH'])
+    print(data)
+    data = quotes_history('SBER')
+    print(data.head(10))
+    print(data[99:101])
+    print(data.tail())
+    data = quotes_history('AKRN', datetime.date(2018, 2, 9))
     print(data)
