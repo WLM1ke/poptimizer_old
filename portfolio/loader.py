@@ -64,7 +64,7 @@ def quotes_history(ticker, first=None):
     -------
     pandas.DataFrame
         В строках даты
-        В столбца цена закрытия и оборот в штуках
+        В столбцах цена закрытия и оборот в штуках
     """
 
     url = ('https://iss.moex.com/iss/history/engines/stock/markets/shares/boards/TQBR/securities/{ticker}.json?'
@@ -87,7 +87,7 @@ def quotes_history(ticker, first=None):
 
         # Ответ сервера - словарь
         # По ключу history - словарь с историей котировок
-        # В кажом из вложеных словарей есть ключи columns и data с масивами описания колонок и данными
+        # Во вложеном словаре есть ключи columns и data с масивами описания колонок и данными
 
         counter = len(data['history']['data'])
         if (counter == 0) and (start == 0):
@@ -102,6 +102,57 @@ def quotes_history(ticker, first=None):
     return result
 
 
+def index_history(first=None):
+    """
+    Возвращает историю котировок индекса полной доходности с учетом российских налогов
+
+    Parameters
+    ----------
+    first : datetime.date
+        Начальная дата котировок. Если None, то используется самая раняя дата на сервере IIS
+
+    Returns
+    -------
+    pandas.DataFrame
+        В строках даты
+        В столбцах цена закрытия
+    """
+
+    url = ('http://iss.moex.com/iss/history/engines/stock/markets/index/boards/RTSI/securities/MCFTRR.json'
+           + '?start={start}')
+
+    if isinstance(first, datetime.date):
+        url = url + '&from=' + str(first)
+
+    # Сервер возвращает историю порциями
+    # Параметр start указывает на начало выдачи
+    # Нумерация значений идет с 0
+
+    start = 0
+    counter = True
+    result = pd.DataFrame()
+
+    while counter:
+        with request.urlopen(url.format(start=start)) as response:
+            data = json.load(response)
+
+        # Ответ сервера - словарь
+        # По ключу history - словарь с историей котировок
+        # Во вложеном словаре есть ключи columns и data с масивами описания колонок и данными
+
+        counter = len(data['history']['data'])
+        if (counter == 0) and (start == 0):
+            raise ValueError('Пустой ответ - возможно ошибка в написании')
+        else:
+            start += counter
+
+        quotes = pd.DataFrame(data=data['history']['data'], columns=data['history']['columns'])
+        quotes = quotes.set_index('TRADEDATE')[['CLOSE']]
+        result = pd.concat([result, quotes])
+
+    return result
+
+
 if __name__ == '__main__':
     data = security_info(['aKRN', 'gAZP', 'LKOH'])
     print(data)
@@ -110,4 +161,10 @@ if __name__ == '__main__':
     print(data[99:101])
     print(data.tail())
     data = quotes_history('AKRN', datetime.date(2018, 2, 9))
+    print(data)
+    data = index_history()
+    print(data.head())
+    print(data[99:101])
+    print(data.tail())
+    data = index_history(datetime.date(2018, 2, 9))
     print(data)
