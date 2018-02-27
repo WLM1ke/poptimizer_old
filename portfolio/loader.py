@@ -51,7 +51,9 @@ def security_info(tickers):
 
 def quotes_history(ticker, first=None):
     """
-    Возвращает историю котировок
+    Возвращает историю цен закрытия и оборотов
+
+    Если в одну и ту же дату происходили торги в нескольких режимах, выбирается режим с максимальным оборотом
 
     Parameters
     ----------
@@ -63,11 +65,11 @@ def quotes_history(ticker, first=None):
     Returns
     -------
     pandas.DataFrame
-        В строках даты
+        В строках даты торгов
         В столбцах цена закрытия и оборот в штуках
     """
 
-    url = ('https://iss.moex.com/iss/history/engines/stock/markets/shares/boards/TQBR/securities/{ticker}.json?'
+    url = ('https://iss.moex.com/iss/history/engines/stock/markets/shares/securities/{ticker}.json?'
            + 'start={start}')
 
     if isinstance(first, datetime.date):
@@ -79,7 +81,7 @@ def quotes_history(ticker, first=None):
 
     start = 0
     counter = True
-    result = pd.DataFrame()
+    result = []
 
     while counter:
         with request.urlopen(url.format(ticker=ticker, start=start)) as response:
@@ -96,8 +98,17 @@ def quotes_history(ticker, first=None):
             start += counter
 
         quotes = pd.DataFrame(data=data['history']['data'], columns=data['history']['columns'])
-        quotes = quotes.set_index('TRADEDATE')[['CLOSE', 'VOLUME']]
-        result = pd.concat([result, quotes])
+        result.append(quotes[['TRADEDATE', 'CLOSE', 'VOLUME']])
+
+    result = pd.concat(result, ignore_index=True)
+
+    result['TRADEDATE'] = pd.to_datetime(result['TRADEDATE'])
+    result['CLOSE'] = pd.to_numeric(result['CLOSE'])
+    result['VOLUME'] = pd.to_numeric(result['VOLUME'])
+
+    result = result.loc[result.groupby('TRADEDATE')['VOLUME'].idxmax()]
+
+    result = result.set_index('TRADEDATE')
 
     return result
 
@@ -114,8 +125,8 @@ def index_history(first=None):
     Returns
     -------
     pandas.DataFrame
-        В строках даты
-        В столбцах цена закрытия
+        В строках даты торгов
+        В столбцах цена закрытия индекса полной доходности
     """
 
     url = ('http://iss.moex.com/iss/history/engines/stock/markets/index/boards/RTSI/securities/MCFTRR.json'
@@ -130,7 +141,7 @@ def index_history(first=None):
 
     start = 0
     counter = True
-    result = pd.DataFrame()
+    result = []
 
     while counter:
         with request.urlopen(url.format(start=start)) as response:
@@ -147,8 +158,14 @@ def index_history(first=None):
             start += counter
 
         quotes = pd.DataFrame(data=data['history']['data'], columns=data['history']['columns'])
-        quotes = quotes.set_index('TRADEDATE')[['CLOSE']]
-        result = pd.concat([result, quotes])
+        result.append(quotes[['TRADEDATE', 'CLOSE']])
+
+    result = pd.concat(result, ignore_index=True)
+
+    result['TRADEDATE'] = pd.to_datetime(result['TRADEDATE'])
+    result['CLOSE'] = pd.to_numeric(result['CLOSE'])
+
+    result = result.set_index('TRADEDATE')
 
     return result
 
@@ -156,11 +173,11 @@ def index_history(first=None):
 if __name__ == '__main__':
     data = security_info(['aKRN', 'gAZP', 'LKOH'])
     print(data)
-    data = quotes_history('SBER')
+    data = quotes_history('LKOH')
     print(data.head(10))
     print(data[99:101])
     print(data.tail())
-    data = quotes_history('AKRN', datetime.date(2018, 2, 9))
+    data = quotes_history('SBER', datetime.date(2018, 2, 9))
     print(data)
     data = index_history()
     print(data.head())
