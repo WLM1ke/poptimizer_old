@@ -101,6 +101,7 @@ def quotes_history(ticker, first=None):
         result.append(quotes[['TRADEDATE', 'CLOSE', 'VOLUME']])
 
     result = pd.concat(result, ignore_index=True)
+    result = result.dropna()
 
     result['TRADEDATE'] = pd.to_datetime(result['TRADEDATE'])
     result['CLOSE'] = pd.to_numeric(result['CLOSE'])
@@ -171,9 +172,9 @@ def index_history(first=None):
 
 
 if __name__ == '__main__':
-    data = security_info(['aKRN', 'gAZP', 'LKOH'])
+    data = security_info(['aKRN', 'gAZP', 'LKOH', 'SBER'])
     print(data)
-    data = quotes_history('LKOH')
+    data = quotes_history('AKRN')
     print(data.head(10))
     print(data[99:101])
     print(data.tail())
