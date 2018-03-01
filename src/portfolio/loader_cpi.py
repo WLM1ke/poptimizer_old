@@ -38,8 +38,9 @@ def download(url, local_path):
         raise Exception("No connection - file fron internet not loaded")               
 # TODO test: write file to temp destination and assert it exists    
 
-def parse_local_dataframe_cpi(path=PATH_RAW_CPI):        
-    # todo: check file exists
+def parse_local_dataframe_cpi(path=PATH_RAW_CPI: str):        
+    if not Path(path).exists():
+        raise FileNotFoundError(path)
     df = pd.read_excel(path, sheet_name='ИПЦ', header=3, skiprows=[4], skip_footer=3)
     months, years = df.shape
     year = df.columns[0] 
@@ -70,6 +71,10 @@ def update_from_web_cpi():
 
 def read_local_cpi():
     return read_df(PATH_PARSED_CPI)    
+
+def monthly_cpi():    
+    """Backward compatibility interface."""
+    return read_local_cpi()
 
 if __name__ == '__main__':
     df1 = update_from_web_cpi()
