@@ -25,7 +25,7 @@ def make_path_parsed(filename):
 
 URL_CPI = 'http://www.gks.ru/free_doc/new_site/prices/potr/I_ipc.xlsx'
 PATH_RAW_CPI = make_path_raw('I_ipc.xlsx')
-PATH_PARSED_CPI = make_path_raw('cpi.txt')
+PATH_PARSED_CPI = make_path_parsed('cpi.txt')
     
 def download(url, local_path):
     r = requests.get(url, stream=True)
@@ -38,7 +38,7 @@ def download(url, local_path):
         raise Exception("No connection - file fron internet not loaded")               
 # TODO test: write file to temp destination and assert it exists    
 
-def parse_local_dataframe_cpi(path=PATH_RAW_CPI: str):        
+def parse_local_dataframe_cpi(path=PATH_RAW_CPI):        
     if not Path(path).exists():
         raise FileNotFoundError(path)
     df = pd.read_excel(path, sheet_name='ИПЦ', header=3, skiprows=[4], skip_footer=3)
@@ -66,25 +66,25 @@ def update_from_web_cpi():
     download(URL_CPI, PATH_RAW_CPI)
     df_cpi = parse_local_dataframe_cpi()
     path = make_path_parsed(PATH_PARSED_CPI)
+    #FIXME: maybe round to 4 digits?
     df_cpi.to_csv(path)
     return df_cpi    
 
-def read_local_cpi():
+def monthly_cpi():
     return read_df(PATH_PARSED_CPI)    
-
-def monthly_cpi():    
-    """Backward compatibility interface."""
-    return read_local_cpi()
 
 if __name__ == '__main__':
     df1 = update_from_web_cpi()
-    df2 = read_local_cpi()
-    
+    df2 = monthly_cpi()
+    for df in [df1, df2]:
+        assert df.CPI.loc['2018-01-31'] == 1.0031    
+        assert df.CPI.loc['1991-01-31'] == 1.0620   
+        
     print(df1.head())
     print(df2.tail())
     
     # FIXME: better comparison
     assert (df1.round(4) == df2.round(4)).all()[0]
 
-    df1.loc['2017-09-30',][0]
-    #Out[16]: 0.9984999999999999
+    # df1.loc['2017-09-30',][0]
+    # Out[16]: 0.9984999999999999
