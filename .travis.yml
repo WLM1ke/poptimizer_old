@@ -4,8 +4,11 @@ python:
 install:
   - pip install pytest
   - pip install pytest-cov
+  - pip install codecov
   - pip install pandas
   - pip install xlrd
   - pip install requests
 script:
   - pytest src --cov=src
+after_success:
+  - codecov
