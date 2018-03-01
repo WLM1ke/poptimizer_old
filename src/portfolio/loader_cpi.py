@@ -67,6 +67,8 @@ def update_from_web_cpi():
     df_cpi = parse_local_dataframe_cpi()
     path = make_path_parsed(PATH_PARSED_CPI)
     #FIXME: maybe round to 4 digits?
+    # df_cpi.loc['2017-09-30',][0]
+    # Out[16]: 0.9984999999999999
     df_cpi.to_csv(path)
     return df_cpi    
 
@@ -82,9 +84,4 @@ if __name__ == '__main__':
         
     print(df1.head())
     print(df2.tail())
-    
-    # FIXME: better comparison
-    assert (df1.round(4) == df2.round(4)).all()[0]
-
-    # df1.loc['2017-09-30',][0]
-    # Out[16]: 0.9984999999999999
+    assert (df1.CPI.round(4) == df2.CPI.round(4)).all()
