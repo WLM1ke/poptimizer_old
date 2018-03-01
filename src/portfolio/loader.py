@@ -1,4 +1,4 @@
-"""Модуль реализует загрузку и первоначальную обработку основныех данных из интернета"""
+"""Модуль реализует загрузку из интернета и первоначальную обработку основныех данных"""
 
 import datetime
 import json
@@ -107,7 +107,6 @@ def quotes_history(ticker, first=None):
         result.append(quotes[['TRADEDATE', 'CLOSE', 'VOLUME']])
 
     result = pd.concat(result, ignore_index=True)
-    result = result.dropna()
 
     result['TRADEDATE'] = pd.to_datetime(result['TRADEDATE'])
     result['CLOSE'] = pd.to_numeric(result['CLOSE'])
