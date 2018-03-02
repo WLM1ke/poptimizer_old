@@ -26,7 +26,8 @@ def make_path_parsed(filename):
 URL_CPI = 'http://www.gks.ru/free_doc/new_site/prices/potr/I_ipc.xlsx'
 PATH_RAW_CPI = make_path_raw('I_ipc.xlsx')
 PATH_PARSED_CPI = make_path_parsed('cpi.txt')
-    
+
+  
 def download(url, local_path):
     r = requests.get(url, stream=True)
     if r.status_code == 200:
