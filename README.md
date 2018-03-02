@@ -1,6 +1,7 @@
 # Оптимизация долгосрочного портфеля акций
 
-[![Build Status](https://travis-ci.org/mini-kep/parser-rosstat-kep.svg?branch=master)](https://travis-ci.org/mini-kep/parser-rosstat-kep) [![codecov](https://codecov.io/gh/WLM1ke/PortfolioOptimizer/branch/master/graph/badge.svg)](https://codecov.io/gh/WLM1ke/PortfolioOptimizer)
+[![Build Status](https://travis-ci.org/WLM1ke/PortfolioOptimizer?branch=master)](https://travis-ci.org/WLM1ke/PortfolioOptimizer) [![codecov](https://codecov.io/gh/WLM1ke/PortfolioOptimizer/branch/master/graph/badge.svg)](https://codecov.io/gh/WLM1ke/PortfolioOptimizer)
+
 
 ## Цель:
 Воспроизвести на базе Python существующую модель управления долгосрочным инвестиционным портфелем российских акций на базе Excel и усовершенствовать ее с помощью автоматизации загрузки данных и методов машинного обучения
@@ -21,6 +22,7 @@
 4. Оптимизационная процедура
 - [ ] Доминирование по Парето
 - [ ] Выбор оптимального направления
+  
 5. Усовершенстование существующей модели
 - [ ] Скользящий месячный таймфрейм
 - [ ] Скользящий таймфрейм по дивидендам
