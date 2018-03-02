@@ -4,9 +4,10 @@ import pandas as pd
 
 def make_url(tickers):
     if isinstance(tickers, str):
-        tickers = [tickers]    
+        tickers = [tickers]
     url_base = 'https://iss.moex.com/iss/engines/stock/markets/shares/boards/TQBR/securities.json?securities={tickers}'
     return url_base.format(tickers=','.join(tickers))
+
 
 def get_raw_json(tickers):
     url = make_url(tickers)
@@ -15,6 +16,7 @@ def get_raw_json(tickers):
     validate_response(result, tickers)
     return result
 
+
 def validate_response(data, tickers):
     n = len(tickers)
     msg = ('Количество тикеров в ответе не соответсвует запросу'
@@ -22,8 +24,8 @@ def validate_response(data, tickers):
     if len(data['securities']['data']) != n:
         raise ValueError(msg)
     if len(data['marketdata']['data']) != n:
-        raise ValueError(msg)        
-        
+        raise ValueError(msg)
+
 
 def get_securities_info(tickers):
     """
@@ -43,19 +45,26 @@ def get_securities_info(tickers):
     # Ответ сервера - словарь со сложной многоуровневой структурой
     # По ключу securities - словарь с описанием инструментов
     # По ключу marketdata - словарь с последними котировками
-    # В каждом из вложеных словарей есть ключи columns и data с массивами 
+    # В каждом из вложеных словарей есть ключи columns и data с массивами
     # описания колонок и данными
     # В массиве данных содержатся массивы для каждого запрошенного тикера
     data = get_raw_json(tickers)
-    securities = pd.DataFrame(data=data['securities']['data'], columns=data['securities']['columns'])
-    marketdata = pd.DataFrame(data=data['marketdata']['data'], columns=data['marketdata']['columns'])
+    securities = pd.DataFrame(
+        data=data['securities']['data'], columns=data['securities']['columns'])
+    marketdata = pd.DataFrame(
+        data=data['marketdata']['data'], columns=data['marketdata']['columns'])
     securities = securities.set_index('SECID')[['SHORTNAME', 'LOTSIZE']]
     marketdata = marketdata.set_index('SECID')['LAST']
     return pd.concat([securities, marketdata], axis=1)
 
+
 if __name__ == "__main__":
     assert make_url('AKRN') == make_url(['AKRN'])
-    assert make_url(['AKRN', 'GAZP', 'LKOH', 'SBER']).endswith('SBER') 
+    assert make_url(['AKRN', 'GAZP', 'LKOH', 'SBER']).endswith('SBER')
     d = get_raw_json(['AKRN', 'GAZP', 'LKOH', 'SBER'])
     assert isinstance(d, dict)
-    assert list(d.keys()) == ['securities', 'marketdata', 'dataversion']   
+    assert list(d.keys()) == ['securities', 'marketdata', 'dataversion']
+    df = get_securities_info(['AKRN', 'GAZP'])
+    assert isinstance(df, pd.DataFrame)
+    assert df.loc['AKRN', 'SHORTNAME'] == 'Акрон'
+    assert df.loc['GAZP', 'SHORTNAME'] == 'ГАЗПРОМ ао'
