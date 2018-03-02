@@ -24,8 +24,6 @@ def validate_response(data, tickers):
     if len(data['marketdata']['data']) != n:
         raise ValueError(msg)        
         
-# ВОПРОС: зачем этот результат нужен в фрейме пандас? 
-#         несколько подозрительно краткое название тянуть в фрейм
 
 def get_securities_info(tickers):
     """
