@@ -1,10 +1,12 @@
 """Downloader and parser for CPI."""
 
-import pandas as pd
-import requests
 from datetime import date
 # requires python 3.6
 from pathlib import Path
+
+import pandas as pd
+import requests
+
 
 def find_root():
     """Return path to repo root."""
@@ -27,7 +29,7 @@ URL_CPI = 'http://www.gks.ru/free_doc/new_site/prices/potr/I_ipc.xlsx'
 PATH_RAW_CPI = make_path_raw('I_ipc.xlsx')
 PATH_PARSED_CPI = make_path_parsed('cpi.txt')
 
-  
+
 def download(url, local_path):
     r = requests.get(url, stream=True)
     if r.status_code == 200:
@@ -56,7 +58,8 @@ def parse_local_dataframe_cpi(path=PATH_RAW_CPI):
     # create new dataframe
     index = pd.DatetimeIndex(freq='M', start=date(year, 1, 31), periods=size)
     flat_data = df.values.reshape(months * years, order='F')
-    return pd.DataFrame(flat_data, index=index, columns=['CPI']).dropna() / 100# TODO test: make sure data includes checkpoints 
+    return pd.DataFrame(flat_data, index=index,
+                        columns=['CPI']).dropna() / 100  # TODO test: make sure data includes checkpoints
 
 
 def read_df(source):

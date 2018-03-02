@@ -1,6 +1,6 @@
 # Оптимизация долгосрочного портфеля акций
 
-[![Build Status](https://travis-ci.org/WLM1ke/PortfolioOptimizer?branch=master)](https://travis-ci.org/WLM1ke/PortfolioOptimizer) [![codecov](https://codecov.io/gh/WLM1ke/PortfolioOptimizer/branch/master/graph/badge.svg)](https://codecov.io/gh/WLM1ke/PortfolioOptimizer)
+[![Build Status](https://travis-ci.org/WLM1ke/PortfolioOptimizer.svg?branch=master)](https://travis-ci.org/WLM1ke/PortfolioOptimizer) [![codecov](https://codecov.io/gh/WLM1ke/PortfolioOptimizer/branch/master/graph/badge.svg)](https://codecov.io/gh/WLM1ke/PortfolioOptimizer)
 
 
 ## Цель:
@@ -12,13 +12,16 @@
 - [ ] CPI
 - [ ] Дивиденды
 - [ ] Индекс полной доходности
+
 2. Трансформация данных
 - [ ] Пересчет в реальные показатели
 - [ ] Перевод в месячные таймфреймы
+
 3. Ключевы метрики портфеля
 - [ ] Простой DGP для волатильности и доходности портфеля
 - [ ] Метрики дивидендного потока
 - [ ] Метрики стоимости потортфеля
+
 4. Оптимизационная процедура
 - [ ] Доминирование по Парето
 - [ ] Выбор оптимального направления

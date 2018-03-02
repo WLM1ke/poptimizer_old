@@ -1,5 +1,5 @@
-import requests
 import pandas as pd
+import requests
 
 
 def make_url(tickers):
