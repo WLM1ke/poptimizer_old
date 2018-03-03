@@ -15,7 +15,8 @@ def test_make_raw_json():
 
 
 def test_get_securities_info():
-    df = get_securities_info(['AKRN', 'GAZP'])
+    df = get_securities_info(['AKRN', 'GAZP', 'TTLK'])
     assert isinstance(df, pd.DataFrame)
     assert df.loc['AKRN', 'SHORTNAME'] == 'Акрон'
     assert df.loc['GAZP', 'SHORTNAME'] == 'ГАЗПРОМ ао'
+    assert df.loc['TTLK', 'LOTSIZE'] == 10000

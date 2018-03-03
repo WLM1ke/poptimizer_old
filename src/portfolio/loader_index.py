@@ -71,9 +71,9 @@ def get_index_history(start_date=None):
         counter = len(data['history']['data'])
         block_position += counter
         quotes = pd.DataFrame(data=data['history']['data'], columns=data['history']['columns'])
-        result.append(quotes.set_index('TRADEDATE')['CLOSE'])
+        result.append(quotes[['TRADEDATE', 'CLOSE']])
     result = pd.concat(result)
-    return result
+    return result.set_index('TRADEDATE')
 
 
 if __name__ == '__main__':
