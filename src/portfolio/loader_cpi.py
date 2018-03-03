@@ -1,7 +1,6 @@
 """Downloader and parser for CPI."""
 
 from datetime import date
-# requires python 3.6
 from pathlib import Path
 
 import pandas as pd
