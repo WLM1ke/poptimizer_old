@@ -1,3 +1,5 @@
+"""Downloader and parser for securities info."""
+
 import pandas as pd
 import requests
 

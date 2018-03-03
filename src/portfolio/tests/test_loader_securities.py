@@ -1,6 +1,6 @@
 import pandas as pd
 
-from ..loader_securities import make_url, get_raw_json, get_securities_info
+from ..loader_info import make_url, get_raw_json, get_securities_info
 
 
 def test_make_url():
