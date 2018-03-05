@@ -1,8 +1,10 @@
-[report]
+[run]
+branch = True
 
+[report]
 exclude_lines =
     if __name__ == .__main__.:
     raise
-
 omit =
     */tests/*
+fail_under = 70
