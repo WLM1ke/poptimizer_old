@@ -40,7 +40,8 @@ def download(url, local_path):
         raise Exception("No connection - file fron internet not loaded")               
 # TODO test: write file to temp destination and assert it exists    
 
-def parse_local_dataframe_cpi(path=PATH_RAW_CPI):        
+
+def parse_local_dataframe_cpi(path=PATH_RAW_CPI):
     if not Path(path).exists():
         raise FileNotFoundError(path)
     df = pd.read_excel(path, sheet_name='ИПЦ', header=3, skiprows=[4], skip_footer=3)
