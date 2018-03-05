@@ -7,4 +7,4 @@ exclude_lines =
     raise
 omit =
     */tests/*
-fail_under = 80
+fail_under = 70
