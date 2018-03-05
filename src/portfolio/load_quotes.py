@@ -30,7 +30,7 @@ def quotes_history(ticker, first=None):
     """
 
     url = ('https://iss.moex.com/iss/history/engines/stock/markets/shares/securities/{ticker}.json?'
-           + 'start={start}')
+           'start={start}')
 
     if isinstance(first, datetime.date):
         url = url + '&from=' + str(first)
