@@ -1,5 +1,7 @@
-import requests
+"""Downloader and parser for securities info."""
+
 import pandas as pd
+import requests
 
 
 def make_url(tickers):

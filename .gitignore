@@ -105,3 +105,6 @@ ENV/
 
 # PyTest
 **.pytest_cache/
+
+# Coverage.py
+.coverage
