@@ -19,10 +19,6 @@ def test_get_index_history():
     assert df.loc['2018-03-02', 'CLOSE'] == 3273.16
 
 
-def test_get_index_history():
-    df = get_index_history_from_start()
-
-
 def test_get_raw_json_works_on_None_start_date():
     data = get_raw_json(start_date=None, block_position=0)
     index = data['history']['columns'].index('TRADEDATE')
