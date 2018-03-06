@@ -62,12 +62,16 @@ class TotalReturn:
     def __init__(self, start_date, block_position=0):
         self.block_position = block_position
         self.start_date = start_date
-        self.url = make_url(self.base, self.ticker, start_date, block_position)       
-        self.data = get_json(self.url)
-        self._validate(block_position) 
+        self.url = make_url(self.base, self.ticker, start_date, block_position) 
+        self.load()
         
-    def _validate(self, block_position):
-        if len(self) == 0 and block_position == 0:
+    def load(self):    
+        self.data = get_json(self.url)
+        self._validate() 
+        return self
+        
+    def _validate(self):
+        if len(self) == 0 and self.block_position == 0:
             raise ValueError('Пустой ответ. Проверьте запрос: {self.url}')
         
     def __len__(self):
@@ -80,15 +84,16 @@ class TotalReturn:
     def __iter__(self):
         return self
 
-    def __next__(self): 
-        # выводим текущий инстанс класса
-        next_obj = TotalReturn(self.start_date, self.block_position) 
+    def __next__(self):
+        # получаем текущий ответ сервера
+        # FIXME: возможно задваимаем вызовы
+        obj = TotalReturn(self.start_date, self.block_position)
         # если он непустой
-        if next_obj:
+        if obj:
             # перещелкиваем на следующий блок
             self.block_position += len(self)
             # выводим текущий фрейм
-            return next_obj.dataframe
+            return obj.dataframe
         else:
             raise StopIteration
 
@@ -116,14 +121,14 @@ class Ticker(TotalReturn):
         self.ticker, self.start_date, self.block_position = \
             ticker, start_date, block_position        
         self.url = make_url(self.base, ticker, start_date, block_position)
-        self.data = get_json(self.url)
-        self._validate(block_position)
+        self.load()
 
     def __next__(self): 
-        next_obj = Ticker(self.ticker, self.start_date, self.block_position) 
-        if next_obj:
+        obj = Ticker(self.ticker, self.start_date, self.block_position)
+        # FIXME: возможно задваимаем вызовы
+        if obj:
             self.block_position += len(self)
-            return next_obj.dataframe
+            return obj.dataframe
         else:
             raise StopIteration
 
