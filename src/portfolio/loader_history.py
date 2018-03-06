@@ -6,6 +6,12 @@ import pandas as pd
 import requests
 
 
+def get_json(url: str):
+    """Return json found at *url*."""
+    response = requests.get(url)
+    return response.json()
+
+
 def make_url(ticker, start_date=None, block_position=0):
     """
     Возвращает url для получения очередного блока данных по индексу полной доходности MOEX.
@@ -47,14 +53,11 @@ class TotalReturn:
     # Во вложеном словаре есть ключи columns и data с масивами описания колонок и данными
 
     def __init__(self, ticker, start_date, block_position):
-        self.data = self.get_raw_json(ticker, start_date, block_position)
+        self.url = make_url(ticker=ticker,
+                            start_date=start_date,
+                            block_position=block_position)
+        self.data = get_json(self.url)
         self.validate(block_position)
-
-    @staticmethod
-    def get_raw_json(ticker, start_date, block_position):
-        url = make_url(ticker=ticker, start_date=start_date, block_position=block_position)
-        response = requests.get(url)
-        return response.json()
 
     def validate(self, block_position):
         if len(self) == 0 and block_position == 0:

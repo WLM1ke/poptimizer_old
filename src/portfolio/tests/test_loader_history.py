@@ -2,7 +2,7 @@ import datetime
 
 import pandas as pd
 
-from ..loader_history import get_ticker_history, make_url, get_index_history, TotalReturn
+from ..loader_history import get_ticker_history, make_url, get_index_history, get_json
 
 
 def test_make_url():
@@ -15,7 +15,8 @@ def test_make_url():
 
 
 def test_get_raw_json_works_on_none_start_date():
-    data = TotalReturn.get_raw_json(ticker=None, start_date=None, block_position=0)
+    url = make_url(ticker=None, start_date=None, block_position=0)
+    data = get_json(url)
     index = data['history']['columns'].index('TRADEDATE')
     assert data['history']['data'][0][index] == '2003-02-26'
 
