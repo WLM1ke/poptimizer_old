@@ -37,7 +37,7 @@ def download(url, local_path):
                 f.write(chunk)
     else:
         # FIXME: better exception?
-        raise Exception("No connection - file fron internet not loaded")               
+        raise Exception("No connection - file from internet not loaded")
 # TODO test: write file to temp destination and assert it exists    
 
 

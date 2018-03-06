@@ -1,4 +1,4 @@
-"""Downloader and parser for MOEX Russia Net Total Return (Resident)."""
+"""Quotes history downloader and parser for tickers and MOEX Russia Net Total Return (Resident) Index."""
 
 import datetime
 
@@ -6,12 +6,14 @@ import pandas as pd
 import requests
 
 
-def index_url(start_date=None, block_position=0):
+def make_url(ticker, start_date=None, block_position=0):
     """
     Возвращает url для получения очередного блока данных по индексу полной доходности MOEX.
 
     Parameters
     ----------
+    ticker: str or None
+        Тикер по котому нужна история котировок. Если None, то возвращаются данные по индексу.
     start_date : date.time or None
         Начальная дата котировок. Если предоставлено значение None 
         - данные запрашиваются с начала имеющейся на сервере ISS 
@@ -26,27 +28,15 @@ def index_url(start_date=None, block_position=0):
     str
         Строка url для запроса.
     """
-    url = ('http://iss.moex.com/iss/history/engines/stock/markets/index/boards/RTSI/securities/MCFTRR.json'
-           f'?start={block_position}')
+    if ticker:
+        url = f'https://iss.moex.com/iss/history/engines/stock/markets/shares/securities/{ticker}.json?'
+    else:
+        url = 'http://iss.moex.com/iss/history/engines/stock/markets/index/boards/RTSI/securities/MCFTRR.json?'
     if start_date:
         if not isinstance(start_date, datetime.date):
             raise TypeError(start_date)
-        url = url + f'&from={start_date:%Y-%m-%d}'
-    return url
-
-
-def compose_ticker_url_function(ticker):
-    base_url = f'https://iss.moex.com/iss/history/engines/stock/markets/shares/securities/{ticker}.json'
-
-    def ticker_url(start_date=None, block_position=0):
-        url = base_url + f'?start={block_position}'
-        if start_date:
-            if not isinstance(start_date, datetime.date):
-                raise TypeError(start_date)
-            url = url + f'&from={start_date:%Y-%m-%d}'
-        return url
-
-    return ticker_url
+        url = url + f'from={start_date:%Y-%m-%d}&'
+    return url + f'start={block_position}'
 
 
 class TotalReturn:
@@ -56,13 +46,13 @@ class TotalReturn:
     # По ключу history - словарь с историей котировок
     # Во вложеном словаре есть ключи columns и data с масивами описания колонок и данными
 
-    def __init__(self, url_function, start_date, block_position):
-        self.data = self.get_raw_json(url_function, start_date, block_position)
+    def __init__(self, ticker, start_date, block_position):
+        self.data = self.get_raw_json(ticker, start_date, block_position)
         self.validate(block_position)
 
     @staticmethod
-    def get_raw_json(url_function, start_date, block_position):
-        url = url_function(start_date=start_date, block_position=block_position)
+    def get_raw_json(ticker, start_date, block_position):
+        url = make_url(ticker=ticker, start_date=start_date, block_position=block_position)
         response = requests.get(url)
         return response.json()
 
@@ -92,12 +82,12 @@ class TotalReturn:
         return df[columns]
 
 
-def yield_data_blocks(url_function, start_date):
+def yield_data_blocks(ticker, start_date):
     """Yield pandas DataFrames until response length is exhausted."""
     block_position = 0
     current_response = True
     while current_response:
-        current_response = TotalReturn(url_function, start_date, block_position)
+        current_response = TotalReturn(ticker, start_date, block_position)
         block_position += len(current_response)
         yield current_response.dataframe
 
@@ -117,7 +107,7 @@ def get_index_history(start_date):
         В строках даты торгов.
         В столбцах цена закрытия индекса полной доходности.
     """
-    result = pd.concat(yield_data_blocks(index_url, start_date))
+    result = pd.concat(yield_data_blocks(None, start_date))
     return result.set_index('TRADEDATE')
 
 
@@ -149,7 +139,7 @@ def get_ticker_history(ticker, start_date):
         В строках даты торгов.
         В столбцах цена закрытия и оборот в штуках.
     """
-    result = pd.concat(yield_data_blocks(compose_ticker_url_function(ticker), start_date), ignore_index=True)
+    result = pd.concat(yield_data_blocks(ticker, start_date), ignore_index=True)
     # Часто объемы не распознаются, как численные значения
     result['VOLUME'] = pd.to_numeric(result['VOLUME'])
     # Для каждой даты выбирается режим торгов с максимальным оборотом
