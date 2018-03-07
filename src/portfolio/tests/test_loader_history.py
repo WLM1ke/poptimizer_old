@@ -57,8 +57,44 @@ def test_ticker_is_iterable():
     assert len(list(t)) >= 3
 
 
-class TestTotalReturn:
-    def test_dataframe(self):
-        index_quotes = TotalReturn(None)
-        assert isinstance(index_quotes.dataframe, pd.DataFrame)
-        assert index_quotes.dataframe.loc['2003-02-26', 'CLOSE'] == 335.67
+class Test_TotalReturn:
+    t = TotalReturn(start_date=None)
+    
+    def test_data_property_on_init_for_None_start_date(self):
+        # lower-level test of server response
+        data = self.t.data
+        index = data['history']['columns'].index('TRADEDATE')
+        assert data['history']['data'][0][index] == '2003-02-26'
+        
+    def test_len_method(self):
+        assert len(self.t) == 100        
+    
+    def test_bool_method(self):
+        assert bool(self.t)
+        
+    def test_values_property(self):
+        assert isinstance(self.t.values, list)
+        assert len(self.t.values[0]) == 16
+
+    def test_columns_property(self):
+        assert self.t.columns == ['BOARDID',
+             'SECID',
+             'TRADEDATE',
+             'SHORTNAME',
+             'NAME',
+             'CLOSE',
+             'OPEN',
+             'HIGH',
+             'LOW',
+             'VALUE',
+             'DURATION',
+             'YIELD',
+             'DECIMALS',
+             'CAPITALIZATION',
+             'CURRENCYID',
+             'DIVISOR']
+    
+    def test_dataframe_propеrty(self):
+        assert isinstance(self.t.dataframe, pd.DataFrame)        
+        assert list(self.t.dataframe.columns) == ['CLOSE']
+        assert self.t.dataframe.loc['2003-02-26', 'CLOSE'] == 335.67
