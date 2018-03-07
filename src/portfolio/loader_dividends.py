@@ -22,45 +22,39 @@ class Dividends:
         else:
             # *requests* fails on SSL, using *urllib.request*
             with urllib.request.urlopen(self.url) as response:
-                return response.read()
+                self._html = response.read()
+                return self._html
 
     @property
     def html_table(self):
-        # TODO: как искать таблицу
         soup = BeautifulSoup(self.html, 'lxml')
         return soup.find_all('table')[2]
 
-    @property
-    def table_header(self):
-        return self.html_table.find(name='tr').find_all(name='th')
-
-    @property
-    def columns_index(self):
-        column_names = ['Дата закрытия реестра', 'Дивиденд (руб.)']
-        return [i for i, column in enumerate(self.table_header) if column.string in column_names]
+    def _table_header_parser(self):
+        header_names = [column.string for column in self.html_table.find(name='tr').find_all(name='th')]
+        self.date_index = header_names.index('Дата закрытия реестра')
+        self.dividend_index = header_names.index('Дивиденд (руб.)')
 
     @property
     def table_rows(self):
+        self._table_header_parser()
         # Строки с прогнозом имеют class = forecast
         return self.html_table.find_all(name='tr', class_=None)[1:]
 
-    def yield_rows(self):
+    def _yield_rows(self):
         for html_row in self.table_rows:
-            row = [column.text.strip() for column in html_row.find_all('td')]
-            try:
-                yield dict(DATE=pd.to_datetime(row[0]), DIVIDEND=row[2])
-            except (IndexError, ValueError):
-                print("Not parsed:", row)
+            row = [column.string for column in html_row.find_all('td')]
+            yield pd.DataFrame(data=[row[self.dividend_index]],
+                               columns=['DIVIDENDS'],
+                               index=[row[self.date_index]])
 
     @property
     def df(self):
-        df = pd.DataFrame(columns=('DATE', 'DIVIDEND'))
-        for row in self.yield_rows():
-            df = df.append(row, ignore_index=True)
-        return df.set_index('DATE')
+        df = pd.concat(self._yield_rows())
+        df.index = pd.to_datetime(df.index)
+        return df.sort_index()
 
 
 if __name__ == '__main__':
     div = Dividends('CHMF')
-    # print(div.columns_index)
     print(div.df)
