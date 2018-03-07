@@ -36,7 +36,7 @@ def test_get_index_history():
     assert df.index.is_monotonic_increasing
     assert df.index.is_unique
     assert df.index[0] == '2017-10-02'
-    assert df.shape[0] > 100
+    assert df.shape[0] >= 100
     assert df.loc['2018-03-02', 'CLOSE'] == 3273.16
 
 
@@ -52,8 +52,13 @@ def test_get_ticker_history_from_start():
     assert df.loc['2018-03-05', 'VOLUME'] == 4553310
 
 
+def test_ticker_is_iterable(): 
+    t = Ticker('AKRN', datetime.date(2017, 3, 1))
+    assert len(list(t)) >= 3
+
+
 class TestTotalReturn:
     def test_dataframe(self):
-        index_quotes = next(TotalReturn(None, 0))
-        assert isinstance(index_quotes, pd.DataFrame)
-        assert index_quotes.loc['2003-02-26', 'CLOSE'] == 335.67
+        index_quotes = TotalReturn(None)
+        assert isinstance(index_quotes.dataframe, pd.DataFrame)
+        assert index_quotes.dataframe.loc['2003-02-26', 'CLOSE'] == 335.67

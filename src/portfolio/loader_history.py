@@ -1,4 +1,16 @@
-"""Quotes history downloader and parser for tickers and MOEX Russia Net Total Return (Resident) Index."""
+"""Download and transform daily quotes to pandas dataframes.
+
+   1. single ticker daily price and volumes 
+
+        get_ticker_history(ticker, start_date)
+        get_ticker_history_from_start(ticker)
+   
+   2. MOEX Russia Net Total Return (Resident) Index
+
+        get_index_history(start_date)
+        get_index_history_from_start()
+   
+"""
 
 import datetime
 
@@ -47,31 +59,29 @@ def make_url(base: str, ticker: str, start_date=None, block_position=0):
     return f'{url}?{arg_str}'
     
 
-class TotalReturn:
+class Ticker:
     """
-    Представление ответа сервера - данные по индексу полной доходности MOEX.
-      
-    В ответе сервера:
-     - по ключу history - словарь с историей котировок
-     - во вложеном словаре есть ключи columns и data с масивами описания 
-       колонок и данными.           
+    Представление ответа сервера по отдельному тикеру.
     """
-    base = 'http://iss.moex.com/iss/history/engines/stock/markets/index/boards/RTSI/securities'
-    ticker = 'MCFTRR'
+    base = 'https://iss.moex.com/iss/history/engines/stock/markets/shares/securities'
 
-    def __init__(self, start_date, block_position=0):
-        self.block_position = block_position
-        self.start_date = start_date
-        self.data = None
-
-    def load(self):
+    def __init__(self, ticker, start_date):        
+        self.ticker, self.start_date = ticker, start_date
+        self.block_position = 0 
+        self.load()
+        
+    @property    
+    def url(self):
+        return make_url(self.base, self.ticker, 
+                        self.start_date, self.block_position)
+        
+    def load(self):    
         self.data = get_json(self.url)
-        self._validate()
-        return self
+        self._validate() 
         
     def _validate(self):
-        if len(self) == 0 and self.block_position == 0:
-            raise ValueError('Пустой ответ. Проверьте запрос: {self.url}')
+        if self.block_position == 0 and len(self) == 0:
+            raise ValueError(f'Пустой ответ. Проверьте запрос: {self.url}')
         
     def __len__(self):
         return len(self.values)
@@ -79,21 +89,10 @@ class TotalReturn:
     def __bool__(self):
         return self.__len__() > 0
     
-    # для итератора необходимы два метода: __iter__() и __next__() 
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        # получаем текущий ответ сервера
-        self.url = make_url(self.base, self.ticker, self.start_date, self.block_position)
-        self.load()
-        # перещелкиваем на следующий блок
-        self.block_position += len(self)
-        # если он непустой
-        if self:
-            return self.dataframe
-        else:
-            raise StopIteration
+    #  В ответе сервера есть словарь:
+    #   - по ключу history - словарь с историей котировок
+    #   - во вложеном словаре есть ключи columns и data с масивами описания 
+    #     колонок и данными.  
 
     @property
     def values(self):
@@ -101,31 +100,54 @@ class TotalReturn:
 
     @property
     def columns(self):
-        return self.data['history']['columns']       
-    
-    @property
-    def dataframe(self):
-        df = pd.DataFrame(data=self.values, columns=self.columns)
-        return df[['TRADEDATE', 'CLOSE']].set_index('TRADEDATE')
-
-
-class Ticker(TotalReturn):
-    """
-    Представление ответа сервера по отдельному тикеру.
-    """
-    base = 'https://iss.moex.com/iss/history/engines/stock/markets/shares/securities'
-
-    def __init__(self, ticker, start_date, block_position=0):
-        super().__init__(start_date, block_position)
-        self.ticker = ticker
+        return self.data['history']['columns']      
 
     @property
+    def df(self):
+        """Raw dataframe from *self.data['history']*"""
+        return pd.DataFrame(data=self.values, columns=self.columns)
+
+    # WONTFIX: для итератора необходимы два метода: __iter__() и __next__() 
+    #          возможно, переход к следующему элементу может быть по-другому 
+    #          распределен между этими методами    
+    def __iter__(self):
+        return self   
+
+    def __next__(self):
+        # если блок непустой
+        if self:
+            # используем текущий результат парсинга
+            current_dataframe = self.dataframe  
+            # перещелкиваем сдаиг на следующий блок и получаем новые данные 
+            self.block_position += len(self)
+            self.load()
+            # выводим текущий результат парсинга
+            return current_dataframe 
+        else:
+            raise StopIteration
+
+    @property
     def dataframe(self):
-        df = pd.DataFrame(data=self.values, columns=self.columns)
-        # часто объемы не распознаются, как численные значения
+        df = self.df
+        # приведение типа - часто объемы не распознаются как численные значения
         df['VOLUME'] = pd.to_numeric(df['VOLUME'])
         return df[['TRADEDATE', 'CLOSE', 'VOLUME']]
 
+class TotalReturn(Ticker):
+    """
+    Представление ответа сервера - данные по индексу полной доходности MOEX.
+       
+    """
+    base = 'http://iss.moex.com/iss/history/engines/stock/markets/index/boards/RTSI/securities'
+    ticker = 'MCFTRR'
+    
+    def __init__(self, start_date):
+        super().__init__(self.ticker, start_date)
+        
+    @property
+    def dataframe(self):        
+        return self.df[['TRADEDATE', 'CLOSE']].set_index('TRADEDATE')        
+    
 
 def get_index_history(start_date):
     """
@@ -170,11 +192,11 @@ def get_ticker_history(ticker, start_date):
     -------
     pandas.DataFrame
         В строках даты торгов.
-        В столбцах цена закрытия и оборот в штуках [CLOSE, VOLUME].
+        В столбцах [CLOSE, VOLUME] цена закрытия и оборот в штуках .
     """
     gen = Ticker(ticker, start_date)
     df = pd.concat(gen, ignore_index=True)
-    # Для каждой даты выбирается режим торгов с максимальным оборотом
+    # для каждой даты выбирается режим торгов с максимальным оборотом
     df = df.loc[df.groupby('TRADEDATE')['VOLUME'].idxmax()]
     return df.set_index('TRADEDATE')
 
@@ -188,5 +210,11 @@ def get_ticker_history_from_start(ticker):
 
 
 if __name__ == '__main__':
-    h = get_ticker_history('MOEX', datetime.date(2018, 2, 1))
-    print(h)
+    assert len(list(Ticker('AKRN', datetime.date(2017, 3, 1)))) >= 4
+    h = get_ticker_history('MOEX', datetime.date(2017, 10, 2))
+    print(h.head())
+    print(h.tail())
+    z = get_index_history(start_date=datetime.date(2017, 10, 2))
+    print(z.head())
+    print(z.tail())
+
