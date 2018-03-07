@@ -26,13 +26,18 @@ class Dividends:
         soup = BeautifulSoup(self.html, 'lxml')
         return soup.find_all('table')[2]
 
+    @property
+    def table_rows(self):
+        # Строки с прогнозом имеют class = forecast
+        return self.html_table.find_all(name='tr', class_=None)
+
     def yield_rows(self):
-        # TODO: как искать строки
-        for html_row in self.html_table.find_all('tr'):
+
+        for html_row in self.table_rows:
             row = [column.text.strip() for column in html_row.find_all('td')]
             try:
                 yield dict(DATE=pd.to_datetime(row[0]), DIVIDEND=row[2])
-            except (IndexError, ValueError) as e:
+            except (IndexError, ValueError):
                 print("Not parsed:", row)
 
     @property
