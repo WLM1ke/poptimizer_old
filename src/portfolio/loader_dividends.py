@@ -6,35 +6,43 @@ import pandas as pd
 from bs4 import BeautifulSoup
 
 
-def get_text(url):
-    # *requests* fails on SSL, using *urllib.request*
-    with urllib.request.urlopen(url) as response:
-        return response.read()
+class Dividends:
+    def __init__(self, ticker):
+        self.ticker = ticker
 
+    @property
+    def url(self):
+        return f'http://www.dohod.ru/ik/analytics/dividend/{self.ticker.lower()}'
 
-def yield_rows(table: str):
-    for html_row in table.find_all('tr'):
-        row = [column.text.strip() for column in html_row.find_all('td')]
-        try:
-            yield dict(DATE=pd.to_datetime(row[0]), DIVIDEND=row[2])
-        except (IndexError, ValueError) as e:
-            print("Not parsed:", row)
+    @property
+    def html(self):
+        # *requests* fails on SSL, using *urllib.request*
+        with urllib.request.urlopen(self.url) as response:
+            return response.read()
 
+    @property
+    def html_table(self):
+        # TODO: как искать таблицу
+        soup = BeautifulSoup(self.html, 'lxml')
+        return soup.find_all('table')[2]
 
-def make_dataframe(table: str):
-    df = pd.DataFrame(columns=('DATE', 'DIVIDEND'))
-    for row in yield_rows(table):
-        df = df.append(row, ignore_index=True)
-    return df.set_index('DATE').drop_duplicates()
+    def yield_rows(self):
+        # TODO: как искать строки
+        for html_row in self.html_table.find_all('tr'):
+            row = [column.text.strip() for column in html_row.find_all('td')]
+            try:
+                yield dict(DATE=pd.to_datetime(row[0]), DIVIDEND=row[2])
+            except (IndexError, ValueError) as e:
+                print("Not parsed:", row)
 
+    @property
+    def df(self):
+        df = pd.DataFrame(columns=('DATE', 'DIVIDEND'))
+        for row in self.yield_rows():
+            df = df.append(row, ignore_index=True)
+        return df.set_index('DATE')
 
-def make_url(ticker):
-    return f'http://www.dohod.ru/ik/analytics/dividend/{ticker.lower()}'
 
 if __name__ == '__main__':
-    html = get_text(make_url('CHMF'))
-    # identify table
-    soup = BeautifulSoup(html, 'lxml')
-    table = soup.find_all('table')[2]
-    df = make_dataframe(table)
-    print(df)
+    div = Dividends('CHMF')
+    print(div.df)
