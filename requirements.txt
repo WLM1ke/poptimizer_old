@@ -2,3 +2,4 @@ pandas
 requests
 xlrd
 bs4
+lxml
