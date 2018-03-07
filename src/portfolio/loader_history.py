@@ -62,12 +62,11 @@ class TotalReturn:
     def __init__(self, start_date, block_position=0):
         self.block_position = block_position
         self.start_date = start_date
-        self.url = make_url(self.base, self.ticker, start_date, block_position) 
-        self.load()
-        
-    def load(self):    
+        self.data = None
+
+    def load(self):
         self.data = get_json(self.url)
-        self._validate() 
+        self._validate()
         return self
         
     def _validate(self):
@@ -86,14 +85,13 @@ class TotalReturn:
 
     def __next__(self):
         # получаем текущий ответ сервера
-        # FIXME: возможно задваимаем вызовы
-        obj = TotalReturn(self.start_date, self.block_position)
+        self.url = make_url(self.base, self.ticker, self.start_date, self.block_position)
+        self.load()
+        # перещелкиваем на следующий блок
+        self.block_position += len(self)
         # если он непустой
-        if obj:
-            # перещелкиваем на следующий блок
-            self.block_position += len(self)
-            # выводим текущий фрейм
-            return obj.dataframe
+        if self:
+            return self.dataframe
         else:
             raise StopIteration
 
@@ -118,19 +116,8 @@ class Ticker(TotalReturn):
     base = 'https://iss.moex.com/iss/history/engines/stock/markets/shares/securities'
 
     def __init__(self, ticker, start_date, block_position=0):
-        self.ticker, self.start_date, self.block_position = \
-            ticker, start_date, block_position        
-        self.url = make_url(self.base, ticker, start_date, block_position)
-        self.load()
-
-    def __next__(self): 
-        obj = Ticker(self.ticker, self.start_date, self.block_position)
-        # FIXME: возможно задваимаем вызовы
-        if obj:
-            self.block_position += len(self)
-            return obj.dataframe
-        else:
-            raise StopIteration
+        super().__init__(start_date, block_position)
+        self.ticker = ticker
 
     @property
     def dataframe(self):
@@ -138,6 +125,7 @@ class Ticker(TotalReturn):
         # часто объемы не распознаются, как численные значения
         df['VOLUME'] = pd.to_numeric(df['VOLUME'])
         return df[['TRADEDATE', 'CLOSE', 'VOLUME']]
+
 
 def get_index_history(start_date):
     """
@@ -200,7 +188,5 @@ def get_ticker_history_from_start(ticker):
 
 
 if __name__ == '__main__':
-    h = get_ticker_history('MOEX', datetime.date(2017, 10, 2))
-    print(h.head())
-    z = get_index_history(start_date=datetime.date(2017, 10, 2))
-    print(z.head())
+    h = get_ticker_history('MOEX', datetime.date(2018, 2, 1))
+    print(h)

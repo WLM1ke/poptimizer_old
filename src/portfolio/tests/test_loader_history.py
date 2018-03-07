@@ -54,6 +54,6 @@ def test_get_ticker_history_from_start():
 
 class TestTotalReturn:
     def test_dataframe(self):
-        index_quotes = TotalReturn(None, 0)
-        assert isinstance(index_quotes.dataframe, pd.DataFrame)
-        assert index_quotes.dataframe.loc['2003-02-26', 'CLOSE'] == 335.67
+        index_quotes = next(TotalReturn(None, 0))
+        assert isinstance(index_quotes, pd.DataFrame)
+        assert index_quotes.loc['2003-02-26', 'CLOSE'] == 335.67
