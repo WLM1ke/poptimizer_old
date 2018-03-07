@@ -51,31 +51,51 @@ class TotalReturn:
     """
     Представление ответа сервера - данные по индексу полной доходности MOEX.
       
-       В ответе сервера:
-         - по ключу history - словарь с историей котировок
-         - во вложеном словаре есть ключи columns и data 
-           с масивами описания колонок и данными           
+    В ответе сервера:
+     - по ключу history - словарь с историей котировок
+     - во вложеном словаре есть ключи columns и data с масивами описания 
+       колонок и данными.           
     """
     base = 'http://iss.moex.com/iss/history/engines/stock/markets/index/boards/RTSI/securities'
     ticker = 'MCFTRR'
 
-    def __init__(self, start_date, block_position):
-        self.url = make_url(self.base, self.ticker,
-                            start_date=start_date,
-                            block_position=block_position)
+    def __init__(self, start_date, block_position=0):
+        self.block_position = block_position
+        self.start_date = start_date
+        self.url = make_url(self.base, self.ticker, start_date, block_position) 
+        self.load()
+        
+    def load(self):    
         self.data = get_json(self.url)
-        self.validate(block_position) 
-
-    def validate(self, block_position):
-        if len(self) == 0 and block_position == 0:
-            raise ValueError('Пустой ответ. '
-                             f'Возможно ошибка в запросе: {self.url}')
+        self._validate() 
+        return self
+        
+    def _validate(self):
+        if len(self) == 0 and self.block_position == 0:
+            raise ValueError('Пустой ответ. Проверьте запрос: {self.url}')
         
     def __len__(self):
         return len(self.values)
 
     def __bool__(self):
         return self.__len__() > 0
+    
+    # для итератора необходимы два метода: __iter__() и __next__() 
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        # получаем текущий ответ сервера
+        # FIXME: возможно задваимаем вызовы
+        obj = TotalReturn(self.start_date, self.block_position)
+        # если он непустой
+        if obj:
+            # перещелкиваем на следующий блок
+            self.block_position += len(self)
+            # выводим текущий фрейм
+            return obj.dataframe
+        else:
+            raise StopIteration
 
     @property
     def values(self):
@@ -97,33 +117,32 @@ class Ticker(TotalReturn):
     """
     base = 'https://iss.moex.com/iss/history/engines/stock/markets/shares/securities'
 
-    def __init__(self, ticker, start_date, block_position):
-        self.ticker = ticker
+    def __init__(self, ticker, start_date, block_position=0):
+        self.ticker, self.start_date, self.block_position = \
+            ticker, start_date, block_position        
         self.url = make_url(self.base, ticker, start_date, block_position)
-        self.data = get_json(self.url)
-        self.validate(block_position)
+        self.load()
+
+    def __next__(self): 
+        obj = Ticker(self.ticker, self.start_date, self.block_position)
+        # FIXME: возможно задваимаем вызовы
+        if obj:
+            self.block_position += len(self)
+            return obj.dataframe
+        else:
+            raise StopIteration
 
     @property
     def dataframe(self):
         df = pd.DataFrame(data=self.values, columns=self.columns)
-        # Часто объемы не распознаются, как численные значения
+        # часто объемы не распознаются, как численные значения
         df['VOLUME'] = pd.to_numeric(df['VOLUME'])
         return df[['TRADEDATE', 'CLOSE', 'VOLUME']]
 
-
-def yield_data_blocks(start_date, cls_maker):
-    """Yield pandas DataFrames until response length is exhausted."""
-    block_position = 0
-    current_response = True
-    while current_response:
-        current_response = cls_maker(start_date, block_position)
-        block_position += len(current_response)
-        yield current_response.dataframe
-
-
 def get_index_history(start_date):
     """
-    Возвращает историю котировок индекса полной доходности с учетом российских налогов.
+    Возвращает котировки индекса полной доходности с учетом российских налогов
+    начиная с даты *start_date*.
 
     Parameters
     ----------
@@ -136,23 +155,20 @@ def get_index_history(start_date):
         В строках даты торгов.
         В столбцах цена закрытия индекса полной доходности.
     """
-    gen = yield_data_blocks(start_date, TotalReturn)
-    return pd.concat(gen)
+    return pd.concat(TotalReturn(start_date))
 
 
 def get_index_history_from_start():
     """
-    Возвращает историю котировок индекса полной доходности с учетом 
-    российских налогов с начала информации.
-    Данные запрашиваются с начала имеющейся на сервере ISS истории котировок.
-    Предполагаемая дата начала котировок - 2003-02-26.    
+    Возвращает котировки индекса полной доходности с учетом российских налогов 
+    с начала информации. Предполагаемая дата начала котировок: 2003-02-26.    
     """
     return get_index_history(start_date=None)
 
 
 def get_ticker_history(ticker, start_date):
     """
-    Возвращает историю котировок тикера.
+    Возвращает историю котировок тикера начиная с даты *start_date*.
 
     Parameters
     ----------
@@ -166,14 +182,9 @@ def get_ticker_history(ticker, start_date):
     -------
     pandas.DataFrame
         В строках даты торгов.
-        В столбцах цена закрытия и оборот в штуках.
+        В столбцах цена закрытия и оборот в штуках [CLOSE, VOLUME].
     """
-
-    # builder function to return Ticket instances - a workaround
-    def ticker_maker(date, offset):
-        return Ticker(ticker, date, offset)
-
-    gen = yield_data_blocks(start_date, ticker_maker)
+    gen = Ticker(ticker, start_date)
     df = pd.concat(gen, ignore_index=True)
     # Для каждой даты выбирается режим торгов с максимальным оборотом
     df = df.loc[df.groupby('TRADEDATE')['VOLUME'].idxmax()]
@@ -183,12 +194,13 @@ def get_ticker_history(ticker, start_date):
 def get_ticker_history_from_start(ticker):
     """
     Возвращает историю котировок тикера с начала информации.
-    Данные запрашиваются с начала имеющейся на сервере ISS истории котировок.
     Начальная дата различается для разных тикеров.
     """
     return get_ticker_history(ticker, start_date=None)
 
 
 if __name__ == '__main__':
-    z = get_ticker_history('MOEX', datetime.date(2017, 10, 2))
-    print(z)
+    h = get_ticker_history('MOEX', datetime.date(2017, 10, 2))
+    print(h.head())
+    z = get_index_history(start_date=datetime.date(2017, 10, 2))
+    print(z.head())
