@@ -3,6 +3,10 @@
 import bs4
 import requests
 
+# Посмотреть - http://html.python-requests.org
+# При необходимости поменять requirements
+
+
 url = 'https://www.dohod.ru/ik/analytics/dividend/rtkmp'
 page = requests.get(url).content
 soup = bs4.BeautifulSoup(page, "html5lib")
