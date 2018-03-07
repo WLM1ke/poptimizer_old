@@ -52,12 +52,13 @@ def test_get_ticker_history_from_start():
     assert df.loc['2018-03-05', 'VOLUME'] == 4553310
 
 
-def test_ticker_is_iterable(): 
-    t = Ticker('AKRN', datetime.date(2017, 3, 1))
-    assert len(list(t)) >= 3
+class TestTicker:
+    def test_ticker_is_iterable(self):
+        t = Ticker('AKRN', datetime.date(2017, 3, 1))
+        assert len(list(t)) >= 3
 
 
-class Test_TotalReturn:
+class TestTotalReturn:
     t = TotalReturn(start_date=None)
     
     def test_data_property_on_init_for_None_start_date(self):
@@ -93,8 +94,8 @@ class Test_TotalReturn:
              'CAPITALIZATION',
              'CURRENCYID',
              'DIVISOR']
-    
-    def test_dataframe_propеrty(self):
+
+    def test_dataframe_property(self):
         assert isinstance(self.t.dataframe, pd.DataFrame)        
         assert list(self.t.dataframe.columns) == ['CLOSE']
         assert self.t.dataframe.loc['2003-02-26', 'CLOSE'] == 335.67
