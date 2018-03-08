@@ -2,14 +2,13 @@
 
    1. single ticker daily price and volumes 
 
-        get_ticker_history(ticker, start_date)
-        get_ticker_history_from_start(ticker)
+        get_quotes_history(ticker, start_date)
+        get_quotes_history_from_start(ticker)
    
    2. MOEX Russia Net Total Return (Resident) Index
 
         get_index_history(start_date)
         get_index_history_from_start()
-   
 """
 
 import datetime
@@ -57,9 +56,9 @@ def make_url(base: str, ticker: str, start_date=None, block_position=0):
         query_args.append(f"from={start_date:%Y-%m-%d}")
     arg_str = '&'.join(query_args)
     return f'{url}?{arg_str}'
-    
 
-class Ticker:
+
+class Quotes:
     """
     Представление ответа сервера по отдельному тикеру.
     """
@@ -133,7 +132,8 @@ class Ticker:
         df['VOLUME'] = pd.to_numeric(df['VOLUME'])
         return df[['TRADEDATE', 'CLOSE', 'VOLUME']]
 
-class TotalReturn(Ticker):
+
+class TotalReturn(Quotes):
     """
     Представление ответа сервера - данные по индексу полной доходности MOEX.
        
@@ -176,7 +176,7 @@ def get_index_history_from_start():
     return get_index_history(start_date=None)
 
 
-def get_ticker_history(ticker, start_date):
+def get_quotes_history(ticker, start_date):
     """
     Возвращает историю котировок тикера начиная с даты *start_date*.
 
@@ -194,27 +194,26 @@ def get_ticker_history(ticker, start_date):
         В строках даты торгов.
         В столбцах [CLOSE, VOLUME] цена закрытия и оборот в штуках .
     """
-    gen = Ticker(ticker, start_date)
+    gen = Quotes(ticker, start_date)
     df = pd.concat(gen, ignore_index=True)
     # для каждой даты выбирается режим торгов с максимальным оборотом
     df = df.loc[df.groupby('TRADEDATE')['VOLUME'].idxmax()]
     return df.set_index('TRADEDATE')
 
 
-def get_ticker_history_from_start(ticker):
+def get_quotes_history_from_start(ticker):
     """
     Возвращает историю котировок тикера с начала информации.
     Начальная дата различается для разных тикеров.
     """
-    return get_ticker_history(ticker, start_date=None)
+    return get_quotes_history(ticker, start_date=None)
 
 
 if __name__ == '__main__':
-    assert len(list(Ticker('AKRN', datetime.date(2017, 3, 1)))) >= 4
-    h = get_ticker_history('MOEX', datetime.date(2017, 10, 2))
+    assert len(list(Quotes('AKRN', datetime.date(2017, 3, 1)))) >= 4
+    h = get_quotes_history('MOEX', datetime.date(2017, 10, 2))
     print(h.head())
     print(h.tail())
     z = get_index_history(start_date=datetime.date(2017, 10, 2))
     print(z.head())
     print(z.tail())
-

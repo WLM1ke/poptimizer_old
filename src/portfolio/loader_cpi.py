@@ -66,6 +66,7 @@ def read_df(source):
     converter_arg = dict(converters={0: pd.to_datetime}, index_col=0)
     return pd.read_csv(source, **converter_arg)
 
+
 def update_from_web_cpi():
     download(URL_CPI, PATH_RAW_CPI)
     df_cpi = parse_local_dataframe_cpi()
@@ -74,10 +75,12 @@ def update_from_web_cpi():
     # df_cpi.loc['2017-09-30',][0]
     # Out[16]: 0.9984999999999999
     df_cpi.to_csv(path)
-    return df_cpi    
+    return df_cpi
+
 
 def monthly_cpi():
-    return read_df(PATH_PARSED_CPI)    
+    return read_df(PATH_PARSED_CPI)
+
 
 if __name__ == '__main__':
     df1 = update_from_web_cpi()

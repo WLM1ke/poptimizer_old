@@ -2,7 +2,7 @@ import datetime
 
 import pandas as pd
 
-from ..loader_history import get_ticker_history, make_url, get_index_history, get_json, TotalReturn, Ticker
+from ..loader_history import get_quotes_history, make_url, get_index_history, get_json, TotalReturn, Quotes
 
 
 def test_make_url():
@@ -15,7 +15,7 @@ def test_make_url():
 
 
 def test_make_url_defaults():
-    url = make_url(base=Ticker.base + '/',
+    url = make_url(base=Quotes.base + '/',
                    ticker='AKRN')
     assert url == ('https://iss.moex.com/iss/history/engines/stock/markets'
                    '/shares/securities/AKRN.json?start=0')
@@ -41,7 +41,7 @@ def test_get_index_history():
 
 
 def test_get_ticker_history():
-    df = get_ticker_history('MOEX', datetime.date(2017, 10, 2))
+    df = get_quotes_history('MOEX', datetime.date(2017, 10, 2))
     assert isinstance(df, pd.DataFrame)
     assert len(df.columns) == 2
     assert df.index.is_monotonic_increasing
@@ -54,7 +54,7 @@ def test_get_ticker_history():
 
 class TestTicker:
     def test_ticker_is_iterable(self):
-        t = Ticker('AKRN', datetime.date(2017, 3, 1))
+        t = Quotes('AKRN', datetime.date(2017, 3, 1))
         assert len(list(t)) >= 3
 
 
