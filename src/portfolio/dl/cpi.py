@@ -9,7 +9,8 @@ import requests
 
 def find_root():
     """Return path to repo root."""
-    return Path(__file__).parents[2]
+    # FIXME: навигация должна идти на основании глобальных настроек
+    return Path(__file__).parents[3]
 
 def make_path(subfolder, filename):
     folder = find_root() / 'data' / subfolder 
