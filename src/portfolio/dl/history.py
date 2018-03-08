@@ -1,11 +1,11 @@
-"""Download and transform daily quotes to pandas dataframes.
+"""Download and transform daily quotes to pandas DataFrames.
 
-   1. single ticker daily price and volumes 
+   1. Single ticker daily price and volumes:
 
         get_quotes_history(ticker, start_date)
         get_quotes_history_from_start(ticker)
    
-   2. MOEX Russia Net Total Return (Resident) Index
+   2. MOEX Russia Net Total Return (Resident) Index:
 
         get_index_history(start_date)
         get_index_history_from_start()

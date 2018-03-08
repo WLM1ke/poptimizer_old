@@ -78,13 +78,13 @@ def update_from_web_cpi():
     return df_cpi
 
 
-def monthly_cpi():
+def get_monthly_cpi():
     return read_df(PATH_PARSED_CPI)
 
 
 if __name__ == '__main__':
     df1 = update_from_web_cpi()
-    df2 = monthly_cpi()
+    df2 = get_monthly_cpi()
     for df in [df1, df2]:
         assert df.CPI.loc['2018-01-31'] == 1.0031    
         assert df.CPI.loc['1991-01-31'] == 1.0620   

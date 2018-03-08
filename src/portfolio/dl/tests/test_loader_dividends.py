@@ -3,7 +3,7 @@ import urllib.error
 
 import pytest
 
-from ..loader_dividends import get_ticker_dividends, Dividends
+from portfolio.dl.dividends import get_dividends, Dividends
 
 
 class TestDividends:
@@ -24,4 +24,4 @@ class TestDividends:
 
 
 def test_get_dividends():
-    assert get_ticker_dividends('CHMF').loc[datetime.date(2017, 9, 26), 'DIVIDENDS'] == 22.28
+    assert get_dividends('CHMF').loc[datetime.date(2017, 9, 26), 'DIVIDENDS'] == 22.28

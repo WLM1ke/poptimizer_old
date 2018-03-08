@@ -1,7 +1,7 @@
 import tempfile
 from pathlib import Path
 
-from ..loader_cpi import download, update_from_web_cpi, parse_local_dataframe_cpi, URL_CPI
+from portfolio.dl.cpi import download, update_from_web_cpi, parse_local_dataframe_cpi, URL_CPI
 
 
 def test_download():    

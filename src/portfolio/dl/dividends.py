@@ -1,4 +1,9 @@
-"""Dividends history downloader and parser."""
+"""Download and transform dividends data to pandas DataFrames.
+
+    Single ticker close dates and dividends:
+
+        get_ticker_dividends(ticker)
+"""
 
 import urllib.error
 import urllib.request
@@ -70,9 +75,9 @@ class Dividends:
         return df.set_index('CLOSE_DATE').sort_index()
 
 
-def get_ticker_dividends(ticker):
+def get_dividends(ticker):
     return Dividends(ticker).df
 
 
 if __name__ == '__main__':
-    print(get_ticker_dividends('CHMF'))
+    print(get_dividends('CHMF'))

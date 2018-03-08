@@ -1,4 +1,9 @@
-"""Downloader and parser for securities info."""
+"""Download and transform securities info to pandas DataFrames.
+
+    Lots sizes, short names and last quotes for ticker or list of tickers:
+
+        get_info(tickers)
+"""
 
 import pandas as pd
 import requests
@@ -29,7 +34,7 @@ def validate_response(data, tickers):
         raise ValueError(msg)
 
 
-def get_securities_info(tickers):
+def get_info(tickers):
     """
     Возвращает краткое наименование, размер лота и последнюю цену
 
@@ -66,7 +71,7 @@ if __name__ == "__main__":
     d = get_raw_json(['AKRN', 'GAZP', 'LKOH', 'SBER'])
     assert isinstance(d, dict)
     assert list(d.keys()) == ['securities', 'marketdata', 'dataversion']
-    df = get_securities_info(['AKRN', 'GAZP'])
+    df = get_info(['AKRN', 'GAZP'])
     assert isinstance(df, pd.DataFrame)
     assert df.loc['AKRN', 'SHORTNAME'] == 'Акрон'
     assert df.loc['GAZP', 'SHORTNAME'] == 'ГАЗПРОМ ао'

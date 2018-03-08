@@ -1,6 +1,6 @@
 import pandas as pd
 
-from ..loader_info import make_url, get_raw_json, get_securities_info
+from portfolio.dl.info import make_url, get_raw_json, get_info
 
 
 def test_make_url():
@@ -15,7 +15,7 @@ def test_make_raw_json():
 
 
 def test_get_securities_info():
-    df = get_securities_info(['AKRN', 'GAZP', 'TTLK'])
+    df = get_info(['AKRN', 'GAZP', 'TTLK'])
     assert isinstance(df, pd.DataFrame)
     assert df.loc['AKRN', 'SHORTNAME'] == 'Акрон'
     assert df.loc['GAZP', 'SHORTNAME'] == 'ГАЗПРОМ ао'
