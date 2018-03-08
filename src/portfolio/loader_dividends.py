@@ -17,6 +17,7 @@ class Dividends:
 
     @property
     def html(self):
+        # Запоминается значение, чтобы не дергать url повторно
         if self._html:
             return self._html
         else:
@@ -53,6 +54,10 @@ class Dividends:
         df = pd.concat(self._yield_rows())
         df.index = pd.to_datetime(df.index)
         return df.sort_index()
+
+
+def get_ticker_dividends(ticker):
+    return Dividends(ticker).df
 
 
 if __name__ == '__main__':
