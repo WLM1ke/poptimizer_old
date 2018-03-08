@@ -8,6 +8,12 @@ from bs4 import BeautifulSoup
 
 
 class Dividends:
+    table_index = 2
+    date_index = 0
+    date_name = 'Дата закрытия реестра'
+    dividend_index = 2
+    dividend_name = 'Дивиденд (руб.)'
+
     def __init__(self, ticker):
         self.ticker = ticker
         self._html = None
@@ -34,16 +40,16 @@ class Dividends:
     @property
     def html_table(self):
         soup = BeautifulSoup(self.html, 'lxml')
-        return soup.find_all('table')[2]
+        return soup.find_all('table')[self.table_index]
 
-    def _table_header_parser(self):
-        header_names = [column.string for column in self.html_table.find(name='tr').find_all(name='th')]
-        self.date_index = header_names.index('Дата закрытия реестра')
-        self.dividend_index = header_names.index('Дивиденд (руб.)')
+    def _validate_table_header(self):
+        names = [column.string for column in self.html_table.find(name='tr').find_all(name='th')]
+        if names[self.date_index] != self.date_name or names[self.dividend_index] != self.dividend_name:
+            raise ValueError(f'Не коректные заголовки таблицы дивидендов {self.ticker}')
 
     @property
     def table_rows(self):
-        self._table_header_parser()
+        self._validate_table_header()
         # Строки с прогнозом имеют class = forecast
         return self.html_table.find_all(name='tr', class_=None)[1:]
 
