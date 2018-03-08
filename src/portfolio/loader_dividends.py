@@ -64,7 +64,7 @@ class Dividends:
     def df(self):
         df = pd.DataFrame(data=self.parse_rows(),
                           columns=['CLOSE_DATE', 'DIVIDENDS'])
-        df.index = pd.to_datetime(df['CLOSE_DATE'])
+        df['CLOSE_DATE'] = pd.to_datetime(df['CLOSE_DATE'])
         df['DIVIDENDS'] = pd.to_numeric(df['DIVIDENDS'])
         return df.set_index('CLOSE_DATE').sort_index()
 
