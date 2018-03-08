@@ -12,8 +12,9 @@ class TestDividends:
 
     def test_wrong_url(self):
         with pytest.raises(urllib.error.URLError) as info:
-            Dividends('TEST').html
-        assert '<urlopen error Не верный url: http://www.dohod.ru/ik/analytics/dividend/test>' == str(info.value)
+            dividends = Dividends('TEST')
+            _ = dividends.html
+        assert f'<urlopen error Не верный url: {dividends.url}>' == str(info.value)
 
     def test_html_table_cache(self):
         div = Dividends('AKRN')
