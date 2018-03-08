@@ -40,7 +40,7 @@ def test_get_index_history():
     assert df.loc['2018-03-02', 'CLOSE'] == 3273.16
 
 
-def test_get_ticker_history():
+def test_get_quotes_history():
     df = get_quotes_history('MOEX', datetime.date(2017, 10, 2))
     assert isinstance(df, pd.DataFrame)
     assert len(df.columns) == 2
