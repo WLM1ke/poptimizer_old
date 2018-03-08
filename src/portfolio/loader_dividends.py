@@ -49,22 +49,24 @@ class Dividends:
 
     @property
     def table_rows(self):
-        self._validate_table_header()
-        # Строки с прогнозом имеют class = forecast
+        # Строки с прогнозом имеют class = forecast, а с фактом - класс отсутсвует
         return self.html_table.find_all(name='tr', class_=None)[1:]
 
-    def _yield_rows(self):
+    def parse_rows(self):
+        self._validate_table_header()
+        data = []
         for html_row in self.table_rows:
             row = [column.string for column in html_row.find_all('td')]
-            yield pd.DataFrame(data=[row[self.dividend_index]],
-                               columns=['DIVIDENDS'],
-                               index=[row[self.date_index]])
+            data.append([row[self.date_index], row[self.dividend_index]])
+        return data
 
     @property
     def df(self):
-        df = pd.concat(self._yield_rows())
-        df.index = pd.to_datetime(df.index)
-        return df.sort_index()
+        df = pd.DataFrame(data=self.parse_rows(),
+                          columns=['CLOSE_DATE', 'DIVIDENDS'])
+        df.index = pd.to_datetime(df['CLOSE_DATE'])
+        df['DIVIDENDS'] = pd.to_numeric(df['DIVIDENDS'])
+        return df.set_index('CLOSE_DATE').sort_index()
 
 
 def get_ticker_dividends(ticker):
@@ -72,5 +74,4 @@ def get_ticker_dividends(ticker):
 
 
 if __name__ == '__main__':
-    div = Dividends('CHMF')
-    print(div.df)
+    print(get_ticker_dividends('CHMF'))
