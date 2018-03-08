@@ -15,11 +15,11 @@ class TestDividends:
             Dividends('TEST').html
         assert '<urlopen error Не верный url: http://www.dohod.ru/ik/analytics/dividend/test>' == str(info.value)
 
-    def test_html_cache(self):
+    def test_html_table_cache(self):
         div = Dividends('AKRN')
-        assert div._html is None
-        assert div._html != div.html
-        assert div._html is not None
+        assert div._html_table is None
+        assert div._html_table != div.html_table
+        assert div._html_table is not None
 
 
 def test_get_dividends():

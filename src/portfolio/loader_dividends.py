@@ -16,7 +16,7 @@ class Dividends:
 
     def __init__(self, ticker):
         self.ticker = ticker
-        self._html = None
+        self._html_table = None
 
     @property
     def url(self):
@@ -24,23 +24,23 @@ class Dividends:
 
     @property
     def html(self):
-        # Запоминается значение, чтобы не дергать url повторно
-        if self._html:
-            return self._html
-        else:
-            try:
-                # *requests* fails on SSL, using *urllib.request*
-                with urllib.request.urlopen(self.url) as response:
-                    self._html = response.read()
-                    return self._html
-            except urllib.error.HTTPError as error:
-                if error.code == 404:
-                    raise urllib.error.URLError(f'Не верный url: {self.url}')
+        try:
+            # *requests* fails on SSL, using *urllib.request*
+            with urllib.request.urlopen(self.url) as response:
+                return response.read()
+        except urllib.error.HTTPError as error:
+            if error.code == 404:
+                raise urllib.error.URLError(f'Не верный url: {self.url}')
 
     @property
     def html_table(self):
-        soup = BeautifulSoup(self.html, 'lxml')
-        return soup.find_all('table')[self.table_index]
+        # Происходит несколько вызовов - запоминается значение, чтобы не дергать url повторно
+        if self._html_table:
+            return self._html_table
+        else:
+            soup = BeautifulSoup(self.html, 'lxml')
+            self._html_table = soup.find_all('table')[self.table_index]
+            return self._html_table
 
     def _validate_table_header(self):
         names = [column.string for column in self.html_table.find(name='tr').find_all(name='th')]
