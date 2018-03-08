@@ -1,5 +1,5 @@
 pandas
-requests
 xlrd
+requests
 bs4
 lxml
