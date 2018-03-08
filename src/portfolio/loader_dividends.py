@@ -52,6 +52,7 @@ class Dividends:
         # Строки с прогнозом имеют class = forecast, а с фактом - класс отсутсвует
         return self.html_table.find_all(name='tr', class_=None)[1:]
 
+    @property
     def parse_rows(self):
         self._validate_table_header()
         data = []
@@ -62,7 +63,7 @@ class Dividends:
 
     @property
     def df(self):
-        df = pd.DataFrame(data=self.parse_rows(),
+        df = pd.DataFrame(data=self.parse_rows,
                           columns=['CLOSE_DATE', 'DIVIDENDS'])
         df['CLOSE_DATE'] = pd.to_datetime(df['CLOSE_DATE'])
         df['DIVIDENDS'] = pd.to_numeric(df['DIVIDENDS'])
