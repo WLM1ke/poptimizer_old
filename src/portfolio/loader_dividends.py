@@ -1,5 +1,6 @@
 """Dividends history downloader and parser."""
 
+import urllib.error
 import urllib.request
 
 import pandas as pd
@@ -21,10 +22,14 @@ class Dividends:
         if self._html:
             return self._html
         else:
-            # *requests* fails on SSL, using *urllib.request*
-            with urllib.request.urlopen(self.url) as response:
-                self._html = response.read()
-                return self._html
+            try:
+                # *requests* fails on SSL, using *urllib.request*
+                with urllib.request.urlopen(self.url) as response:
+                    self._html = response.read()
+                    return self._html
+            except urllib.error.HTTPError as error:
+                if error.code == 404:
+                    raise urllib.error.URLError(f'Не верный url: {self.url}')
 
     @property
     def html_table(self):
