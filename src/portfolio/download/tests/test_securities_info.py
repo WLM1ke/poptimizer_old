@@ -1,6 +1,6 @@
 import pandas as pd
 
-from portfolio.dl.info import make_url, get_raw_json, get_info
+from portfolio.download.securities_info import make_url, get_raw_json, get_securities_info
 
 
 def test_make_url():
@@ -14,8 +14,8 @@ def test_make_raw_json():
     assert list(d.keys()) == ['securities', 'marketdata', 'dataversion']
 
 
-def test_get_info():
-    df = get_info(['AKRN', 'GAZP', 'TTLK'])
+def test_get_securities_info():
+    df = get_securities_info(['AKRN', 'GAZP', 'TTLK'])
     assert isinstance(df, pd.DataFrame)
     assert df.loc['AKRN', 'SHORTNAME'] == 'Акрон'
     assert df.loc['GAZP', 'SHORTNAME'] == 'ГАЗПРОМ ао'

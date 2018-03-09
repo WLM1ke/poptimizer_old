@@ -3,7 +3,7 @@ import urllib.error
 
 import pytest
 
-from portfolio.dl.dividends import get_dividends, Dividends
+from portfolio.download.dividends import get_dividends, Dividends
 
 
 class TestDividends:

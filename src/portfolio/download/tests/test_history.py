@@ -2,7 +2,7 @@ import datetime
 
 import pandas as pd
 
-from portfolio.dl.history import get_quotes_history, make_url, get_index_history, get_json, TotalReturn, Quotes
+from portfolio.download.history import get_quotes_history, make_url, get_index_history, get_json, TotalReturn, Quotes
 
 
 def test_make_url():
