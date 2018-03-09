@@ -3,24 +3,18 @@ import urllib.error
 
 import pytest
 
-from portfolio.download.dividends import get_dividends, Dividends
+from portfolio.download.dividends import get_dividends, make_url
 
 
-class TestDividends:
-    def test_url(self):
-        assert Dividends('MOEX').url == 'http://www.dohod.ru/ik/analytics/dividend/moex'
+def test_url():
+    assert make_url('MOEX') == 'http://www.dohod.ru/ik/analytics/dividend/moex'
 
-    def test_wrong_url(self):
-        with pytest.raises(urllib.error.URLError) as info:
-            dividends = Dividends('TEST')
-            _ = dividends.html
-        assert f'<urlopen error Не верный url: {dividends.url}>' == str(info.value)
 
-    def test_html_table_cache(self):
-        div = Dividends('AKRN')
-        assert div._html_table is None
-        assert div._html_table != div.html_table
-        assert div._html_table is not None
+def test_wrong_url():
+    with pytest.raises(urllib.error.URLError) as info:
+        get_dividends('TEST')
+    url = make_url('TEST')
+    assert f'<urlopen error Неверный url: {url}>' == str(info.value)
 
 
 def test_get_dividends():
