@@ -2,7 +2,7 @@
 
     Single ticker close dates and dividends:
 
-        get_ticker_dividends(ticker)
+        get_dividends(ticker)
 """
 
 import urllib.error
@@ -21,6 +21,18 @@ HEADER = [(0, 'Дата закрытия реестра'),
 def make_url(ticker):
     # Обычно тикеры пишутся всеми большими буквами, но в url они должны быть маленькими
     return f'http://www.dohod.ru/ik/analytics/dividend/{ticker.lower()}'
+
+
+def get_html(url):
+    try:
+        # *requests* fails on SSL, using *urllib.request*
+        with urllib.request.urlopen(url) as response:
+            return BeautifulSoup(response.read(), 'lxml')
+    except urllib.error.HTTPError as error:
+        if error.code == 404:
+            raise urllib.error.URLError(f'Неверный url: {url}')
+        else:
+            raise error
 
 
 def validate_table_header(header):
@@ -49,16 +61,8 @@ def make_df(parsed_rows):
 
 def get_dividends(ticker):
     url = make_url(ticker)
-    try:
-        # *requests* fails on SSL, using *urllib.request*
-        with urllib.request.urlopen(url) as response:
-            soup = BeautifulSoup(response.read(), 'lxml')
-    except urllib.error.HTTPError as error:
-        if error.code == 404:
-            raise urllib.error.URLError(f'Неверный url: {url}')
-        else:
-            raise error
-    html_table = soup.find_all('table')[TABLE_INDEX]
+    html = get_html(url)
+    html_table = html.find_all('table')[TABLE_INDEX]
     parsed_rows = parse_table_rows(html_table)
     return make_df(parsed_rows)
 
