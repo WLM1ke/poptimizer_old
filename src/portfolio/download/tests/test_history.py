@@ -35,7 +35,7 @@ def test_get_index_history():
     assert len(df.columns) == 1
     assert df.index.is_monotonic_increasing
     assert df.index.is_unique
-    assert df.index[0] == '2017-10-02'
+    assert df.index[0] == pd.to_datetime('2017-10-02')
     assert df.shape[0] >= 100
     assert df.loc['2018-03-02', 'CLOSE'] == 3273.16
 
@@ -46,7 +46,7 @@ def test_get_quotes_history():
     assert len(df.columns) == 2
     assert df.index.is_monotonic_increasing
     assert df.index.is_unique
-    assert df.index[0] == '2017-10-02'
+    assert df.index[0] == pd.to_datetime('2017-10-02')
     assert df.shape[0] > 100
     assert df.loc['2018-03-05', 'CLOSE'] == 117
     assert df.loc['2018-03-05', 'VOLUME'] == 4553310
