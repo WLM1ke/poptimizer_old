@@ -128,7 +128,8 @@ class Quotes:
     @property
     def dataframe(self):
         df = self.df
-        # приведение типа - часто объемы не распознаются как численные значения
+        df['TRADEDATE'] = pd.to_datetime(df['TRADEDATE'])
+        df['CLOSE'] = pd.to_numeric(df['CLOSE'])
         df['VOLUME'] = pd.to_numeric(df['VOLUME'])
         return df[['TRADEDATE', 'CLOSE', 'VOLUME']]
 
@@ -145,8 +146,11 @@ class TotalReturn(Quotes):
         super().__init__(self.ticker, start_date)
         
     @property
-    def dataframe(self):        
-        return self.df[['TRADEDATE', 'CLOSE']].set_index('TRADEDATE')        
+    def dataframe(self):
+        df = self.df
+        df['TRADEDATE'] = pd.to_datetime(df['TRADEDATE'])
+        df['CLOSE'] = pd.to_numeric(df['CLOSE'])
+        return df[['TRADEDATE', 'CLOSE']].set_index('TRADEDATE')
     
 
 def get_index_history(start_date):
