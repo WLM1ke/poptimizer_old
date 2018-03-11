@@ -3,3 +3,4 @@ xlrd
 requests
 bs4
 lxml
+arrow

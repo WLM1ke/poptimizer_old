@@ -1,16 +1,32 @@
 """Load and update local data of daily quotes history and returns pandas DataFrames."""
 
+from os import path
+
+import arrow
 import pandas as pd
 
 from portfolio import download
 from portfolio import settings
 
 QUOTES_PATH = 'quotes'
+MARKET_TIME_ZONE = 'Europe/Moscow'
+END_OF_CURRENT_TRADING_DAY = arrow.get().to(MARKET_TIME_ZONE).replace(hour=19,
+                                                                      minute=15,
+                                                                      second=0,
+                                                                      microsecond=0)
 
 
 def quotes_path(ticker: str):
     """Возвращает и при необходимости создает путь к файлу с котировками."""
     return settings.make_data_path(QUOTES_PATH, f'{ticker}.csv')
+
+
+def end_of_last_trading_day():
+    """Возвращает дату последнего завершившегося торгового дня."""
+    if arrow.get().to(MARKET_TIME_ZONE) > END_OF_CURRENT_TRADING_DAY:
+        return END_OF_CURRENT_TRADING_DAY
+    else:
+        return END_OF_CURRENT_TRADING_DAY.shift(days=-1)
 
 
 def load_quotes_history(ticker: str):
@@ -21,24 +37,39 @@ def load_quotes_history(ticker: str):
     return df.set_index('TRADEDATE')
 
 
-def validate(df_old: pd.DataFrame, df_new: pd.DataFrame):
-    if not (df_old.iloc[-1] == df_new.iloc[0]).all(skipna=False):
-        print(df_old.iloc[-1])
-        print(df_new.iloc[0])
+def need_update(ticker):
+    file_date = arrow.get(path.getmtime(quotes_path(ticker))).to(MARKET_TIME_ZONE)
+    # Если файл обновлялся после завершения последнего торгового дня, то он не должен обновляться
+    if file_date > end_of_last_trading_day():
+        return False
+    else:
+        return True
+
+
+def df_last_date(df):
+    return df.index[-1]
+
+
+def validate_last_date(df_old: pd.DataFrame, df_new: pd.DataFrame):
+    last_date = df_last_date(df_old)
+    if not all(df_old.loc[last_date] == df_new.loc[last_date]):
+        print(df_old.loc[last_date])
+        print(df_new.loc[last_date])
         raise ValueError('Загруженные данные не стыкуются с локальными.')
+
+
+def update_quotes_history(ticker: str):
+    df = load_quotes_history(ticker)
+    if need_update(ticker):
+        df_update = download.quotes_history(ticker, df_last_date(df))
+        validate_last_date(df, df_update)
+        df = pd.concat([df, df_update.iloc[1:]])
+        save_quotes_history(ticker, df)
+    return df
 
 
 def save_quotes_history(ticker: str, df: pd.DataFrame):
     df.to_csv(quotes_path(ticker))
-
-
-def update_quotes_history(ticker: str):
-    df_old = load_quotes_history(ticker)
-    # TODO: проверка на время обновление файла
-    df_new = download.quotes_history(ticker, df_old.index[-1])
-    validate(df_old, df_new)
-    df = pd.concat([df_old, df_new.iloc[1:]])
-    return df
 
 
 def get_quotes_history(ticker: str):
@@ -46,7 +77,7 @@ def get_quotes_history(ticker: str):
         df = update_quotes_history(ticker)
     else:
         df = download.quotes_history_from_start(ticker)
-    save_quotes_history(ticker, df)
+        save_quotes_history(ticker, df)
     return df
 
 
