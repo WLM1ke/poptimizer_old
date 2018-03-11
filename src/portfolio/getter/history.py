@@ -82,4 +82,4 @@ def get_quotes_history(ticker: str):
 
 
 if __name__ == '__main__':
-    print(get_quotes_history('AKRN'))
+    print(get_quotes_history('MSTT'))
