@@ -30,10 +30,8 @@ def end_of_last_trading_day():
 
 
 def load_quotes_history(ticker: str) -> pd.DataFrame:
-    df = pd.read_csv(quotes_path(ticker), header=0, engine='python', sep='\s*,')
-    df['TRADEDATE'] = pd.to_datetime(df['TRADEDATE'])
-    df['CLOSE'] = pd.to_numeric(df['CLOSE'])
-    df['VOLUME'] = pd.to_numeric(df['VOLUME'])
+    converters = dict(TRADEDATE=pd.to_datetime, CLOSE=pd.to_numeric, VOLUME=pd.to_numeric)
+    df = pd.read_csv(quotes_path(ticker), converters=converters, header=0, engine='python', sep='\s*,')
     return df.set_index('TRADEDATE')
 
 
