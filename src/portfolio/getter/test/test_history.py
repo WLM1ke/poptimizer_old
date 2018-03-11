@@ -1,7 +1,9 @@
+import arrow
 import pandas as pd
 import pytest
 
 from portfolio import download
+from portfolio.getter import history
 from portfolio.getter.history import get_quotes_history, load_quotes_history, df_last_date, validate_last_date
 
 
@@ -32,20 +34,40 @@ class TestGetQuotesHistory:
     def test_checkpoint(self, get_df):
         assert get_df.loc['2018-03-09', 'CLOSE'] == 148.8 and get_df.loc['2018-03-09', 'VOLUME'] == 2960
 
-
 @pytest.fixture(scope='class')
-def df_old():
-    ticker = 'AKRN'
-    return load_quotes_history(ticker)
+def update_df():
+    saved_date = history.END_OF_CURRENT_TRADING_DAY
+    history.END_OF_CURRENT_TRADING_DAY = arrow.get().shift(months=1)
+    yield get_quotes_history('MSTT')
+    history.END_OF_CURRENT_TRADING_DAY = saved_date
 
 
-class TestValidateLastDate:
-    def test_validate_last_date(self, df_old):
-        df_new = download.quotes_history('AKRN', df_last_date(df_old))
-        assert validate_last_date(df_old, df_new) is None
+class TestUpdateQuotesHistory:
+    def test_df_type(self, update_df):
+        assert isinstance(update_df, pd.DataFrame)
 
-    def test_validate_last_date_error(self, df_old):
-        df_new = download.quotes_history('MSTT', df_last_date(df_old))
-        with pytest.raises(ValueError) as info:
-            validate_last_date(df_old, df_new)
-        assert 'Загруженные данные не стыкуются с локальными.' == str(info.value)
+    def test_df_columns_number(self, update_df):
+        assert len(update_df.columns) == 2
+
+    def test_df_index_monotonic(self, update_df):
+        assert update_df.index.is_monotonic_increasing
+
+    def test_df_is_unique(self, update_df):
+        assert update_df.index.is_unique
+
+    def test_beginning_date(self, update_df):
+        assert update_df.index[0] == pd.to_datetime('2010-11-03')
+
+    def test_load_long_data(self, update_df):
+        assert update_df.shape[0] > 100
+
+    def test_checkpoint(self, update_df):
+        assert update_df.loc['2018-03-09', 'CLOSE'] == 148.8 and update_df.loc['2018-03-09', 'VOLUME'] == 2960
+
+
+def test_validate_last_date_error():
+    df_old = load_quotes_history('AKRN')
+    df_new = download.quotes_history('MSTT', df_last_date(df_old))
+    with pytest.raises(ValueError) as info:
+        validate_last_date(df_old, df_new)
+    assert 'Загруженные данные не стыкуются с локальными.' == str(info.value)
