@@ -29,9 +29,8 @@ def end_of_last_trading_day():
         return END_OF_CURRENT_TRADING_DAY.shift(days=-1)
 
 
-def load_quotes_history(ticker: str):
+def load_quotes_history(ticker: str) -> pd.DataFrame:
     df = pd.read_csv(quotes_path(ticker), header=0, engine='python', sep='\s*,')
-    print(df.columns)
     df['TRADEDATE'] = pd.to_datetime(df['TRADEDATE'])
     df['CLOSE'] = pd.to_numeric(df['CLOSE'])
     df['VOLUME'] = pd.to_numeric(df['VOLUME'])
@@ -53,7 +52,7 @@ def df_last_date(df):
 
 def validate_last_date(df_old: pd.DataFrame, df_new: pd.DataFrame):
     last_date = df_last_date(df_old)
-    if not all(df_old.loc[last_date] == df_new.loc[last_date]):
+    if not (df_old.loc[last_date] == df_new.loc[last_date]).all(skipna=False):
         print(df_old.loc[last_date])
         print(df_new.loc[last_date])
         raise ValueError('Загруженные данные не стыкуются с локальными.')
