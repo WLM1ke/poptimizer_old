@@ -69,4 +69,4 @@ def test_validate_last_date_error():
     df_new = download.quotes_history('MSTT', df_last_date(df_old))
     with pytest.raises(ValueError) as info:
         validate_last_date(df_old, df_new)
-    assert 'Загруженные данные не стыкуются с локальными.' == str(info.value)
+    assert 'Загруженные данные не стыкуются с локальными.' in str(info.value)

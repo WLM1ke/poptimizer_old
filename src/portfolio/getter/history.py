@@ -50,10 +50,12 @@ def df_last_date(df):
 
 def validate_last_date(df_old: pd.DataFrame, df_new: pd.DataFrame):
     last_date = df_last_date(df_old)
-    if not (df_old.loc[last_date] == df_new.loc[last_date]).all(skipna=False):
-        print(df_old.loc[last_date])
-        print(df_new.loc[last_date])
-        raise ValueError('Загруженные данные не стыкуются с локальными.')
+    df_old_last_date = df_old.loc[last_date]
+    df_new_last_date = df_new.loc[last_date]
+    if not df_old_last_date.equals(df_new_last_date):
+        raise ValueError(f'Загруженные данные не стыкуются с локальными. \n' +
+                         f'{df_old_last_date} \n' +
+                         f'{df_new_last_date}')
 
 
 def update_quotes_history(ticker: str):

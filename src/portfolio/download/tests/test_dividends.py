@@ -14,7 +14,7 @@ def test_wrong_url():
     with pytest.raises(urllib.error.URLError) as info:
         get_dividends('TEST')
     url = make_url('TEST')
-    assert f'<urlopen error Неверный url: {url}>' == str(info.value)
+    assert f'Неверный url: {url}' in str(info.value)
 
 
 def test_get_dividends():
