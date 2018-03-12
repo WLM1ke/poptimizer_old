@@ -62,7 +62,7 @@ class TestTotalReturn:
     t = TotalReturn(start_date=None)
     
     def test_data_property_on_init_for_None_start_date(self):
-        # lower-level test of server response
+        # lower-level tests of server response
         data = self.t.data
         index = data['history']['columns'].index('TRADEDATE')
         assert data['history']['data'][0][index] == '2003-02-26'

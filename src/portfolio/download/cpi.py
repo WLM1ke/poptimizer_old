@@ -39,7 +39,9 @@ def download(url, local_path):
     else:
         # FIXME: better exception?
         raise Exception("No connection - file from internet not loaded")
-# TODO test: write file to temp destination and assert it exists    
+
+
+# TODO tests: write file to temp destination and assert it exists
 
 
 def parse_local_dataframe_cpi(path=PATH_RAW_CPI):
@@ -60,7 +62,7 @@ def parse_local_dataframe_cpi(path=PATH_RAW_CPI):
     index = pd.DatetimeIndex(freq='M', start=date(year, 1, 31), periods=size)
     flat_data = df.values.reshape(months * years, order='F')
     return pd.DataFrame(flat_data, index=index,
-                        columns=['CPI']).dropna() / 100  # TODO test: make sure data includes checkpoints
+                        columns=['CPI']).dropna() / 100  # TODO tests: make sure data includes checkpoints
 
 
 def read_df(source):
