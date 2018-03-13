@@ -6,6 +6,7 @@ import pytest
 
 from portfolio import download, settings
 from portfolio.getter import history
+from portfolio.getter.history import get_prices_history, get_volumes_history
 from portfolio.getter.history import get_quotes_history, load_quotes_history, df_last_date, validate_last_date
 
 
@@ -17,7 +18,7 @@ def updated_df():
     return df2
 
 
-@pytest.fixture()
+@pytest.fixture(scope='module')
 def make_dfs(tmpdir_factory):
     saved_path = settings.DATA_PATH
     temp_dir = tmpdir_factory.mktemp('data')
@@ -47,4 +48,16 @@ def test_validate_last_date_error():
     df_new = download.quotes_history('MSTT', df_last_date(df_old))
     with pytest.raises(ValueError) as info:
         validate_last_date('AKRN', df_old, df_new)
-    assert 'Загруженные данные не стыкуются с локальными.' in str(info.value)
+    assert 'Загруженные данные AKRN не стыкуются с локальными.' in str(info.value)
+
+
+def test_get_volumes_history():
+    df = get_volumes_history(['KBTK', 'RTKMP'])
+    assert df.loc['2018-03-09', 'KBTK'] == 0
+    assert df.loc['2018-03-13', 'RTKMP'] == 400100
+
+
+def test_get_prices_history():
+    df = get_prices_history(['KBTK', 'RTKMP'])
+    assert pd.isna(df.loc['2018-03-09', 'KBTK'])
+    assert df.loc['2018-03-13', 'RTKMP'] == 62

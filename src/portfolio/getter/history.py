@@ -52,10 +52,10 @@ def validate_last_date(ticker, df_old: pd.DataFrame, df_new: pd.DataFrame):
     last_date = df_last_date(df_old)
     df_old_last = df_old.loc[last_date]
     df_new_last = df_new.loc[last_date]
-    if any(df_old_last['CLOSE'] != df_new_last['CLOSE'], df_old_last['VOLUME'] != df_new_last['VOLUME']):
+    if any([df_old_last['CLOSE'] != df_new_last['CLOSE'], df_old_last['VOLUME'] != df_new_last['VOLUME']]):
         raise ValueError(f'Загруженные данные {ticker} не стыкуются с локальными. \n' +
-                         f'{df_old_last_date} \n' +
-                         f'{df_new_last_date}')
+                         f'{df_old_last} \n' +
+                         f'{df_new_last}')
 
 
 def update_quotes_history(ticker: str):
@@ -136,4 +136,4 @@ def get_volumes_history(tickers):
 
 
 if __name__ == '__main__':
-    print(get_volumes_history(['MSTT', 'KBTK', 'AKRN', 'RTKMP']))
+    print(get_prices_history(['KBTK', 'RTKMP']))
