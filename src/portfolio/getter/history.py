@@ -48,12 +48,12 @@ def df_last_date(df):
     return df.index[-1]
 
 
-def validate_last_date(df_old: pd.DataFrame, df_new: pd.DataFrame):
+def validate_last_date(ticker, df_old: pd.DataFrame, df_new: pd.DataFrame):
     last_date = df_last_date(df_old)
-    df_old_last_date = df_old.loc[last_date]
-    df_new_last_date = df_new.loc[last_date]
-    if not df_old_last_date.equals(df_new_last_date):
-        raise ValueError(f'Загруженные данные не стыкуются с локальными. \n' +
+    df_old_last = df_old.loc[last_date]
+    df_new_last = df_new.loc[last_date]
+    if any(df_old_last['CLOSE'] != df_new_last['CLOSE'], df_old_last['VOLUME'] != df_new_last['VOLUME']):
+        raise ValueError(f'Загруженные данные {ticker} не стыкуются с локальными. \n' +
                          f'{df_old_last_date} \n' +
                          f'{df_new_last_date}')
 
@@ -62,7 +62,7 @@ def update_quotes_history(ticker: str):
     df = load_quotes_history(ticker)
     if need_update(ticker):
         df_update = download.quotes_history(ticker, df_last_date(df))
-        validate_last_date(df, df_update)
+        validate_last_date(ticker, df, df_update)
         df = pd.concat([df, df_update.iloc[1:]])
         save_quotes_history(ticker, df)
     return df
@@ -136,4 +136,4 @@ def get_volumes_history(tickers):
 
 
 if __name__ == '__main__':
-    print(get_volumes_history(['MSTT', 'KBTK']))
+    print(get_volumes_history(['MSTT', 'KBTK', 'AKRN', 'RTKMP']))
