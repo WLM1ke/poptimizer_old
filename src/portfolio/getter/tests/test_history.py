@@ -20,7 +20,7 @@ def new_df(tmpdir_factory):
 
 
 @pytest.fixture(scope='class')
-def updated_df(new_df):
+def updated_df():
     # Этап 2 - иницируется обновление DataFrame путем подмены параметра окончания торгового дня
     saved_date = history.END_OF_CURRENT_TRADING_DAY
     history.END_OF_CURRENT_TRADING_DAY = arrow.get().shift(months=1)
@@ -30,7 +30,7 @@ def updated_df(new_df):
 
 
 @pytest.fixture(scope='class')
-def no_update_df(updated_df):
+def no_update_df():
     # Этап 3 - повторный вызов без обновления с вовращенным параметром окончания торгового дня
     return get_quotes_history('MSTT')
 
