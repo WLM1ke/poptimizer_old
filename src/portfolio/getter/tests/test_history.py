@@ -9,19 +9,7 @@ from portfolio.getter import history
 from portfolio.getter.history import get_quotes_history, load_quotes_history, df_last_date, validate_last_date
 
 
-@pytest.fixture(scope='class')
-def new_df(tmpdir_factory):
-    # Этап 1 - инициируется создание DataFrame с нуля во временной директории
-    saved_path = settings.DATA_PATH
-    temp_dir = tmpdir_factory.mktemp('data')
-    settings.DATA_PATH = Path(temp_dir)
-    yield get_quotes_history('MSTT')
-    settings.DATA_PATH = saved_path
-
-
-@pytest.fixture(scope='class')
 def updated_df():
-    # Этап 2 - иницируется обновление DataFrame путем подмены параметра окончания торгового дня
     saved_date = history.END_OF_CURRENT_TRADING_DAY
     history.END_OF_CURRENT_TRADING_DAY = arrow.get().shift(months=1)
     df2 = get_quotes_history('MSTT')
@@ -30,15 +18,18 @@ def updated_df():
 
 
 @pytest.fixture(scope='class')
-def no_update_df():
-    # Этап 3 - повторный вызов без обновления с вовращенным параметром окончания торгового дня
-    return get_quotes_history('MSTT')
+def make_dfs(tmpdir_factory):
+    saved_path = settings.DATA_PATH
+    temp_dir = tmpdir_factory.mktemp('data')
+    settings.DATA_PATH = Path(temp_dir)
+    dfs = [get_quotes_history('MSTT'), updated_df(), get_quotes_history('MSTT')]
+    settings.DATA_PATH = saved_path
+    return dfs
 
 
 @pytest.fixture(scope='class', params=range(3))
-def df(request, new_df, updated_df, no_update_df):
-    dfs = [new_df, updated_df, no_update_df]
-    return dfs[request.param]
+def df(request, make_dfs):
+    return make_dfs[request.param]
 
 
 class TestGetQuotesHistory:
