@@ -73,6 +73,20 @@ def save_quotes_history(ticker: str, df: pd.DataFrame):
 
 
 def get_quotes_history(ticker: str):
+    """
+    Возвращает данные по котровкам из локальной версии данных при необходимости обновляя их.
+
+    Parameters
+    ----------
+    ticker
+        Тикер для которого необходимо получить данные
+
+    Returns
+    -------
+    pandas.DataFrame
+        В строках даты торгов.
+        В столбцах [CLOSE, VOLUME] цена закрытия и оборот в штуках.
+    """
     if quotes_path(ticker).exists():
         df = update_quotes_history(ticker)
     else:
@@ -81,5 +95,45 @@ def get_quotes_history(ticker: str):
     return df
 
 
+def get_prices_history(tickers):
+    """
+    Возвращает историю цен по набору тикеров.
+
+    Parameters
+    ----------
+    tickers: list of str
+        Список тикеров.
+
+    Returns
+    -------
+    pandas.DataFrame
+        В строках даты торгов.
+        В столбцах цены закрытия для тикеров.
+    """
+    df = pd.concat([get_quotes_history(ticker)['CLOSE'] for ticker in tickers], axis=1)
+    df.columns = tickers
+    return df
+
+
+def get_volumes_history(tickers):
+    """
+    Возвращает историю объеиов торгов по набору тикеров.
+
+    Parameters
+    ----------
+    tickers: list of str
+        Список тикеров.
+
+    Returns
+    -------
+    pandas.DataFrame
+        В строках даты торгов.
+        В столбцах объемы торгов для тикеров.
+    """
+    df = pd.concat([get_quotes_history(ticker)['VOLUME'] for ticker in tickers], axis=1)
+    df.columns = tickers
+    return df
+
+
 if __name__ == '__main__':
-    print(get_quotes_history('MSTT'))
+    print(get_volumes_history(['MSTT', 'KBTK']))

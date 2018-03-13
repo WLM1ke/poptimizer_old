@@ -196,7 +196,7 @@ def get_quotes_history(ticker, start_date):
     -------
     pandas.DataFrame
         В строках даты торгов.
-        В столбцах [CLOSE, VOLUME] цена закрытия и оборот в штуках .
+        В столбцах [CLOSE, VOLUME] цена закрытия и оборот в штуках.
     """
     gen = Quotes(ticker, start_date)
     df = pd.concat(gen, ignore_index=True)
