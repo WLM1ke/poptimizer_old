@@ -17,7 +17,7 @@ def updated_df():
     return df2
 
 
-@pytest.fixture(scope='class')
+@pytest.fixture()
 def make_dfs(tmpdir_factory):
     saved_path = settings.DATA_PATH
     temp_dir = tmpdir_factory.mktemp('data')
@@ -27,32 +27,19 @@ def make_dfs(tmpdir_factory):
     return dfs
 
 
-@pytest.fixture(scope='class', params=range(3))
+@pytest.fixture(params=range(3))
 def df(request, make_dfs):
     return make_dfs[request.param]
 
 
-class TestGetQuotesHistory:
-    def test_df_type(self, df):
-        assert isinstance(df, pd.DataFrame)
-
-    def test_df_columns_number(self, df):
-        assert len(df.columns) == 2
-
-    def test_df_index_monotonic(self, df):
-        assert df.index.is_monotonic_increasing
-
-    def test_df_is_unique(self, df):
-        assert df.index.is_unique
-
-    def test_beginning_date(self, df):
-        assert df.index[0] == pd.to_datetime('2010-11-03')
-
-    def test_load_long_data(self, df):
-        assert df.shape[0] > 100
-
-    def test_checkpoint(self, df):
-        assert df.loc['2018-03-09', 'CLOSE'] == 148.8 and df.loc['2018-03-09', 'VOLUME'] == 2960
+def test_get_quotes_history(df):
+    assert isinstance(df, pd.DataFrame)
+    assert len(df.columns) == 2
+    assert df.index.is_monotonic_increasing
+    assert df.index.is_unique
+    assert df.index[0] == pd.to_datetime('2010-11-03')
+    assert df.shape[0] > 100
+    assert df.loc['2018-03-09', 'CLOSE'] == 148.8 and df.loc['2018-03-09', 'VOLUME'] == 2960
 
 
 def test_validate_last_date_error():
