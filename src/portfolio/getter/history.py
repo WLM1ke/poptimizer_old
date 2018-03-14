@@ -1,4 +1,14 @@
-"""Load and update local data of daily quotes history and returns pandas DataFrames."""
+"""Load and update local data of daily quotes history and returns pandas DataFrames.
+
+   1. Single ticker daily price and volumes:
+
+        get_quotes_history(ticker: str)
+
+   2. List of tickers daily price or volumes:
+
+        get_prices_history(tickers)
+        get_volumes_history(tickers)
+"""
 
 from os import path
 
@@ -31,6 +41,7 @@ def end_of_last_trading_day():
 
 def load_quotes_history(ticker: str) -> pd.DataFrame:
     converters = dict(TRADEDATE=pd.to_datetime, CLOSE=pd.to_numeric, VOLUME=pd.to_numeric)
+    # Значение sep гарантирует загрузку данных с добавленными PyCharm пробелами
     df = pd.read_csv(quotes_path(ticker), converters=converters, header=0, engine='python', sep='\s*,')
     return df.set_index('TRADEDATE')
 

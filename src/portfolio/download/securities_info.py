@@ -72,7 +72,7 @@ def get_securities_info(tickers):
     # В массиве данных содержатся массивы для каждого запрошенного тикера
     tickers = make_tickers_list(tickers)
     raw_json = get_raw_json(make_tickers_list(tickers))
-    return make_df(raw_json)
+    return make_df(raw_json).sort_index()
 
 
 if __name__ == "__main__":
