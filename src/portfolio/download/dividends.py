@@ -56,12 +56,13 @@ class RowParser:
         return self.columns[VALUE_COLN]  # 2
 
 
-def parse_table_rows(table):
-    def validate_table_header(header):
-        cells = RowParser(header, 'th')
-        if cells.date != TH_DATE or cells.value != TH_VALUE:
-            raise ValueError('Некоректные заголовки таблицы дивидендов.')
+def validate_table_header(header):
+    cells = RowParser(header, 'th')
+    if cells.date != TH_DATE or cells.value != TH_VALUE:
+        raise ValueError('Некоректные заголовки таблицы дивидендов.')
 
+
+def parse_table_rows(table):
     # Строки с прогнозом имеют class = forecast, а у заголовка и факта - класс отсутсвует
     rows = table.find_all(name='tr', class_=None)
     validate_table_header(rows[0])

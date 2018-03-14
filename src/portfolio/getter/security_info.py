@@ -36,13 +36,13 @@ def update_securities_info(tickers) -> pd.DataFrame:
     df_update = download.securities_info(tickers)
     validate(df, df_update)
     not_updated_tickers = list(set(df.index) - set(df_update.index))
-    df = pd.concat([df.loc[not_updated_tickers], df_update]).sort_index()
+    df = pd.concat([df.loc[not_updated_tickers], df_update])
     save_security_info(df)
     return df.loc[tickers]
 
 
 def save_security_info(df: pd.DataFrame):
-    df.to_csv(securities_info_path())
+    df.sort_index().to_csv(securities_info_path())
 
 
 def create_security_info(tickers):

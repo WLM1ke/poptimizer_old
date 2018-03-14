@@ -66,7 +66,8 @@ class Quotes:
 
     def __init__(self, ticker, start_date):        
         self.ticker, self.start_date = ticker, start_date
-        self.block_position = 0 
+        self.block_position = 0
+        self.data = None
         self.load()
         
     @property    

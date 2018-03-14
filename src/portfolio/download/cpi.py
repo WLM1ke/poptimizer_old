@@ -20,7 +20,7 @@ def validate(df):
         raise ValueError('First month must be January')
 
 
-def parse_xls(url):
+def parse_xls(url) -> pd.DataFrame:
     df = pd.read_excel(url, **PARSING_PARAMETERS)
     validate(df)
     size = df.shape[0] * df.shape[1]
@@ -28,7 +28,8 @@ def parse_xls(url):
     # create new DataFrame
     index = pd.DatetimeIndex(name="DATE", freq='M', start=date(first_year, 1, 31), periods=size)
     flat_data = df.values.reshape(size, order='F')
-    return pd.DataFrame(flat_data, index=index, columns=['CPI']).dropna() / 100
+    df = pd.DataFrame(flat_data, index=index, columns=['CPI']).dropna()
+    return df.div(100)
 
 
 def get_monthly_cpi():
