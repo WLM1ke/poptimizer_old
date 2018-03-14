@@ -38,7 +38,7 @@ def update_securities_info(tickers) -> pd.DataFrame:
     not_updated_tickers = list(set(df.index) - set(df_update.index))
     df = pd.concat([df.loc[not_updated_tickers], df_update]).sort_index()
     save_security_info(df)
-    return df
+    return df.loc[tickers]
 
 
 def save_security_info(df: pd.DataFrame):
@@ -65,10 +65,40 @@ def get_security_info(tickers: list):
     if securities_info_path().exists():
         df = update_securities_info(tickers)
     else:
-        df = download.securities_info(tickers)
-        save_security_info(df)
+        df = create_security_info(tickers)
     return df
 
 
+def create_security_info(tickers):
+    df = download.securities_info(tickers)
+    save_security_info(df)
+    return df
+
+
+def get_lots_size(tickers: list):
+    """
+    Возвращает данные по размеру лотов для тикеров из списка
+
+    Parameters
+    ----------
+    tickers
+        Список тикеров.
+
+    Returns
+    -------
+    pandas.DataFrame
+        В столбцах тикеры.
+        В строке размеры лотов.
+    """
+    if securities_info_path().exists():
+        df = load_securities_info()
+        # Если все тикеры в локальной версии, то обновлять данные нет необходимости
+        if not set(df.index).issuperset(tickers):
+            df = update_securities_info(tickers)
+    else:
+        df = create_security_info(tickers)
+    return df.loc[tickers, ['LOTSIZE']].transpose()
+
+
 if __name__ == '__main__':
-    print(get_security_info(['KBTK', 'MOEX']))
+    print(get_lots_size(['KBTK', 'MOEX', 'MTSS']))
