@@ -121,4 +121,4 @@ def get_last_prices(tickers: list):
 
 
 if __name__ == '__main__':
-    print(get_last_prices(['KBTK', 'MOEX', 'MTSS', 'SNGSP', 'GAZP']))
+    print(get_security_info(['KBTK', 'MOEX', 'MTSS', 'SNGSP', 'GAZP']))
