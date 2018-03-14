@@ -45,6 +45,12 @@ def save_security_info(df: pd.DataFrame):
     df.to_csv(securities_info_path())
 
 
+def create_security_info(tickers):
+    df = download.securities_info(tickers)
+    save_security_info(df)
+    return df
+
+
 def get_security_info(tickers: list):
     """
     Возвращает данные по тикерам из списка
@@ -69,15 +75,9 @@ def get_security_info(tickers: list):
     return df
 
 
-def create_security_info(tickers):
-    df = download.securities_info(tickers)
-    save_security_info(df)
-    return df
-
-
 def get_lots_size(tickers: list):
     """
-    Возвращает данные по размеру лотов для тикеров из списка
+    Возвращает размеры лотов для тикеров из списка
 
     Parameters
     ----------
@@ -100,5 +100,25 @@ def get_lots_size(tickers: list):
     return df.loc[tickers, ['LOTSIZE']].transpose()
 
 
+def get_last_prices(tickers: list):
+    """
+    Возвращает последние цены для тикеров из списка
+
+    Parameters
+    ----------
+    tickers
+        Список тикеров.
+
+    Returns
+    -------
+    pandas.DataFrame
+        В столбцах тикеры.
+        В строке последние цены.
+    """
+    # Цены обновляются пстоянно
+    df = get_security_info(tickers)
+    return df.loc[tickers, ['LAST']].transpose()
+
+
 if __name__ == '__main__':
-    print(get_lots_size(['KBTK', 'MOEX', 'MTSS']))
+    print(get_last_prices(['KBTK', 'MOEX', 'MTSS', 'SNGSP', 'GAZP']))
