@@ -1,4 +1,18 @@
-"""Load and update local securities info data."""
+"""Load and update local securities info data.
+
+    1. Load and update local securities info data:
+
+        get_security_info(tickers)
+
+    2. Load and update local lots size data:
+
+        get_lots_size(tickers)
+
+    3. Load and update local last prices data:
+
+        get_last_prices(tickers)
+
+"""
 
 import pandas as pd
 
