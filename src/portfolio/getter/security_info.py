@@ -31,7 +31,7 @@ def validate(df, df_update):
                          f'{df_update}')
 
 
-def update_securities_info(tickers) -> pd.DataFrame:
+def update_local_securities_info(tickers) -> pd.DataFrame:
     df = load_securities_info()
     df_update = download.securities_info(tickers)
     validate(df, df_update)
@@ -45,8 +45,11 @@ def save_security_info(df: pd.DataFrame):
     df.sort_index().to_csv(securities_info_path())
 
 
-def create_security_info(tickers):
+def create_local_security_info(tickers):
     df = download.securities_info(tickers)
+    # add ALIASES empty column
+    columns = ['SHORTNAME', 'REGNUMBER', 'ALIASES', 'LOTSIZE', 'LAST']
+    df = df.reindex(columns=columns)
     save_security_info(df)
     return df
 
@@ -69,9 +72,9 @@ def get_security_info(tickers: list):
     """
     # Общий запрос содержит последние цены, которые регулярно обновляются, поэтому требует обновления
     if securities_info_path().exists():
-        df = update_securities_info(tickers)
+        df = update_local_securities_info(tickers)
     else:
-        df = create_security_info(tickers)
+        df = create_local_security_info(tickers)
     return df
 
 
@@ -94,9 +97,9 @@ def get_lots_size(tickers: list):
         df = load_securities_info()
         # Если все тикеры в локальной версии, то обновлять данные нет необходимости
         if not set(df.index).issuperset(tickers):
-            df = update_securities_info(tickers)
+            df = update_local_securities_info(tickers)
     else:
-        df = create_security_info(tickers)
+        df = create_local_security_info(tickers)
     return df.loc[tickers, ['LOTSIZE']].transpose()
 
 

@@ -18,7 +18,7 @@ def updated_df():
     return df2
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='module', name='dfs')
 def make_dfs(tmpdir_factory):
     saved_path = settings.DATA_PATH
     temp_dir = tmpdir_factory.mktemp('data')
@@ -28,9 +28,9 @@ def make_dfs(tmpdir_factory):
     return dfs
 
 
-@pytest.fixture(params=range(3))
-def df(request, make_dfs):
-    return make_dfs[request.param]
+@pytest.fixture(params=range(3), name='df')
+def yield_df(request, dfs):
+    return dfs[request.param]
 
 
 def test_get_quotes_history(df):

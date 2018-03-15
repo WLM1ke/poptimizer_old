@@ -1,19 +1,12 @@
 """Download and transform securities info to pandas DataFrames.
 
-    Lots sizes, short names and last quotes for ticker or list of tickers:
+    Lots sizes, short names and last quotes for list of tickers:
 
         get_securities_info(tickers)
 """
 
 import pandas as pd
 import requests
-
-
-def make_tickers_list(tickers):
-    if isinstance(tickers, str):
-        return [tickers]
-    else:
-        return tickers
 
 
 def make_url(tickers):
@@ -55,8 +48,8 @@ def get_securities_info(tickers):
 
     Parameters
     ----------
-    tickers : str or list of str
-        Тикер или список тикеров.
+    tickers : list
+        Список тикеров.
 
     Returns
     -------
@@ -70,8 +63,7 @@ def get_securities_info(tickers):
     # В каждом из вложеных словарей есть ключи columns и data с массивами
     # описания колонок и данными
     # В массиве данных содержатся массивы для каждого запрошенного тикера
-    tickers = make_tickers_list(tickers)
-    raw_json = get_raw_json(make_tickers_list(tickers))
+    raw_json = get_raw_json(tickers)
     return make_df(raw_json)
 
 
