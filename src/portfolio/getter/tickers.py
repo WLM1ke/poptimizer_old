@@ -9,7 +9,7 @@ from portfolio import download
 from portfolio.getter import security_info
 
 
-def get_or_create_local_securityes_info(ticker):
+def get_or_create_local_securities_info(ticker):
     if security_info.securities_info_path().exists():
         info = security_info.load_securities_info()
     else:
@@ -31,7 +31,7 @@ def get_tickers(ticker: str) -> list:
     list
         Список тикеров аналогов заданного тикера, включая его самого.
     """
-    info = get_or_create_local_securityes_info(ticker)
+    info = get_or_create_local_securities_info(ticker)
     if (ticker in info.index) and pd.notna(info.loc[ticker, 'TICKERS']):
         # если тикер и информация по долнительным тикерам есть, то берем ее из локальной версии
         tickers = info.loc[ticker, 'TICKERS']
@@ -53,4 +53,4 @@ def get_tickers(ticker: str) -> list:
 
 
 if __name__ == '__main__':
-    print(get_tickers('UPRO'))
+    print(get_tickers('PHOR'))
