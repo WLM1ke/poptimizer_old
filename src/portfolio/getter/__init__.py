@@ -1,1 +1,1 @@
-"""Load local copy of data to pandas DataFrames and updates it."""
+"""Load local copy of data and updates it."""

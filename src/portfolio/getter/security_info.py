@@ -1,6 +1,5 @@
 """Load and update local securities info data."""
 
-import numpy as np
 import pandas as pd
 
 from portfolio import download
@@ -108,7 +107,7 @@ def get_lots_size(tickers: list):
 
 def get_last_prices(tickers: list):
     """
-    Возвращает последние цены для тикеров из списка и обновляет локальные данные
+    Возвращает последние цены для тикеров из списка и обновляет локальные данные.
 
     Parameters
     ----------
@@ -126,30 +125,5 @@ def get_last_prices(tickers: list):
     return df.loc[tickers, ['LAST']].transpose()
 
 
-def get_tickers(ticker: str) -> str:
-    # TODO: Проверка на наличие локальной версии
-    # TODO: Нависать док
-    info = load_securities_info()
-    if (ticker in info.index) and not np.isnan(info.loc[ticker, 'TICKERS']):
-        # если тикер и информация по долнительным тикерам есть, то берем ее из локальной версии
-        tickers = info.loc[ticker, 'TICKERS']
-    elif ticker in info.index:
-        # если тикер присутсувет, но информации по долнительным тикерам нет,
-        # то загружаем информацию и сохраняем локально
-        tickers = download.tickers(ticker)
-        info.loc[ticker, 'TICKERS'] = tickers
-        save_security_info(info)
-    else:
-        # Если тикера нет в локальной версии, то загружаем информацию,
-        # загружаем и добовляем информацию по дополнительным тикерам, объединяем с текущей информацией и сохраняем
-        info_update = download_securities_info([ticker])
-        tickers = download.tickers(ticker)
-        info_update.loc[ticker, 'TICKERS'] = tickers
-        info = pd.concat([info, info_update])
-        save_security_info(info)
-    return tickers
-
-
 if __name__ == '__main__':
-    # print(get_security_info(['KBTK', 'MOEX', 'MTSS', 'SNGSP', 'GAZP']))
-    print(get_tickers('KBTK'))
+    print(get_security_info(['KBTK', 'MOEX', 'MTSS', 'SNGSP', 'GAZP']))
