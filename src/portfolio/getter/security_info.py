@@ -12,6 +12,10 @@
 
         get_last_prices(tickers)
 
+    4. Load aliases for ticker and update local securities info data.
+
+        get_tickers(ticker)
+
 """
 
 import pandas as pd
@@ -54,18 +58,27 @@ def validate(df, df_update):
                          f'{df_update}')
 
 
+def fill_tickers_column(df):
+    for ticker in df.index:
+        if pd.isna(df.loc[ticker, 'TICKERS']):
+            tickers = download.tickers(reg_number=df.loc[ticker, 'REGNUMBER'])
+            df.loc[ticker, 'TICKERS'] = tickers
+
+
 def update_local_securities_info(tickers) -> pd.DataFrame:
     df = load_securities_info()
     df_update = download_securities_info(tickers)
     validate(df, df_update)
     not_updated_tickers = list(set(df.index) - set(df_update.index))
     df = pd.concat([df.loc[not_updated_tickers], df_update])
+    fill_tickers_column(df)
     save_security_info(df)
     return df.loc[tickers]
 
 
 def create_local_security_info(tickers):
     df = download_securities_info(tickers)
+    fill_tickers_column(df)
     save_security_info(df)
     return df
 
@@ -139,5 +152,30 @@ def get_last_prices(tickers: list):
     return df.loc[tickers, ['LAST']].transpose()
 
 
+def get_tickers(ticker: str) -> list:
+    """
+    Возвращает список тикеров аналогов для заданного тикера.
+
+    Parameters
+    ----------
+    ticker
+        Тикер.
+
+    Returns
+    -------
+    list
+        Список тикеров аналогов заданного тикера, включая его самого.
+    """
+    if securities_info_path().exists():
+        df = load_securities_info()
+        # Если тикер в локальной версии, то обновлять данные нет необходимости
+        if ticker not in df.index:
+            df = update_local_securities_info([ticker])
+    else:
+        df = create_local_security_info([ticker])
+    return df.loc[ticker, 'TICKERS'].split(sep=' ')
+
+
 if __name__ == '__main__':
-    print(get_security_info(['KBTK', 'MOEX', 'MTSS', 'SNGSP', 'GAZP']))
+    print(get_security_info(['KBTK', 'MOEX', 'MTSS', 'SNGSP', 'GAZP', 'PHOR']))
+    print(get_tickers('UPRO'))

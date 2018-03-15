@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from portfolio import settings
-from portfolio.getter import tickers
+from portfolio.getter import security_info
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -16,12 +16,12 @@ def fake_data_path(tmpdir_factory):
 
 
 def test_first_get_tickers():
-    assert tickers.get_tickers('UPRO') == ['UPRO', 'EONR', 'OGK4']
+    assert security_info.get_tickers('UPRO') == ['UPRO', 'EONR', 'OGK4']
 
 
 def test_download_tickers_for_get_tickers():
-    assert tickers.get_tickers('TTLK') == ['TTLK']
+    assert security_info.get_tickers('TTLK') == ['TTLK']
 
 
 def test_load_local_tickers_for_get_tickers():
-    assert tickers.get_tickers('UPRO') == ['UPRO', 'EONR', 'OGK4']
+    assert security_info.get_tickers('UPRO') == ['UPRO', 'EONR', 'OGK4']
