@@ -42,7 +42,7 @@ def test_not_all_tickers_in_local_data_security_info():
 def test_all_tickers_are_new_time_security_info():
     df = security_info.get_security_info(['SNGSP', 'GAZP'])
     assert len(df.index) == 2
-    assert len(df.columns) == 4
+    assert len(df.columns) == 5
     df_local = security_info.load_securities_info()
     assert len(df_local.index) == 5
     assert df.equals(df_local.loc[['SNGSP', 'GAZP']])

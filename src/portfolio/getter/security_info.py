@@ -13,16 +13,25 @@ def securities_info_path():
 
 
 def load_securities_info() -> pd.DataFrame:
-    # TODO: add , ALIASES=pd.to_numeric
     converters = dict(LOTSIZE=pd.to_numeric, LAST=pd.to_numeric)
     # Значение sep гарантирует загрузку данных с добавленными PyCharm пробелами
     df = pd.read_csv(securities_info_path(), converters=converters, header=0, engine='python', sep='\s*,')
     return df.set_index('SECID')
 
 
+def download_securities_info(tickers) -> pd.DataFrame:
+    df = download.securities_info(tickers)
+    # add ALIASES empty column
+    columns = ['SHORTNAME', 'REGNUMBER', 'ALIASES', 'LOTSIZE', 'LAST']
+    return df.reindex(columns=columns)
+
+
+def save_security_info(df: pd.DataFrame):
+    df.sort_index().to_csv(securities_info_path())
+
+
 def validate(df, df_update):
     common_tickers = list(set(df.index) & set(df_update.index))
-    # TODO: add , 'ALIASES'
     df = df.loc[common_tickers, ['SHORTNAME', 'REGNUMBER', 'LOTSIZE']]
     df_update = df_update.loc[common_tickers, ['SHORTNAME', 'REGNUMBER', 'LOTSIZE']]
     if not df.equals(df_update):
@@ -33,7 +42,7 @@ def validate(df, df_update):
 
 def update_local_securities_info(tickers) -> pd.DataFrame:
     df = load_securities_info()
-    df_update = download.securities_info(tickers)
+    df_update = download_securities_info(tickers)
     validate(df, df_update)
     not_updated_tickers = list(set(df.index) - set(df_update.index))
     df = pd.concat([df.loc[not_updated_tickers], df_update])
@@ -41,15 +50,8 @@ def update_local_securities_info(tickers) -> pd.DataFrame:
     return df.loc[tickers]
 
 
-def save_security_info(df: pd.DataFrame):
-    df.sort_index().to_csv(securities_info_path())
-
-
 def create_local_security_info(tickers):
-    df = download.securities_info(tickers)
-    # add ALIASES empty column
-    columns = ['SHORTNAME', 'REGNUMBER', 'ALIASES', 'LOTSIZE', 'LAST']
-    df = df.reindex(columns=columns)
+    df = download_securities_info(tickers)
     save_security_info(df)
     return df
 

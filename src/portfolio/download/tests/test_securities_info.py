@@ -1,11 +1,7 @@
 import pandas as pd
 import pytest
 
-from portfolio.download.securities_info import make_url, get_raw_json, get_securities_info, make_tickers_list
-
-
-def test_make_tickers_list():
-    assert make_tickers_list(['LKOH']) == make_tickers_list('LKOH')
+from portfolio.download.securities_info import make_url, get_raw_json, get_securities_info
 
 
 def test_make_url():
@@ -34,7 +30,7 @@ def test_get_securities_info():
 
 
 def test_get_one_securiry_info():
-    df = get_securities_info('MRSB')
+    df = get_securities_info(['MRSB'])
     assert isinstance(df, pd.DataFrame)
     assert df.loc['MRSB', 'SHORTNAME'] == 'МордЭнСб'
     assert df.loc['MRSB', 'REGNUMBER'] == '1-01-55055-E'
