@@ -10,13 +10,12 @@ def get_json(reg_number):
     url = f'https://iss.moex.com/iss/securities.json?q={reg_number}'
     respond = requests.get(url)
     json = respond.json()
-    validate(json, reg_number)
     return json
 
 
-def validate(json, reg_number):
-    if len(json['securities']['data']) == 0:
-        raise ValueError(f'Некорректный регистрационный номер{reg_number}')
+def validate(reg_number, tickers):
+    if len(tickers) == 0:
+        raise ValueError(f'Некорректный регистрационный номер {reg_number}')
 
 
 def yield_parsed_tickers(json, reg_number):
@@ -44,6 +43,8 @@ def get_tickers(reg_number):
         Разделенный пробелами список тикеров.
     """
     json = get_json(reg_number)
+    tickers = list(yield_parsed_tickers(json, reg_number))
+    validate(reg_number, tickers)
     return ' '.join(yield_parsed_tickers(json, reg_number))
 
 
