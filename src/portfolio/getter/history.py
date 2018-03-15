@@ -1,10 +1,10 @@
-"""Load and update local data of daily quotes history and returns pandas DataFrames.
+"""Load and update local data for daily quotes history and returns pandas DataFrames.
 
-   1. Single ticker daily price and volumes:
+   1. Load and update local data for single ticker daily price and volumes:
 
-        get_quotes_history(ticker: str)
+        get_quotes_history(ticker)
 
-   2. List of tickers daily price or volumes:
+   2. Load and update local data for list of tickers daily price or volumes:
 
         get_prices_history(tickers)
         get_volumes_history(tickers)
