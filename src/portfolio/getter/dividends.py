@@ -13,7 +13,7 @@ def legacy_dividends_path():
 
 def get_legacy_dividends(tickers: list) -> pd.DataFrame:
     """
-    Возвращает годовые дивиденды для тикеров.
+    Возвращает ряды годовых дивидендов для тикеров.
 
     Основывается на статичеких локальных данных, которые хранятьсяв xlsx файле. Данная функция нужна для первоначальной
     реализации и сопоставления с xlsx версией модели оптимизации. При дальнейшем развитии будет использоваться более
@@ -36,4 +36,4 @@ def get_legacy_dividends(tickers: list) -> pd.DataFrame:
 
 
 if __name__ == '__main__':
-    print(get_legacy_dividends(['AKRN', 'RTKMP']))
+    print(get_legacy_dividends(['UPRO', 'RTKMP', 'MSTT', 'MAGN', 'LSRG']))
