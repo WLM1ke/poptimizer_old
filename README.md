@@ -8,12 +8,12 @@
 
 ## Этапы работы
 1. Пакет [download](https://github.com/WLM1ke/PortfolioOptimizer/tree/master/src/portfolio/download) -  функции-загрузчики необходимых данных из интернета:
-- [x] [CPI](http://www.gks.ru/free_doc/new_site/prices/potr/tab-potr1.htm) - cpi()
-- [x] [Дивиденды](https://www.dohod.ru/ik/analytics/dividend) - dividends(ticker)
-- [x] История котировок [акций](https://www.moex.com) - quotes_history(ticker, start_date) и index_history_from_start(ticker)
-- [x] Итория значений индекса [MOEX Russia Net Total Return (Resident)](https://www.moex.com/ru/index/totalreturn.aspx) - index_history(ticker, start_date) и index_history_from_start(ticker)
-- [x] [Информация](https://www.moex.com) по кратким наименованиям, регистрационным номерам, размерам лотов и последним ценам - securities_info(tickers)
-- [x] Тикеры, соответсвующие [регистрационному номеру](https://www.moex.com) - tickers(reg_number)
+- [x] [CPI](http://www.gks.ru/free_doc/new_site/prices/potr/tab-potr1.htm) - **cpi()**
+- [x] [Дивиденды](https://www.dohod.ru/ik/analytics/dividend) - **dividends(ticker)**
+- [x] История котировок [акций](https://www.moex.com) - **quotes_history(ticker, start_date)** и **index_history_from_start(ticker)**
+- [x] Итория значений индекса [MOEX Russia Net Total Return (Resident)](https://www.moex.com/ru/index/totalreturn.aspx) - **index_history(ticker, start_date)** и **index_history_from_start(ticker)**
+- [x] [Информация](https://www.moex.com) по кратким наименованиям, регистрационным номерам, размерам лотов и последним ценам - **securities_info(tickers)**
+- [x] Тикеры, соответсвующие [регистрационному номеру](https://www.moex.com) - **tickers(reg_number)**
 
 2. Пакет [getter](https://github.com/WLM1ke/PortfolioOptimizer/tree/master/src/portfolio/getter) - функции, обновляющие и загружающие локальную версию данных:
 - [ ] CPI
