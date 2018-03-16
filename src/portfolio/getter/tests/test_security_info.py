@@ -17,7 +17,7 @@ def fake_data_path(tmpdir_factory):
 
 def test_first_time_get_last_prices():
     df = security_info.get_last_prices(['KBTK', 'MOEX'])
-    assert len(df.columns) == 2
+    assert len(df.index) == 2
     assert len(security_info.load_securities_info().index) == 2
 
 
@@ -53,24 +53,21 @@ def test_all_tickers_are_new_time_security_info():
 
 def test_local_tickers_get_lots_size():
     df = security_info.get_lots_size(['SNGSP', 'GAZP'])
-    assert len(df.index) == 1
-    assert len(df.columns) == 2
-    assert df.loc['LOTSIZE', 'SNGSP'] == 100
-    assert df.loc['LOTSIZE', 'GAZP'] == 10
+    assert len(df.index) == 2
+    assert df.loc['SNGSP'] == 100
+    assert df.loc['GAZP'] == 10
 
 
 def test_not_local_tickers_get_lots_size():
     df = security_info.get_lots_size(['SNGSP', 'GMKN'])
-    assert len(df.index) == 1
-    assert len(df.columns) == 2
-    assert df.loc['LOTSIZE', 'SNGSP'] == 100
-    assert df.loc['LOTSIZE', 'GMKN'] == 1
+    assert len(df.index) == 2
+    assert df.loc['SNGSP'] == 100
+    assert df.loc['GMKN'] == 1
 
 
 def test_fake_no_local_data_get_lots_size(monkeypatch):
     monkeypatch.setattr(security_info, 'DATA_FILE', 'securities_info2.csv')
     df = security_info.get_lots_size(['SNGSP', 'GMKN'])
-    assert len(df.index) == 1
-    assert len(df.columns) == 2
-    assert df.loc['LOTSIZE', 'SNGSP'] == 100
-    assert df.loc['LOTSIZE', 'GMKN'] == 1
+    assert len(df.index) == 2
+    assert df.loc['SNGSP'] == 100
+    assert df.loc['GMKN'] == 1

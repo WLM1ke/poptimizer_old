@@ -147,4 +147,5 @@ def get_volumes_history(tickers):
 
 
 if __name__ == '__main__':
-    print(get_prices_history(['KBTK', 'RTKMP']))
+    # print(get_volumes_history(['KBTK', 'RTKMP']))
+    print(get_quotes_history('KBTK'))

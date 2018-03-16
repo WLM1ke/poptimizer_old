@@ -129,7 +129,7 @@ def get_lots_size(tickers: list):
             df = update_local_securities_info(tickers)
     else:
         df = create_local_security_info(tickers)
-    return df.loc[tickers, ['LOTSIZE']].transpose()
+    return df.loc[tickers, 'LOTSIZE']
 
 
 def get_last_prices(tickers: list):
@@ -149,7 +149,7 @@ def get_last_prices(tickers: list):
     """
     # Цены обновляются пстоянно
     df = get_security_info(tickers)
-    return df.loc[tickers, ['LAST']].transpose()
+    return df.loc[tickers, 'LAST']
 
 
 def get_tickers(ticker: str) -> list:
@@ -179,3 +179,4 @@ def get_tickers(ticker: str) -> list:
 if __name__ == '__main__':
     print(get_security_info(['KBTK', 'MOEX', 'MTSS', 'SNGSP', 'GAZP', 'PHOR']))
     print(get_tickers('UPRO'))
+    print(get_lots_size(['KBTK', 'MOEX', 'MTSS', 'SNGSP', 'GAZP', 'PHOR']))
