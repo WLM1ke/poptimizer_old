@@ -19,5 +19,5 @@ def test_wrong_url():
 
 def test_get_dividends():
     df = get_dividends('CHMF')
-    assert df.loc[datetime.date(2017, 9, 26), 'DIVIDENDS'] == 22.28
-    assert df.loc[datetime.date(2003, 5, 23), 'DIVIDENDS'] == 3
+    assert df.loc[datetime.date(2017, 9, 26)] == 22.28
+    assert df.loc[datetime.date(2003, 5, 23)] == 3
