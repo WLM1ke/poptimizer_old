@@ -4,7 +4,7 @@
 
         get_quotes_history(ticker, start_date)
         get_quotes_history_from_start(ticker)
-   
+
    2. MOEX Russia Net Total Return (Resident) Index:
 
         get_index_history(start_date)
@@ -25,7 +25,7 @@ def get_json(url: str):
 
 def make_url(base: str, ticker: str, start_date=None, block_position=0):
     """Create url based on components.
-    
+
     Parameters
     ----------
     base
@@ -33,18 +33,18 @@ def make_url(base: str, ticker: str, start_date=None, block_position=0):
     ticker
         Наименование тикера.
     start_date : date.time or None
-        Начальная дата котировок. Если предоставлено значение None 
-        - данные запрашиваются с начала имеющейся на сервере ISS 
+        Начальная дата котировок. Если предоставлено значение None
+        - данные запрашиваются с начала имеющейся на сервере ISS
         истории котировок.
     block_position : int
-        Позиция курсора, начиная с которой необходимо получить очередной блок 
-        данных. При большом запросе сервер ISS возвращает данные блоками обычно 
+        Позиция курсора, начиная с которой необходимо получить очередной блок
+        данных. При большом запросе сервер ISS возвращает данные блоками обычно
         по 100 значений. Нумерация позиций в ответе идет с 0.
 
     Returns
     -------
     str
-        Строка url для запроса.        
+        Строка url для запроса.
     """
     if not base.endswith('/'):
         base += '/'
@@ -64,35 +64,35 @@ class Quotes:
     """
     base = 'https://iss.moex.com/iss/history/engines/stock/markets/shares/securities'
 
-    def __init__(self, ticker, start_date):        
+    def __init__(self, ticker, start_date):
         self.ticker, self.start_date = ticker, start_date
         self.block_position = 0
         self.data = None
         self.load()
-        
-    @property    
+
+    @property
     def url(self):
-        return make_url(self.base, self.ticker, 
+        return make_url(self.base, self.ticker,
                         self.start_date, self.block_position)
-        
-    def load(self):    
+
+    def load(self):
         self.data = get_json(self.url)
-        self._validate() 
-        
+        self._validate()
+
     def _validate(self):
         if self.block_position == 0 and len(self) == 0:
             raise ValueError(f'Пустой ответ. Проверьте запрос: {self.url}')
-        
+
     def __len__(self):
         return len(self.values)
 
     def __bool__(self):
         return self.__len__() > 0
-    
+
     #  В ответе сервера есть словарь:
     #   - по ключу history - словарь с историей котировок
-    #   - во вложеном словаре есть ключи columns и data с масивами описания 
-    #     колонок и данными.  
+    #   - во вложеном словаре есть ключи columns и data с масивами описания
+    #     колонок и данными.
 
     @property
     def values(self):
@@ -100,29 +100,29 @@ class Quotes:
 
     @property
     def columns(self):
-        return self.data['history']['columns']      
+        return self.data['history']['columns']
 
     @property
     def df(self):
         """Raw dataframe from *self.data['history']*"""
         return pd.DataFrame(data=self.values, columns=self.columns)
 
-    # WONTFIX: для итератора необходимы два метода: __iter__() и __next__() 
-    #          возможно, переход к следующему элементу может быть по-другому 
-    #          распределен между этими методами    
+    # WONTFIX: для итератора необходимы два метода: __iter__() и __next__()
+    #          возможно, переход к следующему элементу может быть по-другому
+    #          распределен между этими методами
     def __iter__(self):
-        return self   
+        return self
 
     def __next__(self):
         # если блок непустой
         if self:
             # используем текущий результат парсинга
-            current_dataframe = self.dataframe  
-            # перещелкиваем сдаиг на следующий блок и получаем новые данные 
+            current_dataframe = self.dataframe
+            # перещелкиваем сдаиг на следующий блок и получаем новые данные
             self.block_position += len(self)
             self.load()
             # выводим текущий результат парсинга
-            return current_dataframe 
+            return current_dataframe
         else:
             raise StopIteration
 
@@ -138,21 +138,21 @@ class Quotes:
 class TotalReturn(Quotes):
     """
     Представление ответа сервера - данные по индексу полной доходности MOEX.
-       
+
     """
     base = 'http://iss.moex.com/iss/history/engines/stock/markets/index/boards/RTSI/securities'
     ticker = 'MCFTRR'
-    
+
     def __init__(self, start_date):
         super().__init__(self.ticker, start_date)
-        
+
     @property
     def dataframe(self):
         df = self.df
         df['TRADEDATE'] = pd.to_datetime(df['TRADEDATE'])
         df['CLOSE'] = pd.to_numeric(df['CLOSE'])
         return df[['TRADEDATE', 'CLOSE']].set_index('TRADEDATE')
-    
+
 
 def get_index_history(start_date):
     """
@@ -162,8 +162,8 @@ def get_index_history(start_date):
     Parameters
     ----------
     start_date : datetime.date or None
-        Начальная дата котировок. 
-        
+        Начальная дата котировок.
+
     Returns
     -------
     pandas.DataFrame
@@ -175,8 +175,8 @@ def get_index_history(start_date):
 
 def get_index_history_from_start():
     """
-    Возвращает котировки индекса полной доходности с учетом российских налогов 
-    с начала информации. Предполагаемая дата начала котировок: 2003-02-26.    
+    Возвращает котировки индекса полной доходности с учетом российских налогов
+    с начала информации. Предполагаемая дата начала котировок: 2003-02-26.
     """
     return get_index_history(start_date=None)
 
