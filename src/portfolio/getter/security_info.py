@@ -12,9 +12,9 @@
 
         get_last_prices(tickers)
 
-    4. Load aliases for ticker and update local securities info data.
+    4. Load aliases for tickers and update local securities info data.
 
-        get_tickers(ticker)
+        get_tickers(tickers)
 
 """
 
@@ -83,7 +83,7 @@ def create_local_security_info(tickers):
     return df
 
 
-def get_security_info(tickers: list):
+def get_security_info(tickers: list) -> pd.DataFrame:
     """
     Возвращает данные по тикерам из списка и при необходимости обновляет локальные данные
 
@@ -97,7 +97,7 @@ def get_security_info(tickers: list):
     pandas.DataFrame
         В строках тикеры.
         В столбцах данные по размеру лота, регистрационному номеру, краткому наименованию, последней цене и тикерам,
-        которые соответсвуют такому же регистрационному номеру (обычно устаревшие ранеиспользовавшиеся тикеры).
+        которые соответсвуют такому же регистрационному номеру (обычно устаревшие ранее использовавшиеся тикеры).
     """
     # Общий запрос содержит последние цены, которые регулярно обновляются, поэтому требует обновления
     if securities_info_path().exists():
@@ -107,32 +107,31 @@ def get_security_info(tickers: list):
     return df
 
 
-def get_lots_size(tickers: list):
+def get_tickers(tickers: list) -> pd.Series:
     """
-    Возвращает размеры лотов для тикеров из списка и при необходимости обновляет локальные данные
+    Возвращает список тикеров аналогов для заданного набора тикеров.
 
     Parameters
     ----------
     tickers
-        Список тикеров.
+        Тикеры.
 
     Returns
     -------
-    pandas.DataFrame
-        В столбцах тикеры.
-        В строке размеры лотов.
+    pd.Series
+        В строках тикеры и тикеры аналоги для них.
     """
     if securities_info_path().exists():
         df = load_securities_info()
-        # Если все тикеры в локальной версии, то обновлять данные нет необходимости
+        # Если тикеры в локальной версии, то обновлять данные нет необходимости
         if not set(df.index).issuperset(tickers):
             df = update_local_securities_info(tickers)
     else:
         df = create_local_security_info(tickers)
-    return df.loc[tickers, 'LOTSIZE']
+    return df.loc[tickers, 'TICKERS']
 
 
-def get_last_prices(tickers: list):
+def get_last_prices(tickers: list) -> pd.Series:
     """
     Возвращает последние цены для тикеров из списка и обновляет локальные данные.
 
@@ -143,40 +142,14 @@ def get_last_prices(tickers: list):
 
     Returns
     -------
-    pandas.DataFrame
-        В столбцах тикеры.
-        В строке последние цены.
+    pandas.Series
+        В строках тикеры и поледние цены для них.
     """
-    # Цены обновляются пстоянно
+    # Цены обновляются постоянно - поэтому можно вызывать функцию, требующую обновления данных
     df = get_security_info(tickers)
     return df.loc[tickers, 'LAST']
 
 
-def get_tickers(ticker: str) -> list:
-    """
-    Возвращает список тикеров аналогов для заданного тикера.
-
-    Parameters
-    ----------
-    ticker
-        Тикер.
-
-    Returns
-    -------
-    list
-        Список тикеров аналогов заданного тикера, включая его самого.
-    """
-    if securities_info_path().exists():
-        df = load_securities_info()
-        # Если тикер в локальной версии, то обновлять данные нет необходимости
-        if ticker not in df.index:
-            df = update_local_securities_info([ticker])
-    else:
-        df = create_local_security_info([ticker])
-    return df.loc[ticker, 'TICKERS'].split(sep=' ')
-
-
 if __name__ == '__main__':
     print(get_security_info(['KBTK', 'MOEX', 'MTSS', 'SNGSP', 'GAZP', 'PHOR']))
-    print(get_tickers('UPRO'))
-    print(get_lots_size(['KBTK', 'MOEX', 'MTSS', 'SNGSP', 'GAZP', 'PHOR']))
+    print(get_tickers(['UPRO']))

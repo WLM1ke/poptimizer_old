@@ -49,25 +49,3 @@ def test_all_tickers_are_new_time_security_info():
     assert df_local.loc['KBTK', 'SHORTNAME'] == 'КузбТК ао'
     assert df_local.loc['MOEX', 'REGNUMBER'] == '1-05-08443-H'
     assert df.loc['SNGSP', 'LOTSIZE'] == 100
-
-
-def test_local_tickers_get_lots_size():
-    df = security_info.get_lots_size(['SNGSP', 'GAZP'])
-    assert len(df.index) == 2
-    assert df.loc['SNGSP'] == 100
-    assert df.loc['GAZP'] == 10
-
-
-def test_not_local_tickers_get_lots_size():
-    df = security_info.get_lots_size(['SNGSP', 'GMKN'])
-    assert len(df.index) == 2
-    assert df.loc['SNGSP'] == 100
-    assert df.loc['GMKN'] == 1
-
-
-def test_fake_no_local_data_get_lots_size(monkeypatch):
-    monkeypatch.setattr(security_info, 'DATA_FILE', 'securities_info2.csv')
-    df = security_info.get_lots_size(['SNGSP', 'GMKN'])
-    assert len(df.index) == 2
-    assert df.loc['SNGSP'] == 100
-    assert df.loc['GMKN'] == 1

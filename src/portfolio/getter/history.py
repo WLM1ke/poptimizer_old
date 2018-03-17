@@ -106,7 +106,7 @@ def get_quotes_history(ticker: str):
     return df
 
 
-def get_prices_history(tickers):
+def get_prices_history(tickers: list) -> pd.DataFrame:
     """
     Возвращает историю цен по набору тикеров.
 
@@ -126,7 +126,7 @@ def get_prices_history(tickers):
     return df
 
 
-def get_volumes_history(tickers):
+def get_volumes_history(tickers: list) -> pd.DataFrame:
     """
     Возвращает историю объеиов торгов по набору тикеров.
 
