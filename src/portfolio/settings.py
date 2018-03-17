@@ -6,7 +6,7 @@ DATA_PATH = Path(__file__).parents[2] / 'data'
 
 
 def make_data_path(folder, file_name: str) -> Path:
-    """Создает поддиректорию в директории данных и возвращает путь к файлу в ней."""
+    """Создает  поддиректорию в директории данных и возвращает путь к файлу в ней."""
     if folder is None:
         folder = DATA_PATH
     else:
