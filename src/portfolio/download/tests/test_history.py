@@ -60,19 +60,19 @@ class TestTicker:
 
 class TestTotalReturn:
     t = TotalReturn(start_date=None)
-    
+
     def test_data_property_on_init_for_None_start_date(self):
         # lower-level tests of server response
         data = self.t.data
         index = data['history']['columns'].index('TRADEDATE')
         assert data['history']['data'][0][index] == '2003-02-26'
-        
+
     def test_len_method(self):
-        assert len(self.t) == 100        
-    
+        assert len(self.t) == 100
+
     def test_bool_method(self):
         assert bool(self.t)
-        
+
     def test_values_property(self):
         assert isinstance(self.t.values, list)
         assert len(self.t.values[0]) == 16
@@ -96,6 +96,6 @@ class TestTotalReturn:
              'DIVISOR']
 
     def test_dataframe_property(self):
-        assert isinstance(self.t.dataframe, pd.DataFrame)        
+        assert isinstance(self.t.dataframe, pd.DataFrame)
         assert list(self.t.dataframe.columns) == ['CLOSE']
         assert self.t.dataframe.loc['2003-02-26', 'CLOSE'] == 335.67
