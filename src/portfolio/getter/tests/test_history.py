@@ -44,11 +44,11 @@ def test_get_quotes_history(df):
 
 
 def test_validate_last_date_error():
-    df_old = load_quotes_history('AKRN')
+    df_old = load_quotes_history('SBER')
     df_new = download.quotes_history('MSTT', df_last_date(df_old))
     with pytest.raises(ValueError) as info:
-        validate_last_date('AKRN', df_old, df_new)
-    assert 'Загруженные данные AKRN не стыкуются с локальными.' in str(info.value)
+        validate_last_date('SBER', df_old, df_new)
+    assert 'Загруженные данные SBER не стыкуются с локальными.' in str(info.value)
 
 
 def test_get_volumes_history():
