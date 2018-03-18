@@ -7,7 +7,7 @@ import pytest
 from portfolio import download, settings
 from portfolio.getter import history
 from portfolio.getter.history import get_prices_history, get_volumes_history
-from portfolio.getter.history import get_quotes_history, load_quotes_history, df_last_date, validate_last_date
+from portfolio.getter.history import get_quotes_history, Quotes
 
 
 def updated_df():
@@ -44,10 +44,10 @@ def test_get_quotes_history(df):
 
 
 def test_validate_last_date_error():
-    df_old = load_quotes_history('MSTT')
-    df_new = download.quotes_history('AKRN', df_last_date(df_old))
+    df_old = Quotes('MSTT')
+    df_new = download.quotes_history('AKRN', df_old.df_last_date)
     with pytest.raises(ValueError) as info:
-        validate_last_date('MSTT', df_old, df_new)
+        df_old._validate_last_date(df_new)
     assert 'Загруженные данные MSTT не стыкуются с локальными.' in str(info.value)
 
 
