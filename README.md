@@ -14,8 +14,8 @@
 1. Пакет [download](https://github.com/WLM1ke/PortfolioOptimizer/tree/master/src/portfolio/download) -  функции-загрузчики необходимых данных из интернета. Функции максимально приближены к API выдачи данных, поэтому принимают иногда набор тикеров, а иногда отдельный тикер:
 - [x] CPI [источник данных](http://www.gks.ru/) - **cpi()**
 - [x] Дивиденды [источник данных](https://www.dohod.ru/) - **dividends(ticker)**
-- [x] История котировок акций [источник данных](https://www.moex.com) - **quotes_history(ticker, start_date)** и **index_history_from_start(ticker)**
-- [x] Итория значений индекса MOEX Russia Net Total Return (Resident) [источник данных](https://www.moex.com/ru/index/totalreturn.aspx) - **index_history(ticker, start_date)** и **index_history_from_start(ticker)**
+- [x] История котировок акций [источник данных](https://www.moex.com) - **quotes_history(ticker, start_date)**
+- [x] Итория значений индекса MOEX Russia Net Total Return (Resident) [источник данных](https://www.moex.com/ru/index/totalreturn.aspx) - **index_history(ticker, start_date)**
 - [x] Информация по кратким наименованиям, регистрационным номерам, размерам лотов и последним ценам [источник данных](https://www.moex.com)- **securities_info(tickers)**
 - [x] Тикеры, соответсвующие регистрационному номеру [источник данных](https://www.moex.com) - **reg_number_tickers(reg_number)**
 

@@ -3,12 +3,10 @@
    1. Single ticker daily price and volumes:
 
         get_quotes_history(ticker, start_date)
-        get_quotes_history_from_start(ticker)
 
    2. MOEX Russia Net Total Return (Resident) Index:
 
         get_index_history(start_date)
-        get_index_history_from_start()
 """
 
 import datetime
@@ -173,14 +171,6 @@ def get_index_history(start_date=None):
     return pd.concat(TotalReturn(start_date))
 
 
-def get_index_history_from_start():
-    """
-    Возвращает котировки индекса полной доходности с учетом российских налогов
-    с начала информации. Предполагаемая дата начала котировок: 2003-02-26.
-    """
-    return get_index_history(start_date=None)
-
-
 def get_quotes_history(ticker, start_date=None):
     """
     Возвращает историю котировок тикера начиная с даты *start_date*.
@@ -206,13 +196,6 @@ def get_quotes_history(ticker, start_date=None):
     df = df.set_index('TRADEDATE').sort_index()
     return df
 
-
-def get_quotes_history_from_start(ticker):
-    """
-    Возвращает историю котировок тикера с начала информации.
-    Начальная дата различается для разных тикеров.
-    """
-    return get_quotes_history(ticker, start_date=None)
 
 
 if __name__ == '__main__':
