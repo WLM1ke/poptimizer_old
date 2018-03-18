@@ -61,10 +61,10 @@ def get_reg_number_tickers_fake_data_path(tmpdir_factory):
 @pytest.mark.usefixtures('get_reg_number_tickers_fake_data_path')
 class TestGetRegNumberTickers:
     def test_first_get_reg_number_tickers(self):
-        assert security_info.get_reg_number_tickers(['UPRO']).loc['UPRO'] == 'UPRO EONR OGK4'
+        assert security_info.get_aliases_tickers(['UPRO']).loc['UPRO'] == 'UPRO EONR OGK4'
 
     def test_download_tickers_for_get_reg_number_tickers(self):
-        assert security_info.get_reg_number_tickers(['TTLK']).loc['TTLK'] == 'TTLK'
+        assert security_info.get_aliases_tickers(['TTLK']).loc['TTLK'] == 'TTLK'
 
     def test_load_local_tickers_for_get_reg_number_tickers(self):
-        assert security_info.get_reg_number_tickers(['UPRO']).loc['UPRO'] == 'UPRO EONR OGK4'
+        assert security_info.get_aliases_tickers(['UPRO']).loc['UPRO'] == 'UPRO EONR OGK4'

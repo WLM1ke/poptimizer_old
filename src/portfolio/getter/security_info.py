@@ -10,7 +10,7 @@
 
     3. Load aliases for tickers and update local securities info data.
 
-        get_reg_number_tickers(tickers)
+        get_aliases_tickers(tickers)
 
 """
 
@@ -35,7 +35,7 @@ def load_securities_info() -> pd.DataFrame:
 
 def download_securities_info(tickers) -> pd.DataFrame:
     df = download.securities_info(tickers)
-    # add ALIASES empty column
+    # Add ALIASES empty column
     columns = ['ALIASES', 'SHORTNAME', 'REGNUMBER', 'LOTSIZE', 'LAST']
     return df.reindex(columns=columns)
 
@@ -104,7 +104,7 @@ def get_security_info(tickers: list) -> pd.DataFrame:
     return df
 
 
-def get_reg_number_tickers(tickers: list) -> pd.Series:
+def get_aliases_tickers(tickers: list) -> pd.Series:
     """
     Возвращает список тикеров аналогов для заданного набора тикеров.
 
@@ -149,4 +149,4 @@ def get_last_prices(tickers: list) -> pd.Series:
 
 if __name__ == '__main__':
     print(get_security_info(['KBTK', 'MOEX', 'MTSS', 'SNGSP', 'GAZP', 'PHOR']), '\n')
-    print(get_reg_number_tickers(['MOEX', 'UPRO']))
+    print(get_aliases_tickers(['MOEX', 'UPRO']))

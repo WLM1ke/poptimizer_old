@@ -1,6 +1,8 @@
 """Load and update local data for daily quotes history and returns pandas DataFrames.
 
-   1. Load and update local data for single ticker daily price and volumes:
+
+
+   1. Load and update local data for single ticker and all its aliases daily price and volumes:
 
         get_quotes_history(ticker)
 
@@ -17,9 +19,11 @@ import pandas as pd
 
 from portfolio import download
 from portfolio import settings
+from portfolio.getter import security_info
 
 QUOTES_PATH = 'quotes'
 MARKET_TIME_ZONE = 'Europe/Moscow'
+# Реально торги заканчиваются в 19.00, но данные транслируются с задержкой в 15 минут
 END_OF_CURRENT_TRADING_DAY = arrow.get().to(MARKET_TIME_ZONE).replace(hour=19,
                                                                       minute=15,
                                                                       second=0,
@@ -35,8 +39,7 @@ def end_of_last_trading_day():
     """Возвращает дату последнего завершившегося торгового дня."""
     if arrow.get().to(MARKET_TIME_ZONE) > END_OF_CURRENT_TRADING_DAY:
         return END_OF_CURRENT_TRADING_DAY
-    else:
-        return END_OF_CURRENT_TRADING_DAY.shift(days=-1)
+    return END_OF_CURRENT_TRADING_DAY.shift(days=-1)
 
 
 def load_quotes_history(ticker: str) -> pd.DataFrame:
@@ -51,8 +54,7 @@ def need_update(ticker):
     # Если файл обновлялся после завершения последнего торгового дня, то он не должен обновляться
     if file_date > end_of_last_trading_day():
         return False
-    else:
-        return True
+    return True
 
 
 def df_last_date(df):
@@ -69,6 +71,10 @@ def validate_last_date(ticker, df_old: pd.DataFrame, df_new: pd.DataFrame):
                          f'{df_new_last}')
 
 
+def save_quotes_history(ticker: str, df: pd.DataFrame):
+    df.to_csv(quotes_path(ticker))
+
+
 def update_quotes_history(ticker: str):
     df = load_quotes_history(ticker)
     if need_update(ticker):
@@ -79,13 +85,29 @@ def update_quotes_history(ticker: str):
     return df
 
 
-def save_quotes_history(ticker: str, df: pd.DataFrame):
-    df.to_csv(quotes_path(ticker))
+def yield_aliases_quotes_history(ticker: str):
+    aliases_series = security_info.get_aliases_tickers([ticker])
+    aliases = aliases_series.loc[ticker].split(sep=' ')
+    for ticker in aliases:
+        yield download.quotes_history(ticker)
+
+
+def create_quotes_history(ticker: str):
+    aliases = yield_aliases_quotes_history(ticker)
+    df = pd.concat(aliases)
+    # Для каждой даты выбирается тикер с максимальным оборотом
+    df = df.loc[df.groupby('TRADEDATE')['VOLUME'].idxmax()]
+    df.sort_index(inplace=True)
+    save_quotes_history(ticker, df)
+    return df
 
 
 def get_quotes_history(ticker: str):
     """
     Возвращает данные по котровкам из локальной версии данных при необходимости обновляя их.
+
+    При первоночальном формировании данных используются все алиасы тикера для его регистрационного номера, чтобы
+    выгрузить максимально длинную историю котировок. При последующих обновлениях используется только текущий тикер.
 
     Parameters
     ----------
@@ -101,8 +123,7 @@ def get_quotes_history(ticker: str):
     if quotes_path(ticker).exists():
         df = update_quotes_history(ticker)
     else:
-        df = download.quotes_history_from_start(ticker)
-        save_quotes_history(ticker, df)
+        df = create_quotes_history(ticker)
     return df
 
 
@@ -147,5 +168,4 @@ def get_volumes_history(tickers: list) -> pd.DataFrame:
 
 
 if __name__ == '__main__':
-    # print(get_volumes_history(['KBTK', 'RTKMP']))
-    print(get_quotes_history('KBTK'))
+    print(get_quotes_history('MTSS'))

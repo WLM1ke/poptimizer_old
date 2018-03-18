@@ -154,7 +154,7 @@ class TotalReturn(Quotes):
         return df[['TRADEDATE', 'CLOSE']].set_index('TRADEDATE')
 
 
-def get_index_history(start_date):
+def get_index_history(start_date=None):
     """
     Возвращает котировки индекса полной доходности с учетом российских налогов
     начиная с даты *start_date*.
@@ -181,7 +181,7 @@ def get_index_history_from_start():
     return get_index_history(start_date=None)
 
 
-def get_quotes_history(ticker, start_date):
+def get_quotes_history(ticker, start_date=None):
     """
     Возвращает историю котировок тикера начиная с даты *start_date*.
 
@@ -201,9 +201,10 @@ def get_quotes_history(ticker, start_date):
     """
     gen = Quotes(ticker, start_date)
     df = pd.concat(gen, ignore_index=True)
-    # для каждой даты выбирается режим торгов с максимальным оборотом
+    # Для каждой даты выбирается режим торгов с максимальным оборотом
     df = df.loc[df.groupby('TRADEDATE')['VOLUME'].idxmax()]
-    return df.set_index('TRADEDATE')
+    df = df.set_index('TRADEDATE').sort_index()
+    return df
 
 
 def get_quotes_history_from_start(ticker):
