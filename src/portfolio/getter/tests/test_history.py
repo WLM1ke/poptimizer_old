@@ -18,14 +18,14 @@ def updated_df():
     return df2
 
 
-@pytest.fixture(scope='module', name='dfs')
-def make_dfs(tmpdir_factory):
+@pytest.fixture(scope='module', name='dfs', autouse=True)
+def make_dfs_and_fake_path(tmpdir_factory):
     saved_path = settings.DATA_PATH
     temp_dir = tmpdir_factory.mktemp('data')
     settings.DATA_PATH = Path(temp_dir)
     dfs = [get_quotes_history('MSTT'), updated_df(), get_quotes_history('MSTT')]
+    yield dfs
     settings.DATA_PATH = saved_path
-    return dfs
 
 
 @pytest.fixture(params=range(3), name='df')
@@ -44,11 +44,11 @@ def test_get_quotes_history(df):
 
 
 def test_validate_last_date_error():
-    df_old = load_quotes_history('SBER')
-    df_new = download.quotes_history('MSTT', df_last_date(df_old))
+    df_old = load_quotes_history('MSTT')
+    df_new = download.quotes_history('AKRN', df_last_date(df_old))
     with pytest.raises(ValueError) as info:
-        validate_last_date('SBER', df_old, df_new)
-    assert 'Загруженные данные SBER не стыкуются с локальными.' in str(info.value)
+        validate_last_date('MSTT', df_old, df_new)
+    assert 'Загруженные данные MSTT не стыкуются с локальными.' in str(info.value)
 
 
 def test_get_volumes_history():

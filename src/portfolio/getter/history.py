@@ -2,11 +2,11 @@
 
 
 
-   1. Load and update local data for single ticker and all its aliases daily price and volumes:
+   1. Load and update local data for single ticker and all its aliases daily prices and volumes:
 
         get_quotes_history(ticker)
 
-   2. Load and update local data for list of tickers daily price or volumes:
+   2. Load and update local data for list of tickers daily prices or volumes:
 
         get_prices_history(tickers)
         get_volumes_history(tickers)
@@ -43,13 +43,15 @@ def end_of_last_trading_day():
 
 
 def load_quotes_history(ticker: str) -> pd.DataFrame:
+    """Загружает историю котировок из локальных данных."""
     converters = dict(TRADEDATE=pd.to_datetime, CLOSE=pd.to_numeric, VOLUME=pd.to_numeric)
     # Значение sep гарантирует загрузку данных с добавленными PyCharm пробелами
     df = pd.read_csv(quotes_path(ticker), converters=converters, header=0, engine='python', sep='\s*,')
     return df.set_index('TRADEDATE')
 
 
-def need_update(ticker):
+def need_update(ticker: str) -> bool:
+    """Проверяет по дате изменения файла и времени окончания торгов, нужно ли обновлять локальные данные."""
     file_date = arrow.get(path.getmtime(quotes_path(ticker))).to(MARKET_TIME_ZONE)
     # Если файл обновлялся после завершения последнего торгового дня, то он не должен обновляться
     if file_date > end_of_last_trading_day():
@@ -57,11 +59,13 @@ def need_update(ticker):
     return True
 
 
-def df_last_date(df):
+def df_last_date(df: pd.DataFrame):
+    """Возвращает последнюю дату в DataFrame."""
     return df.index[-1]
 
 
 def validate_last_date(ticker, df_old: pd.DataFrame, df_new: pd.DataFrame):
+    """Проверяет совпадение данных на стыке, то есть для последней даты старого DataFrame."""
     last_date = df_last_date(df_old)
     df_old_last = df_old.loc[last_date]
     df_new_last = df_new.loc[last_date]
@@ -72,10 +76,12 @@ def validate_last_date(ticker, df_old: pd.DataFrame, df_new: pd.DataFrame):
 
 
 def save_quotes_history(ticker: str, df: pd.DataFrame):
+    """Сохраняет локальную версию данных в csv-файл с именем тикера."""
     df.to_csv(quotes_path(ticker))
 
 
-def update_quotes_history(ticker: str):
+def update_quotes_history(ticker: str) -> pd.DataFrame:
+    """Обновляет локальные данные данными из интернета и возвращает полную историю котировок и объемов."""
     df = load_quotes_history(ticker)
     if need_update(ticker):
         df_update = download.quotes_history(ticker, df_last_date(df))
@@ -86,6 +92,7 @@ def update_quotes_history(ticker: str):
 
 
 def yield_aliases_quotes_history(ticker: str):
+    """Генерирует истории котировок для все тикеров аналогов заданного тикера."""
     aliases_series = security_info.get_aliases_tickers([ticker])
     aliases = aliases_series.loc[ticker].split(sep=' ')
     for ticker in aliases:
@@ -93,6 +100,7 @@ def yield_aliases_quotes_history(ticker: str):
 
 
 def create_quotes_history(ticker: str):
+    """Формирует, сохраняет локальную версию и возвращает склеенную из всех тикеров аналогов историю котировок."""
     aliases = yield_aliases_quotes_history(ticker)
     df = pd.concat(aliases)
     # Для каждой даты выбирается тикер с максимальным оборотом
