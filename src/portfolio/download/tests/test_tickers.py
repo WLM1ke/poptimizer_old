@@ -1,6 +1,6 @@
 import pytest
 
-from ..tickers import get_tickers
+from ..tickers import get_reg_number_tickers
 
 check_points = [('1-02-65104-D', 'UPRO EONR OGK4'),
                 ('10301481B', 'SBER SBER03'),
@@ -10,4 +10,4 @@ check_points = [('1-02-65104-D', 'UPRO EONR OGK4'),
 
 @pytest.mark.parametrize("reg_number, expected", check_points)
 def test_get_tickers(reg_number, expected):
-    assert get_tickers(reg_number) == expected
+    assert get_reg_number_tickers(reg_number) == expected

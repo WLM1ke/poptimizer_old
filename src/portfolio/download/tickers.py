@@ -1,6 +1,6 @@
 """Return list of ticker for given registration number from ISS.
 
-    get_tickers(reg_number)
+    get_reg_number_tickers(reg_number)
 """
 
 import requests
@@ -28,7 +28,7 @@ def yield_parsed_tickers(json, reg_number):
             yield row[ticker_index]
 
 
-def get_tickers(reg_number):
+def get_reg_number_tickers(reg_number):
     """
     Возвращает разделенный пробелами список тикеров для заданного регистрационного номера с ISS сервера.
 
@@ -49,7 +49,7 @@ def get_tickers(reg_number):
 
 
 if __name__ == '__main__':
-    print(get_tickers('1-02-65104-D'))
-    print(get_tickers('10301481B'))
-    print(get_tickers('20301481B'))
-    print(get_tickers('1-02-06556-A'))
+    print(get_reg_number_tickers('1-02-65104-D'))
+    print(get_reg_number_tickers('10301481B'))
+    print(get_reg_number_tickers('20301481B'))
+    print(get_reg_number_tickers('1-02-06556-A'))

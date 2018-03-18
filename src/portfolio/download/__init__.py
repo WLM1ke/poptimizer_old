@@ -7,4 +7,4 @@ from .history import get_index_history_from_start as index_history_from_start
 from .history import get_quotes_history as quotes_history
 from .history import get_quotes_history_from_start as quotes_history_from_start
 from .securities_info import get_securities_info as securities_info
-from .tickers import get_tickers as tickers
+from .tickers import get_reg_number_tickers as reg_number_tickers

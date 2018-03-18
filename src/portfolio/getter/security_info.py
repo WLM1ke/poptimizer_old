@@ -14,7 +14,7 @@
 
     4. Load aliases for tickers and update local securities info data.
 
-        get_tickers(tickers)
+        get_reg_number_tickers(tickers)
 
 """
 
@@ -61,7 +61,7 @@ def validate(df, df_update):
 def fill_tickers_column(df):
     for ticker in df.index:
         if pd.isna(df.loc[ticker, 'TICKERS']):
-            tickers = download.tickers(reg_number=df.loc[ticker, 'REGNUMBER'])
+            tickers = download.reg_number_tickers(reg_number=df.loc[ticker, 'REGNUMBER'])
             df.loc[ticker, 'TICKERS'] = tickers
 
 
@@ -107,7 +107,7 @@ def get_security_info(tickers: list) -> pd.DataFrame:
     return df
 
 
-def get_tickers(tickers: list) -> pd.Series:
+def get_reg_number_tickers(tickers: list) -> pd.Series:
     """
     Возвращает список тикеров аналогов для заданного набора тикеров.
 
@@ -152,4 +152,4 @@ def get_last_prices(tickers: list) -> pd.Series:
 
 if __name__ == '__main__':
     print(get_security_info(['KBTK', 'MOEX', 'MTSS', 'SNGSP', 'GAZP', 'PHOR']))
-    print(get_tickers(['UPRO']))
+    print(get_reg_number_tickers(['UPRO']))

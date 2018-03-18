@@ -10,7 +10,8 @@ import requests
 
 
 def make_url(tickers):
-    url_base = 'https://iss.moex.com/iss/engines/stock/markets/shares/boards/TQBR/securities.json?securities={tickers}'
+    url_base = ('https://iss.moex.com/iss/engines/stock/markets/shares/boards/TQBR/securities.json?'
+                'securities={tickers}')
     return url_base.format(tickers=','.join(tickers))
 
 
@@ -42,9 +43,9 @@ def make_df(raw_json):
     return pd.concat([securities, marketdata], axis=1)
 
 
-def get_securities_info(tickers):
+def get_securities_info(tickers: list) -> pd.DataFrame:
     """
-    Возвращает краткое наименование, размер лота и последнюю цену
+    Возвращает краткое наименование, размер лота и последнюю цену.
 
     Parameters
     ----------
@@ -57,12 +58,6 @@ def get_securities_info(tickers):
         В строках тикеры (используется написание из выдачи ISS).
         В столбцах краткое наименование, регистрационный номер, размер лота и последняя цена.
     """
-    # Ответ сервера - словарь со сложной многоуровневой структурой
-    # По ключу securities - словарь с описанием инструментов
-    # По ключу marketdata - словарь с последними котировками
-    # В каждом из вложеных словарей есть ключи columns и data с массивами
-    # описания колонок и данными
-    # В массиве данных содержатся массивы для каждого запрошенного тикера
     raw_json = get_raw_json(tickers)
     return make_df(raw_json)
 
