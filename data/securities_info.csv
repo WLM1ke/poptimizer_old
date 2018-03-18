@@ -1,8 +1,8 @@
-SECID,SHORTNAME ,REGNUMBER   ,TICKERS               ,LOTSIZE,LAST
-GAZP ,ГАЗПРОМ ао,1-02-00028-A,GAZP                  ,10     ,137.23
-KBTK ,КузбТК ао ,1-02-11330-F,KBTK                  ,10     ,157.5
-MOEX ,МосБиржа  ,1-05-08443-H,MOEX                  ,10     ,116.88
-MTSS ,МТС-ао    ,1-01-04715-A,MTSS MTSI RU14MTSG1006,10     ,311.55
-PHOR ,ФосАгро ао,1-02-06556-A,PHOR                  ,1      ,2358.0
-SNGSP,Сургнфгз-п,2-01-00155-A,SNGSP                 ,100    ,30.22
-UPRO ,Юнипро ао ,1-02-65104-D,UPRO EONR OGK4        ,1000   ,2.78
+SECID,ALIASES               ,SHORTNAME ,REGNUMBER   ,LOTSIZE,LAST
+GAZP ,GAZP                  ,ГАЗПРОМ ао,1-02-00028-A,10     ,141.0
+KBTK ,KBTK                  ,КузбТК ао ,1-02-11330-F,10     ,158.0
+MOEX ,MOEX                  ,МосБиржа  ,1-05-08443-H,10     ,121.0
+MTSS ,MTSS MTSI RU14MTSG1006,МТС-ао    ,1-01-04715-A,10     ,316.85
+PHOR ,PHOR                  ,ФосАгро ао,1-02-06556-A,1      ,2357.0
+SNGSP,SNGSP                 ,Сургнфгз-п,2-01-00155-A,100    ,30.26
+UPRO ,UPRO EONR OGK4        ,Юнипро ао ,1-02-65104-D,1000   ,2.75

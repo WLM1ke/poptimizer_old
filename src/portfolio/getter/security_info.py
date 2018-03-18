@@ -4,15 +4,11 @@
 
         get_security_info(tickers)
 
-    2. Load and update local lots size data:
-
-        get_lots_size(tickers)
-
-    3. Load and update local last prices data:
+    2. Load and update local last prices data:
 
         get_last_prices(tickers)
 
-    4. Load aliases for tickers and update local securities info data.
+    3. Load aliases for tickers and update local securities info data.
 
         get_reg_number_tickers(tickers)
 
@@ -40,7 +36,7 @@ def load_securities_info() -> pd.DataFrame:
 def download_securities_info(tickers) -> pd.DataFrame:
     df = download.securities_info(tickers)
     # add ALIASES empty column
-    columns = ['SHORTNAME', 'REGNUMBER', 'TICKERS', 'LOTSIZE', 'LAST']
+    columns = ['ALIASES', 'SHORTNAME', 'REGNUMBER', 'LOTSIZE', 'LAST']
     return df.reindex(columns=columns)
 
 
@@ -50,19 +46,20 @@ def save_security_info(df: pd.DataFrame):
 
 def validate(df, df_update):
     common_tickers = list(set(df.index) & set(df_update.index))
-    df = df.loc[common_tickers, ['SHORTNAME', 'REGNUMBER', 'LOTSIZE']]
-    df_update = df_update.loc[common_tickers, ['SHORTNAME', 'REGNUMBER', 'LOTSIZE']]
+    columns_for_validation = ['SHORTNAME', 'REGNUMBER', 'LOTSIZE']
+    df = df.loc[common_tickers, columns_for_validation]
+    df_update = df_update.loc[common_tickers, columns_for_validation]
     if not df.equals(df_update):
         raise ValueError(f'Загруженные данные {common_tickers} не стыкуются с локальными. \n' +
                          f'{df} \n' +
                          f'{df_update}')
 
 
-def fill_tickers_column(df):
+def fill_aliases_column(df):
     for ticker in df.index:
-        if pd.isna(df.loc[ticker, 'TICKERS']):
+        if pd.isna(df.loc[ticker, 'ALIASES']):
             tickers = download.reg_number_tickers(reg_number=df.loc[ticker, 'REGNUMBER'])
-            df.loc[ticker, 'TICKERS'] = tickers
+            df.loc[ticker, 'ALIASES'] = tickers
 
 
 def update_local_securities_info(tickers) -> pd.DataFrame:
@@ -71,14 +68,14 @@ def update_local_securities_info(tickers) -> pd.DataFrame:
     validate(df, df_update)
     not_updated_tickers = list(set(df.index) - set(df_update.index))
     df = pd.concat([df.loc[not_updated_tickers], df_update])
-    fill_tickers_column(df)
+    fill_aliases_column(df)
     save_security_info(df)
     return df.loc[tickers]
 
 
 def create_local_security_info(tickers):
     df = download_securities_info(tickers)
-    fill_tickers_column(df)
+    fill_aliases_column(df)
     save_security_info(df)
     return df
 
@@ -128,7 +125,7 @@ def get_reg_number_tickers(tickers: list) -> pd.Series:
             df = update_local_securities_info(tickers)
     else:
         df = create_local_security_info(tickers)
-    return df.loc[tickers, 'TICKERS']
+    return df.loc[tickers, 'ALIASES']
 
 
 def get_last_prices(tickers: list) -> pd.Series:
@@ -151,5 +148,5 @@ def get_last_prices(tickers: list) -> pd.Series:
 
 
 if __name__ == '__main__':
-    print(get_security_info(['KBTK', 'MOEX', 'MTSS', 'SNGSP', 'GAZP', 'PHOR']))
-    print(get_reg_number_tickers(['UPRO']))
+    print(get_security_info(['KBTK', 'MOEX', 'MTSS', 'SNGSP', 'GAZP', 'PHOR']), '\n')
+    print(get_reg_number_tickers(['MOEX', 'UPRO']))
