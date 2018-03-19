@@ -26,14 +26,14 @@ def securities_info_path():
     return settings.make_data_path(None, DATA_FILE)
 
 
-def load_securities_info() -> pd.DataFrame:
+def load_securities_info():
     converters = dict(LOTSIZE=pd.to_numeric, LAST=pd.to_numeric)
     # Значение sep гарантирует загрузку данных с добавленными PyCharm пробелами
     df = pd.read_csv(securities_info_path(), converters=converters, header=0, engine='python', sep='\s*,')
     return df.set_index('SECID')
 
 
-def download_securities_info(tickers) -> pd.DataFrame:
+def download_securities_info(tickers):
     df = download.securities_info(tickers)
     # Add ALIASES empty column
     columns = ['ALIASES', 'SHORTNAME', 'REGNUMBER', 'LOTSIZE', 'LAST']
@@ -62,7 +62,7 @@ def fill_aliases_column(df):
             df.loc[ticker, 'ALIASES'] = tickers
 
 
-def update_local_securities_info(tickers) -> pd.DataFrame:
+def update_local_securities_info(tickers):
     df = load_securities_info()
     df_update = download_securities_info(tickers)
     validate(df, df_update)
@@ -80,7 +80,7 @@ def create_local_security_info(tickers):
     return df
 
 
-def get_security_info(tickers: list) -> pd.DataFrame:
+def get_security_info(tickers: list):
     """
     Возвращает данные по тикерам из списка и при необходимости обновляет локальные данные
 
@@ -104,7 +104,7 @@ def get_security_info(tickers: list) -> pd.DataFrame:
     return df
 
 
-def get_aliases_tickers(tickers: list) -> pd.Series:
+def get_aliases_tickers(tickers: list):
     """
     Возвращает список тикеров аналогов для заданного набора тикеров.
 
@@ -128,7 +128,7 @@ def get_aliases_tickers(tickers: list) -> pd.Series:
     return df.loc[tickers, 'ALIASES']
 
 
-def get_last_prices(tickers: list) -> pd.Series:
+def get_last_prices(tickers: list):
     """
     Возвращает последние цены для тикеров из списка и обновляет локальные данные.
 
@@ -152,4 +152,3 @@ if __name__ == '__main__':
     print(df_get)
     df_local = load_securities_info().loc[['SNGSP', 'GAZP']]
     print(df_local)
-    # assert df.equals(df_local.loc[['SNGSP', 'GAZP']])

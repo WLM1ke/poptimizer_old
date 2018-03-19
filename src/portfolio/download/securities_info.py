@@ -43,7 +43,7 @@ def make_df(raw_json):
     return pd.concat([securities, marketdata], axis=1)
 
 
-def get_securities_info(tickers: list) -> pd.DataFrame:
+def get_securities_info(tickers: list):
     """
     Возвращает краткое наименование, размер лота и последнюю цену.
 

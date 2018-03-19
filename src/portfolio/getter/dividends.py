@@ -11,7 +11,7 @@ def legacy_dividends_path():
     return settings.make_data_path(None, LEGACY_DIVIDENDS_FILE)
 
 
-def get_legacy_dividends(tickers: list) -> pd.DataFrame:
+def get_legacy_dividends(tickers: list):
     """
     Возвращает ряды годовых дивидендов для тикеров.
 

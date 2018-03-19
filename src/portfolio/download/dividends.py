@@ -16,8 +16,8 @@ TABLE_INDEX = 2
 # Позиции и наименования ключевых столбцов
 TH_DATE = 'Дата закрытия реестра'
 TH_VALUE = 'Дивиденд (руб.)'
-DATE_COLN = 0
-VALUE_COLN = 2
+DATE_COLUMN = 0
+VALUE_COLUMN = 2
 
 
 def make_url(ticker: str):
@@ -52,23 +52,23 @@ class RowParser:
     @property
     def date(self):
         """Дата закрытия реестра"""
-        return self.columns[DATE_COLN]  # 0
+        return self.columns[DATE_COLUMN]  # 0
 
     @property
     def value(self):
         """Размер дивиденда"""
-        return self.columns[VALUE_COLN]  # 2
+        return self.columns[VALUE_COLUMN]  # 2
 
 
 def validate_table_header(header):
     """Проверка наименований столбцов с датой закрытия и дивидендами."""
     cells = RowParser(header, 'th')
     if cells.date != TH_DATE or cells.value != TH_VALUE:
-        raise ValueError('Некоректные заголовки таблицы дивидендов.')
+        raise ValueError('Некорректные заголовки таблицы дивидендов.')
 
 
 def parse_table_rows(table):
-    """Строки с прогнозом имеют class = forecast, а у заголовка и факта - класс отсутсвует."""
+    """Строки с прогнозом имеют class = forecast, а у заголовка и факта - класс отсутствует."""
     rows = table.find_all(name='tr', class_=None)
     validate_table_header(rows[0])
     for row in rows[1:]:
@@ -77,7 +77,7 @@ def parse_table_rows(table):
 
 
 def make_df(parsed_rows):
-    """Формирует DataFrame и упорядычивает даты по возростанию."""
+    """Формирует DataFrame и упорядочивает даты по возрастанию."""
     df = pd.DataFrame(data=parsed_rows,
                       columns=['CLOSE_DATE', 'DIVIDENDS'])
     return df.set_index('CLOSE_DATE')['DIVIDENDS'].sort_index()
@@ -85,7 +85,7 @@ def make_df(parsed_rows):
 
 def get_dividends(ticker: str) -> pd.Series:
     """
-    Возвращает Series с двивидендами упорядоченными по возростанию даты закрытия реестра.
+    Возвращает Series с дивидендами упорядоченными по возрастанию даты закрытия реестра.
 
     Parameters
     ----------
@@ -95,7 +95,7 @@ def get_dividends(ticker: str) -> pd.Series:
     Returns
     -------
     pandas.Series
-        Строки - даты закрытия реестраб упорядоченные по возрастанию.
+        Строки - даты закрытия реестра упорядоченные по возрастанию.
         Значения - дивиденды.
     """
     url = make_url(ticker)
