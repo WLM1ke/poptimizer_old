@@ -2,12 +2,12 @@ import datetime
 
 import pandas as pd
 
-from portfolio.download.history import get_quotes_history, make_url, get_index_history, get_json, TotalReturn, Quotes
+from portfolio.download.history import get_quotes_history, make_url, get_index_history, get_json, Index, Quotes
 
 
 def test_make_url():
-    url = make_url(base=TotalReturn.base,
-                   ticker=TotalReturn.ticker,
+    url = make_url(base=Index.base,
+                   ticker=Index.ticker,
                    start_date=datetime.date(2017, 10, 1),
                    block_position=50)
     assert url == ('http://iss.moex.com/iss/history/engines/stock/markets/index/'
@@ -22,8 +22,8 @@ def test_make_url_defaults():
 
 
 def test_get_raw_json_works_on_none_start_date():
-    url = make_url(base=TotalReturn.base,
-                   ticker=TotalReturn.ticker)
+    url = make_url(base=Index.base,
+                   ticker=Index.ticker)
     data = get_json(url)
     index = data['history']['columns'].index('TRADEDATE')
     assert data['history']['data'][0][index] == '2003-02-26'
@@ -59,7 +59,7 @@ class TestTicker:
 
 
 class TestTotalReturn:
-    t = TotalReturn(start_date=None)
+    t = Index(start_date=None)
 
     def test_data_property_on_init_for_None_start_date(self):
         # lower-level tests of server response

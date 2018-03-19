@@ -40,7 +40,7 @@ def end_of_last_trading_day() -> arrow:
 
 
 class Quotes:
-    _quotes_folder = 'quotes'
+    _data_folder = 'quotes'
     _columns_for_validation = ['CLOSE', 'VOLUME']
 
     def __init__(self, ticker: str):
@@ -56,7 +56,7 @@ class Quotes:
     @property
     def quotes_path(self) -> Path:
         """Возвращает и при необходимости создает путь к файлу с котировками."""
-        return settings.make_data_path(self._quotes_folder, f'{self.ticker}.csv')
+        return settings.make_data_path(self._data_folder, f'{self.ticker}.csv')
 
     def load_quotes_history(self) -> pd.DataFrame:
         """Загружает историю котировок из локальных данных."""
@@ -121,9 +121,33 @@ class Quotes:
         return self._df
 
 
+class Index(Quotes):
+    _data_folder = None
+    _columns_for_validation = ['CLOSE']
+
+    def __init__(self) -> None:
+        super(Index, self).__init__('MCFTRR')
+
+    def update_quotes_history(self) -> pd.DataFrame:
+        """Обновляет локальные данные данными из интернета и возвращает полную историю котировок индекса."""
+        df = self.load_quotes_history()
+        if self.need_update():
+            df_update = download.index_history(self.df_last_date)
+            self._validate_last_date(df_update)
+            self._df = pd.concat([df, df_update.iloc[1:]])
+            self._save_quotes_history()
+        return self._df
+
+    def create_quotes_history(self) -> pd.DataFrame:
+        """Формирует, сохраняет локальную версию историю котировок индекса."""
+        self._df = download.index_history()
+        self._save_quotes_history()
+        return self._df
+
+
 def get_quotes_history(ticker: str):
     """
-    Возвращает данные по котровкам из локальной версии данных при необходимости обновляя их.
+    Возвращает данные по котровкам из локальной версии данных, при необходимости обновляя их.
 
     При первоночальном формировании данных используются все алиасы тикера для его регистрационного номера, чтобы
     выгрузить максимально длинную историю котировок. При последующих обновлениях используется только текущий тикер.
@@ -145,7 +169,7 @@ def get_quotes_history(ticker: str):
 
 def get_prices_history(tickers: list) -> pd.DataFrame:
     """
-    Возвращает историю цен по набору тикеров.
+    Возвращает историю цен закрытия по набору тикеров из локальных данных, при необходимости обновляя их.
 
     Parameters
     ----------
@@ -165,7 +189,7 @@ def get_prices_history(tickers: list) -> pd.DataFrame:
 
 def get_volumes_history(tickers: list) -> pd.DataFrame:
     """
-    Возвращает историю объеиов торгов по набору тикеров.
+    Возвращает историю объемов торгов по набору тикеров из локальных данных, при необходимости обновляя их.
 
     Parameters
     ----------
@@ -183,5 +207,21 @@ def get_volumes_history(tickers: list) -> pd.DataFrame:
     return df
 
 
+def get_index_history() -> pd.DataFrame:
+    """
+    Возвращает историю индекса полной доходности с учетом российских налогов из локальных данных.
+
+    При необходимости локальные данные обновляются для ускорения последующих загрузок.
+
+    Returns
+    -------
+    pandas.DataFrame
+        В строках даты торгов.
+        В столбце цена закрытия индекса.
+    """
+    df = Index()
+    return df()
+
+
 if __name__ == '__main__':
-    print(get_quotes_history('KBTK'))
+    print(get_index_history())

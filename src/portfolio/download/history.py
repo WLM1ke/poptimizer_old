@@ -133,7 +133,7 @@ class Quotes:
         return df[['TRADEDATE', 'CLOSE', 'VOLUME']]
 
 
-class TotalReturn(Quotes):
+class Index(Quotes):
     """
     Представление ответа сервера - данные по индексу полной доходности MOEX.
 
@@ -168,7 +168,7 @@ def get_index_history(start_date=None):
         В строках даты торгов.
         В столбцах цена закрытия индекса полной доходности.
     """
-    return pd.concat(TotalReturn(start_date))
+    return pd.concat(Index(start_date))
 
 
 def get_quotes_history(ticker, start_date=None):
@@ -197,12 +197,7 @@ def get_quotes_history(ticker, start_date=None):
     return df
 
 
-
 if __name__ == '__main__':
-    assert len(list(Quotes('AKRN', datetime.date(2017, 3, 1)))) >= 4
-    h = get_quotes_history('MOEX', datetime.date(2017, 10, 2))
-    print(h.head())
-    print(h.tail())
     z = get_index_history(start_date=datetime.date(2017, 10, 2))
     print(z.head())
     print(z.tail())
