@@ -1,6 +1,5 @@
 """Global package settings."""
 
-from enum import Enum, unique
 from pathlib import Path
 
 DATA_PATH = Path(__file__).parents[2] / 'data'
@@ -15,10 +14,3 @@ def make_data_path(folder, file_name: str) -> Path:
     if not folder.exists():
         folder.mkdir(parents=True)
     return folder / file_name
-
-
-@unique
-class Labels(Enum):
-    """Основные метки столбцов и строк в DataFrame."""
-    cpi = 'CPI'
-    date = 'DATE'

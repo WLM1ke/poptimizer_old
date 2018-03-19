@@ -4,7 +4,7 @@ from datetime import date
 
 import pandas as pd
 
-from portfolio.settings import Labels
+from portfolio.labels import *
 
 URL_CPI = 'http://www.gks.ru/free_doc/new_site/prices/potr/I_ipc.xlsx'
 PARSING_PARAMETERS = dict(sheet_name='ИПЦ', header=3, skiprows=[4], skip_footer=3)
@@ -28,9 +28,9 @@ def parse_xls(url):
     size = df.shape[0] * df.shape[1]
     first_year = df.columns[0]
     # create new DataFrame
-    index = pd.DatetimeIndex(name=Labels.date, freq='M', start=date(first_year, 1, 31), periods=size)
+    index = pd.DatetimeIndex(name=DATE, freq='M', start=date(first_year, 1, 31), periods=size)
     flat_data = df.values.reshape(size, order='F')
-    df = pd.DataFrame(flat_data, index=index, columns=[Labels.cpi]).dropna()
+    df = pd.Series(flat_data, index=index, name=CPI).dropna()
     return df.div(100)
 
 
