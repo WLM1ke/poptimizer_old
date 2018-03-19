@@ -40,6 +40,7 @@ def end_of_last_trading_day() -> arrow:
 
 
 class Quotes:
+    """Реализует хранение, обновление и хранение локальных данных по котировкам тикеров."""
     _data_folder = 'quotes'
     _columns_for_validation = ['CLOSE', 'VOLUME']
 
@@ -122,6 +123,7 @@ class Quotes:
 
 
 class Index(Quotes):
+    """Реализует хранение, обновление и хранение локальных данных по индексу MCFTRR."""
     _data_folder = None
     _columns_for_validation = ['CLOSE']
 

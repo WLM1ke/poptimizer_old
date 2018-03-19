@@ -34,12 +34,12 @@ def validate_response(data, tickers):
 
 
 def make_df(raw_json):
-    securities = pd.DataFrame(
-        data=raw_json['securities']['data'], columns=raw_json['securities']['columns'])
-    marketdata = pd.DataFrame(
-        data=raw_json['marketdata']['data'], columns=raw_json['marketdata']['columns'])
+    securities = pd.DataFrame(data=raw_json['securities']['data'],
+                              columns=raw_json['securities']['columns'])
+    marketdata = pd.DataFrame(data=raw_json['marketdata']['data'],
+                              columns=raw_json['marketdata']['columns'])
     securities = securities.set_index('SECID')[['SHORTNAME', 'REGNUMBER', 'LOTSIZE']]
-    marketdata = marketdata.set_index('SECID')['LAST']
+    marketdata = pd.to_numeric(marketdata.set_index('SECID')['LAST'])
     return pd.concat([securities, marketdata], axis=1)
 
 

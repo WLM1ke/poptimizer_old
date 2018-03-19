@@ -148,5 +148,8 @@ def get_last_prices(tickers: list) -> pd.Series:
 
 
 if __name__ == '__main__':
-    print(get_security_info(['KBTK', 'MOEX', 'MTSS', 'SNGSP', 'GAZP', 'PHOR']), '\n')
-    print(get_aliases_tickers(['MOEX', 'UPRO']))
+    df_get = get_security_info(['SNGSP', 'GAZP'])
+    print(df_get)
+    df_local = load_securities_info().loc[['SNGSP', 'GAZP']]
+    print(df_local)
+    # assert df.equals(df_local.loc[['SNGSP', 'GAZP']])

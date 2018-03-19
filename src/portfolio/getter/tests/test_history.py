@@ -7,7 +7,7 @@ import pytest
 from portfolio import download, settings
 from portfolio.getter import history
 from portfolio.getter.history import get_prices_history, get_volumes_history
-from portfolio.getter.history import get_quotes_history, Quotes
+from portfolio.getter.history import get_quotes_history, get_index_history, Quotes, Index
 
 
 def updated_df():
@@ -43,6 +43,33 @@ def test_get_quotes_history(df):
     assert df.loc['2018-03-09', 'CLOSE'] == 148.8 and df.loc['2018-03-09', 'VOLUME'] == 2960
 
 
+@pytest.fixture(scope='module', name='index_cases')
+def make_index_cases():
+    df1 = get_index_history()
+    index = Index()
+    df2 = index.update_quotes_history()
+    save_need_update = index.need_update
+    index.need_update = lambda: True
+    df3 = index.update_quotes_history()
+    index.need_update = save_need_update
+    return df1, df2, df3
+
+
+@pytest.fixture(params=range(3), name='index_df')
+def yield_index_df(request, index_cases):
+    return index_cases[request.param]
+
+
+def test_get_index_history(index_df):
+    assert isinstance(index_df, pd.DataFrame)
+    assert len(index_df.columns) == 1
+    assert index_df.index.is_monotonic_increasing
+    assert index_df.index.is_unique
+    assert index_df.index[0] == pd.to_datetime('2003-02-26')
+    assert index_df.shape[0] > 100
+    assert index_df.loc['2018-03-16', 'CLOSE'] == 3281.58
+
+
 def test_validate_last_date_error():
     df_old = Quotes('MSTT')
     df_new = download.quotes_history('AKRN', df_old.df_last_date)
@@ -61,3 +88,9 @@ def test_get_prices_history():
     df = get_prices_history(['KBTK', 'RTKMP'])
     assert pd.isna(df.loc['2018-03-09', 'KBTK'])
     assert df.loc['2018-03-13', 'RTKMP'] == 62
+
+
+def test_end_of_last_trading_day(monkeypatch):
+    monkeypatch.setattr(history, "END_OF_CURRENT_TRADING_DAY",
+                        arrow.get().to(history.MARKET_TIME_ZONE).replace(minute=0, second=0, microsecond=0))
+    assert history.end_of_last_trading_day() == history.END_OF_CURRENT_TRADING_DAY
