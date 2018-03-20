@@ -5,6 +5,7 @@ import pandas as pd
 from portfolio import settings
 
 LEGACY_DIVIDENDS_FILE = 'dividends.xlsx'
+LEGACY_SHEET_NAME = 'Dividends'
 
 
 def legacy_dividends_path():
@@ -31,7 +32,7 @@ def get_legacy_dividends(tickers: list):
         В столбцах цены годовые дивиденды для тикеров.
     """
 
-    df = pd.read_excel(legacy_dividends_path(), sheet_name='Dividends', header=0, index_col=0)
+    df = pd.read_excel(legacy_dividends_path(), sheet_name=LEGACY_SHEET_NAME, header=0, index_col=0)
     return df.transpose()[tickers]
 
 

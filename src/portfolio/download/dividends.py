@@ -11,6 +11,8 @@ import urllib.request
 import pandas as pd
 from bs4 import BeautifulSoup
 
+from portfolio.settings import DATE, DIVIDENDS
+
 # Номер таблицы с дивидендами в документе
 TABLE_INDEX = 2
 # Позиции и наименования ключевых столбцов
@@ -79,8 +81,8 @@ def parse_table_rows(table):
 def make_df(parsed_rows):
     """Формирует DataFrame и упорядочивает даты по возрастанию."""
     df = pd.DataFrame(data=parsed_rows,
-                      columns=['CLOSE_DATE', 'DIVIDENDS'])
-    return df.set_index('CLOSE_DATE')['DIVIDENDS'].sort_index()
+                      columns=[DATE, DIVIDENDS])
+    return df.set_index(DATE)[DIVIDENDS].sort_index()
 
 
 def get_dividends(ticker: str) -> pd.Series:
