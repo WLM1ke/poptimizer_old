@@ -23,28 +23,33 @@ DATA_FILE = 'securities_info.csv'
 
 
 def securities_info_path():
+    """Возвращает путь к файлу с данными и при необходимости прокладывает его."""
     return settings.make_data_path(None, DATA_FILE)
 
 
 def load_securities_info():
+    """загружает локальную версию данных - sep гарантирует загрузку данных с добавленными PyCharm пробелами."""
     converters = dict(LOTSIZE=pd.to_numeric, LAST=pd.to_numeric)
-    # Значение sep гарантирует загрузку данных с добавленными PyCharm пробелами
     df = pd.read_csv(securities_info_path(), converters=converters, header=0, engine='python', sep='\s*,')
     return df.set_index('SECID')
 
 
 def download_securities_info(tickers):
+    """Загружает информацию о тикерах из интернета и добавляет колонку пустую колонку ALIASES."""
     df = download.securities_info(tickers)
-    # Add ALIASES empty column
     columns = ['ALIASES', 'SHORTNAME', 'REGNUMBER', 'LOTSIZE', 'LAST']
     return df.reindex(columns=columns)
 
 
 def save_security_info(df: pd.DataFrame):
+    """Сохраняет фрейм с данными в директорию с данными."""
     df.sort_index().to_csv(securities_info_path())
 
 
 def validate(df, df_update):
+    """Проверяет совпадение данных для общих тикеров.
+
+    Проверка осуществляется для колонок с кратким наименованием, регистрационным номером и размером лота."""
     common_tickers = list(set(df.index) & set(df_update.index))
     columns_for_validation = ['SHORTNAME', 'REGNUMBER', 'LOTSIZE']
     df = df.loc[common_tickers, columns_for_validation]
@@ -56,6 +61,7 @@ def validate(df, df_update):
 
 
 def fill_aliases_column(df):
+    """Заполняет пустые ячейки в колонке с тикерами аналогами."""
     for ticker in df.index:
         if pd.isna(df.loc[ticker, 'ALIASES']):
             tickers = download.reg_number_tickers(reg_number=df.loc[ticker, 'REGNUMBER'])
@@ -63,6 +69,7 @@ def fill_aliases_column(df):
 
 
 def update_local_securities_info(tickers):
+    """Обновляет существующую локальную версию данных и проверяет соответствие новых данных старым."""
     df = load_securities_info()
     df_update = download_securities_info(tickers)
     validate(df, df_update)
@@ -74,6 +81,7 @@ def update_local_securities_info(tickers):
 
 
 def create_local_security_info(tickers):
+    """Создает с нуля локальную версию данных, загружая их из интернета."""
     df = download_securities_info(tickers)
     fill_aliases_column(df)
     save_security_info(df)
@@ -140,7 +148,7 @@ def get_last_prices(tickers: list):
     Returns
     -------
     pandas.Series
-        В строках тикеры и поледние цены для них.
+        В строках тикеры и последние цены для них.
     """
     # Цены обновляются постоянно - поэтому можно вызывать функцию, требующую обновления данных
     df = get_security_info(tickers)
