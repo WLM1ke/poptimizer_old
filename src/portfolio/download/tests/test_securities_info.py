@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 
 from portfolio.download.securities_info import make_url, get_raw_json, get_securities_info
+from portfolio.settings import COMPANY_NAME, REG_NUMBER, LOT_SIZE
 
 
 def test_make_url():
@@ -24,14 +25,14 @@ class TestGetRawJson:
 def test_get_securities_info():
     df = get_securities_info(['AKRN', 'GAZP', 'TTLK'])
     assert isinstance(df, pd.DataFrame)
-    assert df.loc['AKRN', 'SHORTNAME'] == 'Акрон'
-    assert df.loc['GAZP', 'REGNUMBER'] == '1-02-00028-A'
-    assert df.loc['TTLK', 'LOTSIZE'] == 10000
+    assert df.loc['AKRN', COMPANY_NAME] == 'Акрон'
+    assert df.loc['GAZP', REG_NUMBER] == '1-02-00028-A'
+    assert df.loc['TTLK', LOT_SIZE] == 10000
 
 
 def test_get_one_securiry_info():
     df = get_securities_info(['MRSB'])
     assert isinstance(df, pd.DataFrame)
-    assert df.loc['MRSB', 'SHORTNAME'] == 'МордЭнСб'
-    assert df.loc['MRSB', 'REGNUMBER'] == '1-01-55055-E'
-    assert df.loc['MRSB', 'LOTSIZE'] == 10000
+    assert df.loc['MRSB', COMPANY_NAME] == 'МордЭнСб'
+    assert df.loc['MRSB', REG_NUMBER] == '1-01-55055-E'
+    assert df.loc['MRSB', LOT_SIZE] == 10000

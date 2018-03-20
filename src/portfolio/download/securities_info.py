@@ -8,6 +8,8 @@
 import pandas as pd
 import requests
 
+from portfolio.settings import LAST_PRICE, LOT_SIZE, COMPANY_NAME, REG_NUMBER, TICKER
+
 
 def make_url(tickers):
     url_base = ('https://iss.moex.com/iss/engines/stock/markets/shares/boards/TQBR/securities.json?'
@@ -25,7 +27,7 @@ def get_raw_json(tickers):
 
 def validate_response(data, tickers):
     n = len(tickers)
-    msg = ('Количество тикеров в ответе не соответсвует запросу'
+    msg = ('Количество тикеров в ответе не соответствует запросу'
            ' - возможно ошибка в написании')
     if len(data['securities']['data']) != n:
         raise ValueError(msg)
@@ -36,11 +38,14 @@ def validate_response(data, tickers):
 def make_df(raw_json):
     securities = pd.DataFrame(data=raw_json['securities']['data'],
                               columns=raw_json['securities']['columns'])
-    marketdata = pd.DataFrame(data=raw_json['marketdata']['data'],
-                              columns=raw_json['marketdata']['columns'])
+    market_data = pd.DataFrame(data=raw_json['marketdata']['data'],
+                               columns=raw_json['marketdata']['columns'])
     securities = securities.set_index('SECID')[['SHORTNAME', 'REGNUMBER', 'LOTSIZE']]
-    marketdata = pd.to_numeric(marketdata.set_index('SECID')['LAST'])
-    return pd.concat([securities, marketdata], axis=1)
+    market_data = pd.to_numeric(market_data.set_index('SECID')['LAST'])
+    df = pd.concat([securities, market_data], axis=1)
+    df.index.name = TICKER
+    df.columns = [COMPANY_NAME, REG_NUMBER, LOT_SIZE, LAST_PRICE]
+    return df
 
 
 def get_securities_info(tickers: list):

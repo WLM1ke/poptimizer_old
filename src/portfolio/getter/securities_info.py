@@ -18,6 +18,7 @@ import pandas as pd
 
 from portfolio import download
 from portfolio import settings
+from portfolio.settings import LAST_PRICE, LOT_SIZE, COMPANY_NAME, REG_NUMBER, TICKER, TICKER_ALIASES
 
 DATA_FILE = 'securities_info.csv'
 
@@ -29,15 +30,15 @@ def securities_info_path():
 
 def load_securities_info():
     """загружает локальную версию данных - sep гарантирует загрузку данных с добавленными PyCharm пробелами."""
-    converters = dict(LOTSIZE=pd.to_numeric, LAST=pd.to_numeric)
+    converters = {LOT_SIZE: pd.to_numeric, LAST_PRICE: pd.to_numeric}
     df = pd.read_csv(securities_info_path(), converters=converters, header=0, engine='python', sep='\s*,')
-    return df.set_index('SECID')
+    return df.set_index(TICKER)
 
 
 def download_securities_info(tickers):
     """Загружает информацию о тикерах из интернета и добавляет колонку пустую колонку ALIASES."""
     df = download.securities_info(tickers)
-    columns = ['ALIASES', 'SHORTNAME', 'REGNUMBER', 'LOTSIZE', 'LAST']
+    columns = [TICKER_ALIASES, COMPANY_NAME, REG_NUMBER, LOT_SIZE, LAST_PRICE]
     return df.reindex(columns=columns)
 
 
@@ -51,7 +52,7 @@ def validate(df, df_update):
 
     Проверка осуществляется для колонок с кратким наименованием, регистрационным номером и размером лота."""
     common_tickers = list(set(df.index) & set(df_update.index))
-    columns_for_validation = ['SHORTNAME', 'REGNUMBER', 'LOTSIZE']
+    columns_for_validation = [COMPANY_NAME, REG_NUMBER, LOT_SIZE]
     df = df.loc[common_tickers, columns_for_validation]
     df_update = df_update.loc[common_tickers, columns_for_validation]
     if not df.equals(df_update):
@@ -63,9 +64,9 @@ def validate(df, df_update):
 def fill_aliases_column(df):
     """Заполняет пустые ячейки в колонке с тикерами аналогами."""
     for ticker in df.index:
-        if pd.isna(df.loc[ticker, 'ALIASES']):
-            tickers = download.reg_number_tickers(reg_number=df.loc[ticker, 'REGNUMBER'])
-            df.loc[ticker, 'ALIASES'] = tickers
+        if pd.isna(df.loc[ticker, TICKER_ALIASES]):
+            tickers = download.reg_number_tickers(reg_number=df.loc[ticker, REG_NUMBER])
+            df.loc[ticker, TICKER_ALIASES] = tickers
 
 
 def update_local_securities_info(tickers):
@@ -133,7 +134,7 @@ def get_aliases_tickers(tickers: list):
             df = update_local_securities_info(tickers)
     else:
         df = create_local_security_info(tickers)
-    return df.loc[tickers, 'ALIASES']
+    return df.loc[tickers, TICKER_ALIASES]
 
 
 def get_last_prices(tickers: list):
@@ -152,7 +153,7 @@ def get_last_prices(tickers: list):
     """
     # Цены обновляются постоянно - поэтому можно вызывать функцию, требующую обновления данных
     df = get_security_info(tickers)
-    return df.loc[tickers, 'LAST']
+    return df.loc[tickers, LAST_PRICE]
 
 
 if __name__ == '__main__':
