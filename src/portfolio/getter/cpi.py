@@ -6,6 +6,7 @@
 import time
 from os import path
 
+import numpy as np
 import pandas as pd
 
 from portfolio import download
@@ -46,7 +47,7 @@ def cpi_need_update():
 
 def validate(df_old, df_updated):
     """Проверяет совпадение данных для дат, присутствующих в старом фрейме."""
-    if not df_old.equals(df_updated[df_old.index]):
+    if not np.allclose(df_old, df_updated[df_old.index]):
         raise ValueError('Новые данные CPI не совпадают с локальной версией.')
 
 
