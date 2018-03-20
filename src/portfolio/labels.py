@@ -1,2 +1,0 @@
-CPI = 'CPI'
-DATE = 'DATE'
