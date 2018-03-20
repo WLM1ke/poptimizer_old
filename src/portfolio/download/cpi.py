@@ -35,6 +35,14 @@ def parse_xls(url):
 
 
 def get_monthly_cpi():
+    """
+    Загружает данные по месячному CPI с сайта ФСГС и возвращает.
+
+    Returns
+    -------
+    pd.Series
+        В строках значения инфляции для каждого месяца.
+    """
     return parse_xls(URL_CPI)
 
 
