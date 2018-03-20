@@ -14,6 +14,8 @@ import datetime
 import pandas as pd
 import requests
 
+from portfolio.settings import DATE, CLOSE_PRICE, VOLUME
+
 
 def get_json(url: str):
     """Return json found at *url*."""
@@ -127,10 +129,10 @@ class Quotes:
     @property
     def dataframe(self):
         df = self.df
-        df['TRADEDATE'] = pd.to_datetime(df['TRADEDATE'])
-        df['CLOSE'] = pd.to_numeric(df['CLOSE'])
-        df['VOLUME'] = pd.to_numeric(df['VOLUME'])
-        return df[['TRADEDATE', 'CLOSE', 'VOLUME']]
+        df[DATE] = pd.to_datetime(df['TRADEDATE'])
+        df[CLOSE_PRICE] = pd.to_numeric(df['CLOSE'])
+        df[VOLUME] = pd.to_numeric(df['VOLUME'])
+        return df[[DATE, CLOSE_PRICE, VOLUME]]
 
 
 class Index(Quotes):
@@ -147,9 +149,9 @@ class Index(Quotes):
     @property
     def dataframe(self):
         df = self.df
-        df['TRADEDATE'] = pd.to_datetime(df['TRADEDATE'])
-        df['CLOSE'] = pd.to_numeric(df['CLOSE'])
-        return df[['TRADEDATE', 'CLOSE']].set_index('TRADEDATE')
+        df[DATE] = pd.to_datetime(df['TRADEDATE'])
+        df[CLOSE_PRICE] = pd.to_numeric(df['CLOSE'])
+        return df[[DATE, CLOSE_PRICE]].set_index(DATE)
 
 
 def get_index_history(start_date=None):
@@ -192,8 +194,8 @@ def get_quotes_history(ticker, start_date=None):
     gen = Quotes(ticker, start_date)
     df = pd.concat(gen, ignore_index=True)
     # Для каждой даты выбирается режим торгов с максимальным оборотом
-    df = df.loc[df.groupby('TRADEDATE')['VOLUME'].idxmax()]
-    df = df.set_index('TRADEDATE').sort_index()
+    df = df.loc[df.groupby(DATE)[VOLUME].idxmax()]
+    df = df.set_index(DATE).sort_index()
     return df
 
 

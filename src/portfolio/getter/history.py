@@ -18,6 +18,7 @@ import pandas as pd
 from portfolio import download
 from portfolio import settings
 from portfolio.getter import security_info
+from portfolio.settings import DATE, CLOSE_PRICE, VOLUME
 
 MARKET_TIME_ZONE = 'Europe/Moscow'
 # Реально торги заканчиваются в 19.00, но данные транслируются с задержкой в 15 минут
@@ -25,6 +26,8 @@ END_OF_CURRENT_TRADING_DAY = arrow.get().to(MARKET_TIME_ZONE).replace(hour=19,
                                                                       minute=15,
                                                                       second=0,
                                                                       microsecond=0)
+QUOTES_FOLDER = 'quotes'
+INDEX_TICKER = 'MCFTRR'
 
 
 def end_of_last_trading_day():
@@ -36,8 +39,8 @@ def end_of_last_trading_day():
 
 class Quotes:
     """Реализует хранение, обновление и хранение локальных данных по котировкам тикеров."""
-    _data_folder = 'quotes'
-    _columns_for_validation = ['CLOSE', 'VOLUME']
+    _data_folder = QUOTES_FOLDER
+    _columns_for_validation = [CLOSE_PRICE, VOLUME]
 
     def __init__(self, ticker: str):
         self.ticker = ticker
@@ -56,10 +59,10 @@ class Quotes:
 
     def load_quotes_history(self) -> pd.DataFrame:
         """Загружает историю котировок из локальных данных."""
-        converters = dict(TRADEDATE=pd.to_datetime, CLOSE=pd.to_numeric, VOLUME=pd.to_numeric)
+        converters = {DATE: pd.to_datetime, CLOSE_PRICE: pd.to_numeric, VOLUME: pd.to_numeric}
         # Значение sep гарантирует загрузку данных с добавленными PyCharm пробелами
         df = pd.read_csv(self.quotes_path, converters=converters, header=0, engine='python', sep='\s*,')
-        self._df = df.set_index('TRADEDATE')
+        self._df = df.set_index(DATE)
         return self._df
 
     def need_update(self):
@@ -111,7 +114,7 @@ class Quotes:
         aliases = self._yield_aliases_quotes_history()
         df = pd.concat(aliases)
         # Для каждой даты выбирается тикер с максимальным оборотом
-        df = df.loc[df.groupby('TRADEDATE')['VOLUME'].idxmax()]
+        df = df.loc[df.groupby(DATE)[VOLUME].idxmax()]
         self._df = df.sort_index()
         self._save_quotes_history()
         return self._df
@@ -120,10 +123,10 @@ class Quotes:
 class Index(Quotes):
     """Реализует хранение, обновление и хранение локальных данных по индексу MCFTRR."""
     _data_folder = None
-    _columns_for_validation = ['CLOSE']
+    _columns_for_validation = [CLOSE_PRICE]
 
     def __init__(self):
-        super(Index, self).__init__('MCFTRR')
+        super(Index, self).__init__(INDEX_TICKER)
 
     def update_quotes_history(self):
         """Обновляет локальные данные данными из интернета и возвращает полную историю котировок индекса."""
@@ -179,7 +182,7 @@ def get_prices_history(tickers: list):
         В строках даты торгов.
         В столбцах цены закрытия для тикеров.
     """
-    df = pd.concat([get_quotes_history(ticker)['CLOSE'] for ticker in tickers], axis=1)
+    df = pd.concat([get_quotes_history(ticker)[CLOSE_PRICE] for ticker in tickers], axis=1)
     df.columns = tickers
     return df
 
@@ -199,7 +202,7 @@ def get_volumes_history(tickers: list):
         В строках даты торгов.
         В столбцах объемы торгов для тикеров.
     """
-    df = pd.concat([get_quotes_history(ticker)['VOLUME'] for ticker in tickers], axis=1)
+    df = pd.concat([get_quotes_history(ticker)[VOLUME] for ticker in tickers], axis=1)
     df.columns = tickers
     return df
 

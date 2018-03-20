@@ -3,6 +3,7 @@ import datetime
 import pandas as pd
 
 from portfolio.download.history import get_quotes_history, make_url, get_index_history, get_json, Index, Quotes
+from portfolio.settings import CLOSE_PRICE, VOLUME
 
 
 def test_make_url():
@@ -37,7 +38,7 @@ def test_get_index_history():
     assert df.index.is_unique
     assert df.index[0] == pd.to_datetime('2017-10-02')
     assert df.shape[0] >= 100
-    assert df.loc['2018-03-02', 'CLOSE'] == 3273.16
+    assert df.loc['2018-03-02', CLOSE_PRICE] == 3273.16
 
 
 def test_get_quotes_history():
@@ -48,8 +49,8 @@ def test_get_quotes_history():
     assert df.index.is_unique
     assert df.index[0] == pd.to_datetime('2017-10-02')
     assert df.shape[0] > 100
-    assert df.loc['2018-03-05', 'CLOSE'] == 117
-    assert df.loc['2018-03-05', 'VOLUME'] == 4553310
+    assert df.loc['2018-03-05', CLOSE_PRICE] == 117
+    assert df.loc['2018-03-05', VOLUME] == 4553310
 
 
 class TestTicker:
@@ -97,5 +98,5 @@ class TestTotalReturn:
 
     def test_dataframe_property(self):
         assert isinstance(self.t.dataframe, pd.DataFrame)
-        assert list(self.t.dataframe.columns) == ['CLOSE']
-        assert self.t.dataframe.loc['2003-02-26', 'CLOSE'] == 335.67
+        assert list(self.t.dataframe.columns) == [CLOSE_PRICE]
+        assert self.t.dataframe.loc['2003-02-26', CLOSE_PRICE] == 335.67

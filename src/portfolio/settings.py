@@ -3,9 +3,11 @@
 from pathlib import Path
 
 # Основные метки столбцов в DataFrame
+CLOSE_PRICE = 'CLOSE'
 CPI = 'CPI'
 DATE = 'DATE'
 DIVIDENDS = 'DIVIDENDS'
+VOLUME = 'VOLUME'
 # Путь к данным - данные состоящие из нескольких серий хранятся в директориях внутри базовой директории
 DATA_PATH = Path(__file__).parents[2] / 'data'
 

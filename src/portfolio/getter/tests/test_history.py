@@ -8,6 +8,7 @@ from portfolio import download, settings
 from portfolio.getter import history
 from portfolio.getter.history import get_prices_history, get_volumes_history
 from portfolio.getter.history import get_quotes_history, get_index_history, Quotes, Index
+from portfolio.settings import VOLUME, CLOSE_PRICE
 
 
 def updated_df():
@@ -40,7 +41,7 @@ def test_get_quotes_history(df):
     assert df.index.is_unique
     assert df.index[0] == pd.to_datetime('2010-11-03')
     assert df.shape[0] > 100
-    assert df.loc['2018-03-09', 'CLOSE'] == 148.8 and df.loc['2018-03-09', 'VOLUME'] == 2960
+    assert df.loc['2018-03-09', CLOSE_PRICE] == 148.8 and df.loc['2018-03-09', VOLUME] == 2960
 
 
 @pytest.fixture(scope='module', name='index_cases')
@@ -67,7 +68,7 @@ def test_get_index_history(index_df):
     assert index_df.index.is_unique
     assert index_df.index[0] == pd.to_datetime('2003-02-26')
     assert index_df.shape[0] > 100
-    assert index_df.loc['2018-03-16', 'CLOSE'] == 3281.58
+    assert index_df.loc['2018-03-16', CLOSE_PRICE] == 3281.58
 
 
 def test_validate_last_date_error():
