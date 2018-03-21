@@ -1,24 +1,48 @@
-import pandas as pd
+import time
+from pathlib import Path
+
 import pytest
 
+from portfolio import settings
 from portfolio.getter import dividends
 
 
-def test_get_legacy_dividends():
-    df = dividends.get_legacy_dividends(['UPRO', 'RTKMP', 'MSTT', 'MAGN', 'LSRG'])
-    assert df.index.equals(pd.Index([2012, 2013, 2014, 2015, 2016]))
-    assert df.columns.equals(pd.Index(['UPRO', 'RTKMP', 'MSTT', 'MAGN', 'LSRG']))
-    assert df.loc[2012, 'UPRO'] == pytest.approx(0.289541278733806)
-    assert df.loc[2013, 'RTKMP'] == pytest.approx(4.848555414552)
-    assert df.loc[2014, 'MSTT'] == pytest.approx(7.09)
-    assert df.loc[2015, 'MAGN'] == pytest.approx(0.89)
-    assert df.loc[2016, 'LSRG'] == pytest.approx(78)
+@pytest.fixture(scope='module', autouse=True)
+def security_data_path(tmpdir_factory):
+    saved_path = settings.DATA_PATH
+    temp_dir = tmpdir_factory.mktemp('new_dividends')
+    settings.DATA_PATH = Path(temp_dir)
+    yield
+    settings.DATA_PATH = saved_path
 
 
-def test_get_dividends():
+def test_get_dividends_first_time():
     df = dividends.get_dividends(['GAZP', 'MRKC'])
     assert len(df.columns) == 2
     assert df.index.is_monotonic_increasing
     assert df.index.unique
     assert df.loc['2002-05-13', 'GAZP'] == 0.44
     assert df.loc['2017-06-21', 'MRKC'] == 0.0442
+
+
+def test_forced_update_fake_new_rows(monkeypatch):
+    dividends_object = dividends.LocalDividends('GAZP')
+    dividends_object._df = dividends_object._df.reindex(dividends_object._df.index[:-1])
+    monkeypatch.setattr(dividends, 'UPDATE_PERIOD_IN_SECONDS', 1)
+    time.sleep(1)
+    dividends_object.update_local_history()
+    df = dividends_object()
+    assert df.index.is_monotonic_increasing
+    assert df.index.unique
+    assert df.loc['2002-05-13'] == 0.44
+    assert df.loc['2017-07-20'] == 8.04
+
+
+def test_forced_update_now_new_rows(monkeypatch):
+    monkeypatch.setattr(dividends, 'UPDATE_PERIOD_IN_SECONDS', 1)
+    time.sleep(1)
+    test_get_dividends_first_time()
+
+
+def test_get_dividends_no_update():
+    test_get_dividends_first_time()
