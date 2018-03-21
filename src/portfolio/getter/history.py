@@ -40,7 +40,6 @@ def end_of_last_trading_day():
 class LocalQuotes(LocalDividends):
     """Реализует хранение, обновление и хранение локальных данных по котировкам тикеров."""
     _data_folder = QUOTES_FOLDER
-    _columns_for_validation = [CLOSE_PRICE, VOLUME]
     _load_converter = {DATE: pd.to_datetime, CLOSE_PRICE: pd.to_numeric, VOLUME: pd.to_numeric}
     _data_columns = [CLOSE_PRICE, VOLUME]
 
@@ -62,7 +61,8 @@ class LocalQuotes(LocalDividends):
         last_date = self.df_last_date
         df_old_last = self._df.loc[last_date]
         df_new_last = df_new.loc[last_date]
-        if any([df_old_last[column] != df_new_last[column] for column in self._columns_for_validation]):
+        columns_for_validation = [CLOSE_PRICE, VOLUME]
+        if any([df_old_last[column] != df_new_last[column] for column in columns_for_validation]):
             raise ValueError(f'Загруженные данные {self.ticker} не стыкуются с локальными. \n' +
                              f'{df_old_last} \n' +
                              f'{df_new_last}')
@@ -97,12 +97,21 @@ class LocalQuotes(LocalDividends):
 class LocalIndex(LocalQuotes):
     """Реализует хранение, обновление и хранение локальных данных по индексу MCFTRR."""
     _data_folder = None
-    _columns_for_validation = [CLOSE_PRICE]
     _load_converter = {DATE: pd.to_datetime, CLOSE_PRICE: pd.to_numeric}
     _data_columns = CLOSE_PRICE
 
     def __init__(self):
         super().__init__(INDEX_TICKER)
+
+    def _validate_new_data(self, df_new):
+        """Проверяет совпадение данных на стыке, то есть для последней даты старого DataFrame."""
+        last_date = self.df_last_date
+        df_old_last = self._df.loc[last_date]
+        df_new_last = df_new.loc[last_date]
+        if df_old_last != df_new_last:
+            raise ValueError(f'Загруженные данные {self.ticker} не стыкуются с локальными. \n' +
+                             f'{df_old_last} \n' +
+                             f'{df_new_last}')
 
     def update_local_history(self):
         """Обновляет локальные данные данными из интернета и возвращает полную историю котировок индекса."""

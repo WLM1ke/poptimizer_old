@@ -166,11 +166,11 @@ def get_index_history(start_date=None):
 
     Returns
     -------
-    pandas.DataFrame
+    pandas.Series
         В строках даты торгов.
         В столбцах цена закрытия индекса полной доходности.
     """
-    return pd.concat(Index(start_date))
+    return pd.concat(Index(start_date))[CLOSE_PRICE]
 
 
 def get_quotes_history(ticker, start_date=None):

@@ -20,7 +20,7 @@ def legacy_dividends_path():
     return settings.make_data_path(None, LEGACY_DIVIDENDS_FILE)
 
 
-class LocalDividends():
+class LocalDividends:
     """Реализует хранение, обновление и хранение локальных данных по индексу дивидендам."""
     _data_folder = DIVIDENDS_FOLDER
     _load_converter = {DATE: pd.to_datetime, DIVIDENDS: pd.to_numeric}
@@ -108,7 +108,9 @@ def get_dividends(tickers: list):
         В столбцах - тикеры.
         Значения - выплаченные дивиденды.
     """
-    return pd.concat([LocalDividends(ticker)() for ticker in tickers], axis=1)
+    df = pd.concat([LocalDividends(ticker)() for ticker in tickers], axis=1)
+    df.columns = tickers
+    return df
 
 
 def get_legacy_dividends(tickers: list):

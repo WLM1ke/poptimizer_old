@@ -32,13 +32,12 @@ def test_get_raw_json_works_on_none_start_date():
 
 def test_get_index_history():
     df = get_index_history(datetime.date(2017, 10, 2))
-    assert isinstance(df, pd.DataFrame)
-    assert len(df.columns) == 1
+    assert isinstance(df, pd.Series)
     assert df.index.is_monotonic_increasing
     assert df.index.is_unique
     assert df.index[0] == pd.to_datetime('2017-10-02')
     assert df.shape[0] >= 100
-    assert df.loc['2018-03-02', CLOSE_PRICE] == 3273.16
+    assert df.loc['2018-03-02'] == 3273.16
 
 
 def test_get_quotes_history():

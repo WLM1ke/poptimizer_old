@@ -13,3 +13,12 @@ def test_get_legacy_dividends():
     assert df.loc[2014, 'MSTT'] == pytest.approx(7.09)
     assert df.loc[2015, 'MAGN'] == pytest.approx(0.89)
     assert df.loc[2016, 'LSRG'] == pytest.approx(78)
+
+
+def test_get_dividends():
+    df = dividends.get_dividends(['GAZP', 'MRKC'])
+    assert len(df.columns) == 2
+    assert df.index.is_monotonic_increasing
+    assert df.index.unique
+    assert df.loc['2002-05-13', 'GAZP'] == 0.44
+    assert df.loc['2017-06-21', 'MRKC'] == 0.0442

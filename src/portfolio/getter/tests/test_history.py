@@ -62,13 +62,12 @@ def yield_index_df(request, index_cases):
 
 
 def test_get_index_history(index_df):
-    assert isinstance(index_df, pd.DataFrame)
-    assert len(index_df.columns) == 1
+    assert isinstance(index_df, pd.Series)
     assert index_df.index.is_monotonic_increasing
     assert index_df.index.is_unique
     assert index_df.index[0] == pd.to_datetime('2003-02-26')
     assert index_df.shape[0] > 100
-    assert index_df.loc['2018-03-16', CLOSE_PRICE] == 3281.58
+    assert index_df.loc['2018-03-16'] == 3281.58
 
 
 def test_validate_last_date_error():
