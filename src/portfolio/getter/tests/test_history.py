@@ -7,7 +7,7 @@ import pytest
 from portfolio import download, settings
 from portfolio.getter import history
 from portfolio.getter.history import get_prices_history, get_volumes_history
-from portfolio.getter.history import get_quotes_history, get_index_history, Quotes, Index
+from portfolio.getter.history import get_quotes_history, get_index_history, LocalQuotes, LocalIndex
 from portfolio.settings import VOLUME, CLOSE_PRICE
 
 
@@ -47,11 +47,11 @@ def test_get_quotes_history(df):
 @pytest.fixture(scope='module', name='index_cases')
 def make_index_cases():
     df1 = get_index_history()
-    index = Index()
-    df2 = index.update_quotes_history()
+    index = LocalIndex()
+    df2 = index.update_local_history()
     save_need_update = index.need_update
     index.need_update = lambda: True
-    df3 = index.update_quotes_history()
+    df3 = index.update_local_history()
     index.need_update = save_need_update
     return df1, df2, df3
 
@@ -72,10 +72,10 @@ def test_get_index_history(index_df):
 
 
 def test_validate_last_date_error():
-    df_old = Quotes('MSTT')
+    df_old = LocalQuotes('MSTT')
     df_new = download.quotes_history('AKRN', df_old.df_last_date)
     with pytest.raises(ValueError) as info:
-        df_old._validate_last_date(df_new)
+        df_old._validate_new_data(df_new)
     assert 'Загруженные данные MSTT не стыкуются с локальными.' in str(info.value)
 
 

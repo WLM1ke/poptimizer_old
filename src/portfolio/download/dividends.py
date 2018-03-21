@@ -40,10 +40,13 @@ def get_html(url):
             raise error
 
 
-def pick_table(html: str, n: int = TABLE_INDEX):
+def pick_table(url, html: str, n: int = TABLE_INDEX):
     """Выбирает таблицу с дивидендами на странице."""
     soup = BeautifulSoup(html, 'lxml')
-    return soup.find_all('table')[n]
+    try:
+        return soup.find_all('table')[n]
+    except IndexError:
+        raise IndexError(f'На странице {url} нет таблицы с дивидендами.')
 
 
 class RowParser:
@@ -102,7 +105,7 @@ def get_dividends(ticker: str) -> pd.Series:
     """
     url = make_url(ticker)
     html = get_html(url)
-    table = pick_table(html)
+    table = pick_table(url, html)
     parsed_rows = parse_table_rows(table)
     return make_df(parsed_rows)
 
