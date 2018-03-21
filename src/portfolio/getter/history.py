@@ -16,8 +16,8 @@ import arrow
 import pandas as pd
 
 from portfolio import download
-from portfolio import settings
 from portfolio.getter import securities_info
+from portfolio.getter.dividends import LocalDividends
 from portfolio.settings import DATE, CLOSE_PRICE, VOLUME
 
 MARKET_TIME_ZONE = 'Europe/Moscow'
@@ -37,41 +37,12 @@ def end_of_last_trading_day():
     return END_OF_CURRENT_TRADING_DAY.shift(days=-1)
 
 
-class LocalQuotes:
+class LocalQuotes(LocalDividends):
     """Реализует хранение, обновление и хранение локальных данных по котировкам тикеров."""
     _data_folder = QUOTES_FOLDER
     _columns_for_validation = [CLOSE_PRICE, VOLUME]
     _load_converter = {DATE: pd.to_datetime, CLOSE_PRICE: pd.to_numeric, VOLUME: pd.to_numeric}
     _data_columns = [CLOSE_PRICE, VOLUME]
-
-    def __init__(self, ticker: str):
-        self.ticker = ticker
-        if self.local_data_path.exists():
-            self._df = self.load_local_history()
-            self._df = self.update_local_history()
-        else:
-            self._df = self.create_local_history()
-
-    def __call__(self):
-        return self._df
-
-    @property
-    def local_data_path(self):
-        """Возвращает и при необходимости создает путь к файлу с котировками."""
-        return settings.make_data_path(self._data_folder, f'{self.ticker}.csv')
-
-    def load_local_history(self):
-        """Загружает историю котировок из локальных данных.
-
-        Значение sep гарантирует загрузку данных с добавленными PyCharm пробелами
-        """
-        df = pd.read_csv(self.local_data_path,
-                         converters=self._load_converter,
-                         header=0,
-                         engine='python',
-                         sep='\s*,')
-        self._df = df.set_index(DATE)
-        return self._df[self._data_columns]
 
     def need_update(self):
         """Проверяет по дате изменения файла и времени окончания торгов, нужно ли обновлять локальные данные."""
@@ -95,12 +66,6 @@ class LocalQuotes:
             raise ValueError(f'Загруженные данные {self.ticker} не стыкуются с локальными. \n' +
                              f'{df_old_last} \n' +
                              f'{df_new_last}')
-
-    def _save_history(self):
-        """Сохраняет локальную версию данных в csv-файл с именем тикера.
-
-        Флаги заголовков необходимы для поддержки сохранения серий, а не только заголовков."""
-        self._df.to_csv(self.local_data_path, index=True, header=True)
 
     def update_local_history(self):
         """Обновляет локальные данные данными из интернета и возвращает полную историю котировок и объемов."""
@@ -137,7 +102,7 @@ class LocalIndex(LocalQuotes):
     _data_columns = CLOSE_PRICE
 
     def __init__(self):
-        super(LocalIndex, self).__init__(INDEX_TICKER)
+        super().__init__(INDEX_TICKER)
 
     def update_local_history(self):
         """Обновляет локальные данные данными из интернета и возвращает полную историю котировок индекса."""

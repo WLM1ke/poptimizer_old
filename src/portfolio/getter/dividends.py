@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 
 from portfolio import settings, download
-from portfolio.getter.history import LocalQuotes
 from portfolio.settings import DATE, DIVIDENDS
 
 LEGACY_DIVIDENDS_FILE = 'dividends.xlsx'
@@ -21,11 +20,46 @@ def legacy_dividends_path():
     return settings.make_data_path(None, LEGACY_DIVIDENDS_FILE)
 
 
-class LocalDividends(LocalQuotes):
+class LocalDividends():
     """Реализует хранение, обновление и хранение локальных данных по индексу дивидендам."""
     _data_folder = DIVIDENDS_FOLDER
     _load_converter = {DATE: pd.to_datetime, DIVIDENDS: pd.to_numeric}
     _data_columns = DIVIDENDS
+
+    def __init__(self, ticker: str):
+        self.ticker = ticker
+        if self.local_data_path.exists():
+            self._df = self.load_local_history()
+            self._df = self.update_local_history()
+        else:
+            self._df = self.create_local_history()
+
+    def __call__(self):
+        return self._df
+
+    @property
+    def local_data_path(self):
+        """Возвращает и при необходимости создает путь к файлу с котировками."""
+        return settings.make_data_path(self._data_folder, f'{self.ticker}.csv')
+
+    def _save_history(self):
+        """Сохраняет локальную версию данных в csv-файл с именем тикера.
+
+        Флаги заголовков необходимы для поддержки сохранения серий, а не только заголовков."""
+        self._df.to_csv(self.local_data_path, index=True, header=True)
+
+    def load_local_history(self):
+        """Загружает историю котировок из локальных данных.
+
+        Значение sep гарантирует загрузку данных с добавленными PyCharm пробелами
+        """
+        df = pd.read_csv(self.local_data_path,
+                         converters=self._load_converter,
+                         header=0,
+                         engine='python',
+                         sep='\s*,')
+        self._df = df.set_index(DATE)
+        return self._df[self._data_columns]
 
     def need_update(self):
         """Обновление требуется по прошествии фиксированного количества секунд."""
