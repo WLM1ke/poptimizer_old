@@ -1,13 +1,17 @@
 """Load and update local data for daily quotes history and returns pandas DataFrames.
 
-   1. Load and update local data for single ticker and all its aliases daily prices and volumes:
+    1. Load and update local data for single ticker and all its aliases daily prices and volumes:
 
         get_quotes_history(ticker)
 
-   2. Load and update local data for list of tickers daily prices or volumes:
+    2. Load and update local data for list of tickers daily prices or volumes:
 
         get_prices_history(tickers)
         get_volumes_history(tickers)
+
+    3. Load and update local daily data for MOEX Russia Net Total Return (Resident):
+
+        get_index_history()
 """
 
 from os import path

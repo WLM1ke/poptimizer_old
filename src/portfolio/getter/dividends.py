@@ -1,4 +1,8 @@
-"""Load and update local data for dividends history and returns pandas DataFrames."""
+"""Load and update local data for dividends history and returns pandas DataFrames.
+
+    get_dividends(tickers)
+    get_legacy_dividends(tickers)
+"""
 
 import time
 from os import path
@@ -45,7 +49,7 @@ class LocalDividends:
     def _save_history(self):
         """Сохраняет локальную версию данных в csv-файл с именем тикера.
 
-        Флаги заголовков необходимы для поддержки сохранения серий, а не только заголовков."""
+        Флаги заголовков необходимы для поддержки сохранения серий, а не только датафреймов."""
         self._df.to_csv(self.local_data_path, index=True, header=True)
 
     def load_local_history(self):

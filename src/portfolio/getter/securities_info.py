@@ -11,7 +11,6 @@
     3. Load aliases for tickers and update local securities info data.
 
         get_aliases_tickers(tickers)
-
 """
 
 import pandas as pd
