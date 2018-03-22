@@ -32,6 +32,8 @@ def load_cpi():
     df = pd.read_csv(cpi_path(),
                      converters={DATE: pd.to_datetime, CPI: pd.to_numeric},
                      header=0,
+                     # QUESTION: не очень понятно, откуда берется такое сложное чтение
+                     #           пишем csv же стандартным способом 
                      engine='python',
                      sep='\s*,')
     df = df.set_index(DATE)
@@ -50,9 +52,11 @@ def validate(df_old, df_updated):
     if not np.allclose(df_old, df_updated[df_old.index]):
         raise ValueError('Новые данные CPI не совпадают с локальной версией.')
 
+# FIXME: в двух функциях ниже не должно быть возврата df, это перегружает
+#        лучше остановаиться на том, что фрейм всегда получает load_cpi()
 
 def update_cpi():
-    df = load_cpi()
+    df = load_cpi()    
     if cpi_need_update():
         df_updated = download.cpi()
         validate(df, df_updated)
@@ -78,9 +82,13 @@ def get_cpi():
         В строках значения инфляции для каждого месяца.
     """
     if cpi_path().exists():
+        # FIXME: здесь должны быть
+        # update_cpi()        
         return update_cpi()
     else:
+        # create_cpi()
         return create_cpi()
+    # return load_cpi()
 
 
 if __name__ == '__main__':
