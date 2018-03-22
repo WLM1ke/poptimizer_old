@@ -14,6 +14,8 @@ from portfolio import settings
 from portfolio.settings import DATE, CPI
 
 FILE_NAME = 'CPI.csv'
+
+# FIXME: это не глабльаня ли переменная на несколько модулей?
 UPDATE_PERIOD_IN_DAYS = 1
 
 
@@ -36,12 +38,16 @@ def load_cpi():
                      #           пишем csv же стандартным способом
                      # ANSWER: если смотреть файлы в PyCharm, то он вставляет пробелы для выравнивания столбцов,
                      #         после чего файлы не читаются.
+                     # EP: наверняка и у PyCharm есть настройка на этот счет 
+                     #     выглядит как заглушка, немного странно подстраивать код под редактор                     
+                     #     в любом случае это отдельная функция.
                      engine='python',
                      sep='\s*,')
     df = df.set_index(DATE)
     return df[CPI]
 
 
+# FIXME: общая функция needs_update(filepath)
 def cpi_need_update():
     """Обновление нужно, если прошло установленное число дней с момента обновления."""
     if time.time() - path.getmtime(cpi_path()) > UPDATE_PERIOD_IN_DAYS * 60 * 60 * 24:
@@ -57,7 +63,7 @@ def validate(df_old, df_updated):
 # FIXME: в двух функциях ниже не должно быть возврата df, это перегружает
 #        лучше остановаиться на том, что фрейм всегда получает load_cpi()
 # ANSWER: будет реализовано в виде класса на основе dividends
-
+# EP: без класса пока проще отрефакторить, с классом новые сложности появятся       
 
 def update_cpi():
     df = load_cpi()
