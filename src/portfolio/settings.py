@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+# QUESTION: зачем нужно переименовывать строки в константы?
 # Основные метки столбцов в фреймах данных
 CLOSE_PRICE = 'CLOSE_PRICE'
 CPI = 'CPI'
@@ -17,7 +18,7 @@ VOLUME = 'VOLUME'
 # Путь к данным - данные состоящие из нескольких серий хранятся в отдельных директориях внутри базовой директории
 DATA_PATH = Path(__file__).parents[2] / 'data'
 
-
+# FIXME: file_name - лучше первый аргумент
 def make_data_path(folder, file_name: str) -> Path:
     """Создает директорию в директории данных и возвращает путь к файлу в ней."""
     if folder is None:
