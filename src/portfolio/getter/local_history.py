@@ -73,6 +73,7 @@ class LocalQuotes(LocalDividends):
 
     def update_local_history(self):
         """Обновляет локальные данные данными из интернета и возвращает полную историю котировок и объемов."""
+        self._df = self.load_local_history()
         if self.need_update():
             df_update = download.quotes_history(self.ticker, self.df_last_date)
             self._validate_new_data(df_update)
@@ -119,6 +120,7 @@ class LocalIndex(LocalQuotes):
 
     def update_local_history(self):
         """Обновляет локальные данные данными из интернета и возвращает полную историю котировок индекса."""
+        self._df = self.load_local_history()
         if self.need_update():
             df_update = download.index_history(self.df_last_date)
             self._validate_new_data(df_update)

@@ -18,8 +18,12 @@ LEGACY_SHEET_NAME = 'Dividends'
 DIVIDENDS_FOLDER = 'dividends'
 # FIXME: (1) нагляднее, если константа показывает какой-то осязаемый лаг, например, 1 день
 #        перевод в секунды - дело техническое
-#        (2) где-то проверяется целостность данных? дата изменеия файла может и сама поменяться
-UPDATE_PERIOD_IN_SECONDS = 60 * 60 * 24
+#        (2) где-то проверяется целостность данных? дата изменения файла может и сама поменяться
+# QUESTION: Пункт (1) поправил.
+#           По пункту (2) вопрос - за счет чего может поменяться дата?
+#           При валидации новых данных они полностью сопоставляются со старыми или ты что-то другое подразумеваешь под
+#           проверкой целостности данных?
+UPDATE_PERIOD_IN_DAYS = 1
 
 
 def legacy_dividends_path():
@@ -36,9 +40,6 @@ class LocalDividends:
     def __init__(self, ticker: str):
         self.ticker = ticker
         if self.local_data_path.exists():
-            # FIXME: тут желательно пересмотреть логику по аналогии с ИПЦ - читает данные всегда один метод,
-            #        один метод обновляет, один создает данные. это три зарных и непереплетающихся метода. 
-            self._df = self.load_local_history()
             self._df = self.update_local_history()
         else:
             self._df = self.create_local_history()
@@ -57,11 +58,13 @@ class LocalDividends:
         Флаги заголовков необходимы для поддержки сохранения серий, а не только датафреймов."""
         self._df.to_csv(self.local_data_path, index=True, header=True)
 
-    # COMMENT: похоже на повторяющуюся в разных местах функцию      
+    # COMMENT: похоже на повторяющуюся в разных местах функцию
+    # ANSWER: поздно сообразил - для дивидендов и котировок используется класс с наследованием части функций.
+    #         CPI и информацию по акциям, наверное стоит тоже переделать под общую гребенку - добавил ишью.
     def load_local_history(self):
         """Загружает историю котировок из локальных данных.
 
-        Значение sep гарантирует загрузку данных с добавленными PyCharm пробелами
+        Значение sep гарантирует загрузку данных с добавленными PyCharm пробелами.
         """
         df = pd.read_csv(self.local_data_path,
                          converters=self._load_converter,
@@ -71,14 +74,12 @@ class LocalDividends:
         self._df = df.set_index(DATE)
         return self._df[self._data_columns]
 
-    # COMMENT: похоже на повторяющуюся в разных местах функцию      
     def need_update(self):
-        """Обновление требуется по прошествии фиксированного количества секунд."""
-        if time.time() - path.getmtime(self.local_data_path) > UPDATE_PERIOD_IN_SECONDS:
+        """Обновление требуется по прошествии фиксированного количества дней."""
+        if time.time() - path.getmtime(self.local_data_path) > UPDATE_PERIOD_IN_DAYS * 60 * 60 * 24:
             return True
         return False
 
-    # COMMENT: похоже на повторяющуюся в разных местах функцию      
     def _validate_new_data(self, df_new):
         """Проверяем, что старые данные совпадают с новыми."""
         common_rows = list(set(self._df.index) & set(df_new.index))
@@ -87,6 +88,7 @@ class LocalDividends:
 
     def update_local_history(self):
         """Обновляет локальные данные данными из интернета и возвращает полную историю дивидендных выплат."""
+        self._df = self.load_local_history()
         if self.need_update():
             df_update = download.dividends(self.ticker)
             self._validate_new_data(df_update)
@@ -121,6 +123,7 @@ def get_dividends(tickers: list):
         Значения - выплаченные дивиденды.
     """
     # QUESTION: как это работает? LocalDividends(ticker)()
+    # ANSWER: метод __call__ у класса - LocalDividends(ticker) экземпляр класса, потом он вызывается ()
     df = pd.concat([LocalDividends(ticker)() for ticker in tickers], axis=1)
     df.columns = tickers
     return df

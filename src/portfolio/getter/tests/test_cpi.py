@@ -38,7 +38,7 @@ def test_get_quotes_history(df):
 
 def test_update_cpi_need_update(monkeypatch):
     time.sleep(1)
-    monkeypatch.setattr(local_cpi, 'UPDATE_PERIOD_IN_SECONDS', 1)
+    monkeypatch.setattr(local_cpi, 'UPDATE_PERIOD_IN_DAYS', 1 / (60 * 60 * 24))
     file_time = path.getmtime(cpi_path())
     update_cpi()
     assert path.getmtime(cpi_path()) > file_time

@@ -28,7 +28,7 @@ def test_get_dividends_first_time():
 def test_forced_update_fake_new_rows(monkeypatch):
     dividends_object = local_dividends.LocalDividends('GAZP')
     dividends_object._df = dividends_object._df.reindex(dividends_object._df.index[:-1])
-    monkeypatch.setattr(local_dividends, 'UPDATE_PERIOD_IN_SECONDS', 1)
+    monkeypatch.setattr(local_dividends, 'UPDATE_PERIOD_IN_DAYS', 1 / (60 * 60 * 24))
     time.sleep(1)
     dividends_object.update_local_history()
     df = dividends_object()
@@ -39,7 +39,7 @@ def test_forced_update_fake_new_rows(monkeypatch):
 
 
 def test_forced_update_now_new_rows(monkeypatch):
-    monkeypatch.setattr(local_dividends, 'UPDATE_PERIOD_IN_SECONDS', 1)
+    monkeypatch.setattr(local_dividends, 'UPDATE_PERIOD_IN_DAYS', 1 / (60 * 60 * 24))
     time.sleep(1)
     test_get_dividends_first_time()
 

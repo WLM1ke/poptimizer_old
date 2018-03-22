@@ -14,7 +14,7 @@ from portfolio import settings
 from portfolio.settings import DATE, CPI
 
 FILE_NAME = 'CPI.csv'
-UPDATE_PERIOD_IN_SECONDS = 60 * 60 * 24
+UPDATE_PERIOD_IN_DAYS = 1
 
 
 def cpi_path():
@@ -33,7 +33,9 @@ def load_cpi():
                      converters={DATE: pd.to_datetime, CPI: pd.to_numeric},
                      header=0,
                      # QUESTION: не очень понятно, откуда берется такое сложное чтение
-                     #           пишем csv же стандартным способом 
+                     #           пишем csv же стандартным способом
+                     # ANSWER: если смотреть файлы в PyCharm, то он вставляет пробелы для выравнивания столбцов,
+                     #         после чего файлы не читаются.
                      engine='python',
                      sep='\s*,')
     df = df.set_index(DATE)
@@ -41,8 +43,8 @@ def load_cpi():
 
 
 def cpi_need_update():
-    """Обновление нужно, если прошло установленное число секунд с момента обновления."""
-    if time.time() - path.getmtime(cpi_path()) > UPDATE_PERIOD_IN_SECONDS:
+    """Обновление нужно, если прошло установленное число дней с момента обновления."""
+    if time.time() - path.getmtime(cpi_path()) > UPDATE_PERIOD_IN_DAYS * 60 * 60 * 24:
         return True
     return False
 
@@ -54,9 +56,11 @@ def validate(df_old, df_updated):
 
 # FIXME: в двух функциях ниже не должно быть возврата df, это перегружает
 #        лучше остановаиться на том, что фрейм всегда получает load_cpi()
+# ANSWER: будет реализовано в виде класса на основе dividends
+
 
 def update_cpi():
-    df = load_cpi()    
+    df = load_cpi()
     if cpi_need_update():
         df_updated = download.cpi()
         validate(df, df_updated)
@@ -83,7 +87,7 @@ def get_cpi():
     """
     if cpi_path().exists():
         # FIXME: здесь должны быть
-        # update_cpi()        
+        # update_cpi()
         return update_cpi()
     else:
         # create_cpi()
