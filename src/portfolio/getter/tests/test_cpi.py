@@ -6,8 +6,8 @@ import pandas as pd
 import pytest
 
 from portfolio import settings
-from portfolio.getter import cpi
-from portfolio.getter.cpi import get_cpi, load_cpi, validate, cpi_path, update_cpi
+from portfolio.getter import local_cpi
+from portfolio.getter.local_cpi import get_cpi, load_cpi, validate, cpi_path, update_cpi
 from portfolio.settings import CPI
 
 
@@ -38,7 +38,7 @@ def test_get_quotes_history(df):
 
 def test_update_cpi_need_update(monkeypatch):
     time.sleep(1)
-    monkeypatch.setattr(cpi, 'UPDATE_PERIOD_IN_SECONDS', 1)
+    monkeypatch.setattr(local_cpi, 'UPDATE_PERIOD_IN_SECONDS', 1)
     file_time = path.getmtime(cpi_path())
     update_cpi()
     assert path.getmtime(cpi_path()) > file_time

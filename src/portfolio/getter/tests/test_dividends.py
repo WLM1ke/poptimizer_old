@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from portfolio import settings
-from portfolio.getter import dividends
+from portfolio.getter import local_dividends
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -17,7 +17,7 @@ def security_data_path(tmpdir_factory):
 
 
 def test_get_dividends_first_time():
-    df = dividends.get_dividends(['GAZP', 'MRKC'])
+    df = local_dividends.get_dividends(['GAZP', 'MRKC'])
     assert len(df.columns) == 2
     assert df.index.is_monotonic_increasing
     assert df.index.unique
@@ -26,9 +26,9 @@ def test_get_dividends_first_time():
 
 
 def test_forced_update_fake_new_rows(monkeypatch):
-    dividends_object = dividends.LocalDividends('GAZP')
+    dividends_object = local_dividends.LocalDividends('GAZP')
     dividends_object._df = dividends_object._df.reindex(dividends_object._df.index[:-1])
-    monkeypatch.setattr(dividends, 'UPDATE_PERIOD_IN_SECONDS', 1)
+    monkeypatch.setattr(local_dividends, 'UPDATE_PERIOD_IN_SECONDS', 1)
     time.sleep(1)
     dividends_object.update_local_history()
     df = dividends_object()
@@ -39,7 +39,7 @@ def test_forced_update_fake_new_rows(monkeypatch):
 
 
 def test_forced_update_now_new_rows(monkeypatch):
-    monkeypatch.setattr(dividends, 'UPDATE_PERIOD_IN_SECONDS', 1)
+    monkeypatch.setattr(local_dividends, 'UPDATE_PERIOD_IN_SECONDS', 1)
     time.sleep(1)
     test_get_dividends_first_time()
 
