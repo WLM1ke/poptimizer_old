@@ -16,6 +16,9 @@ from portfolio.settings import DATE, DIVIDENDS
 LEGACY_DIVIDENDS_FILE = 'dividends.xlsx'
 LEGACY_SHEET_NAME = 'Dividends'
 DIVIDENDS_FOLDER = 'dividends'
+# FIXME: (1) нагляднее, если константа показывает какой-то осязаемый лаг, например, 1 день
+#        перевод в секунды - дело техническое
+#        (2) где-то проверяется целостность данных? дата изменеия файла может и сама поменяться
 UPDATE_PERIOD_IN_SECONDS = 60 * 60 * 24
 
 
@@ -33,6 +36,8 @@ class LocalDividends:
     def __init__(self, ticker: str):
         self.ticker = ticker
         if self.local_data_path.exists():
+            # FIXME: тут желательно пересмотреть логику по аналогии с ИПЦ - читает данные всегда один метод,
+            #        один метод обновляет, один создает данные. это три зарных и непереплетающихся метода. 
             self._df = self.load_local_history()
             self._df = self.update_local_history()
         else:
@@ -52,6 +57,7 @@ class LocalDividends:
         Флаги заголовков необходимы для поддержки сохранения серий, а не только датафреймов."""
         self._df.to_csv(self.local_data_path, index=True, header=True)
 
+    # COMMENT: похоже на повторяющуюся в разных местах функцию      
     def load_local_history(self):
         """Загружает историю котировок из локальных данных.
 
@@ -65,12 +71,14 @@ class LocalDividends:
         self._df = df.set_index(DATE)
         return self._df[self._data_columns]
 
+    # COMMENT: похоже на повторяющуюся в разных местах функцию      
     def need_update(self):
         """Обновление требуется по прошествии фиксированного количества секунд."""
         if time.time() - path.getmtime(self.local_data_path) > UPDATE_PERIOD_IN_SECONDS:
             return True
         return False
 
+    # COMMENT: похоже на повторяющуюся в разных местах функцию      
     def _validate_new_data(self, df_new):
         """Проверяем, что старые данные совпадают с новыми."""
         common_rows = list(set(self._df.index) & set(df_new.index))
@@ -112,6 +120,7 @@ def get_dividends(tickers: list):
         В столбцах - тикеры.
         Значения - выплаченные дивиденды.
     """
+    # QUESTION: как это работает? LocalDividends(ticker)()
     df = pd.concat([LocalDividends(ticker)() for ticker in tickers], axis=1)
     df.columns = tickers
     return df
