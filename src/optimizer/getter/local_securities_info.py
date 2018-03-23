@@ -46,7 +46,7 @@ def validate(df, df_update):
 
     Проверка осуществляется для колонок с кратким наименованием, регистрационным номером и размером лота."""
     common_tickers = list(set(df.index) & set(df_update.index))
-    columns_for_validation = [COMPANY_NAME, REG_NUMBER, LOT_SIZE]
+    columns_for_validation = [REG_NUMBER, LOT_SIZE]
     df = df.loc[common_tickers, columns_for_validation]
     df_update = df_update.loc[common_tickers, columns_for_validation]
     if not df.equals(df_update):
