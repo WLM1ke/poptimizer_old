@@ -7,7 +7,7 @@ import pandas as pd
 
 from optimizer import settings
 
-LEGACY_DIVIDENDS_PATH = settings.make_data_path('legacy_dividends', 'dividends.xlsx')
+DATA_PATH = settings.make_data_path('legacy_dividends', 'dividends.xlsx')
 LEGACY_SHEET_NAME = 'Dividends'
 
 
@@ -31,5 +31,9 @@ def get_legacy_dividends(tickers: list):
         В столбцах цены годовые дивиденды для тикеров.
     """
 
-    df = pd.read_excel(LEGACY_DIVIDENDS_PATH, sheet_name=LEGACY_SHEET_NAME, header=0, index_col=0)
+    df = pd.read_excel(DATA_PATH, sheet_name=LEGACY_SHEET_NAME, header=0, index_col=0)
     return df.transpose()[tickers]
+
+
+if __name__ == '__main__':
+    print(get_legacy_dividends(['AKRN']))

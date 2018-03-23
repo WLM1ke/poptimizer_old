@@ -5,17 +5,18 @@ import pandas as pd
 import pytest
 
 from optimizer import download, settings
-from optimizer.getter import local_history
-from optimizer.getter.local_history import get_prices_history, get_volumes_history
-from optimizer.getter.local_history import get_quotes_history, get_index_history, LocalQuotes, LocalIndex
+from optimizer.getter import local_quotes
+from optimizer.getter.local_index import LocalIndex, get_index_history
+from optimizer.getter.local_quotes import get_prices_history, get_volumes_history
+from optimizer.getter.local_quotes import get_quotes_history, LocalQuotes
 from optimizer.settings import VOLUME, CLOSE_PRICE
 
 
 def updated_df():
-    saved_date = local_history.END_OF_CURRENT_TRADING_DAY
-    local_history.END_OF_CURRENT_TRADING_DAY = arrow.get().shift(months=1)
+    saved_date = local_quotes.END_OF_CURRENT_TRADING_DAY
+    local_quotes.END_OF_CURRENT_TRADING_DAY = arrow.get().shift(months=1)
     df2 = get_quotes_history('MSTT')
-    local_history.END_OF_CURRENT_TRADING_DAY = saved_date
+    local_quotes.END_OF_CURRENT_TRADING_DAY = saved_date
     return df2
 
 
@@ -91,6 +92,6 @@ def test_get_prices_history():
 
 
 def test_end_of_last_trading_day(monkeypatch):
-    monkeypatch.setattr(local_history, "END_OF_CURRENT_TRADING_DAY",
-                        arrow.get().to(local_history.MARKET_TIME_ZONE).replace(minute=0, second=0, microsecond=0))
-    assert local_history.end_of_last_trading_day() == local_history.END_OF_CURRENT_TRADING_DAY
+    monkeypatch.setattr(local_quotes, "END_OF_CURRENT_TRADING_DAY",
+                        arrow.get().to(local_quotes.MARKET_TIME_ZONE).replace(minute=0, second=0, microsecond=0))
+    assert local_quotes.end_of_last_trading_day() == local_quotes.END_OF_CURRENT_TRADING_DAY

@@ -13,21 +13,16 @@ from optimizer import download
 from optimizer import settings
 from optimizer.settings import DATE, CPI
 
-FILE_NAME = 'CPI.csv'
+DATA_PATH = settings.make_data_path('macro', 'cpi.csv')
 
 # FIXME: это не глабльная ли переменная на несколько модулей?
 # MIKE: нет, периодичность может быть разная для разных данных - просто пока поставил одинаковую
 UPDATE_PERIOD_IN_DAYS = 1
 
 
-def cpi_path():
-    """Формирует и при необходимости создает путь к файлу с данными."""
-    return settings.make_data_path(None, FILE_NAME)
-
-
 def save_cpi(df):
     """Сохраняет файл с данными."""
-    df.to_csv(cpi_path(), index=True, header=True)
+    df.to_csv(DATA_PATH, index=True, header=True)
 
 
 def load_cpi():
@@ -35,7 +30,7 @@ def load_cpi():
 
     Значение sep гарантирует загрузку данных с добавленными PyCharm пробелами.
     """
-    df = pd.read_csv(cpi_path(),
+    df = pd.read_csv(DATA_PATH,
                      converters={DATE: pd.to_datetime, CPI: pd.to_numeric},
                      header=0,
                      # QUESTION: не очень понятно, откуда берется такое сложное чтение
@@ -55,7 +50,7 @@ def load_cpi():
 # FIXME: общая функция needs_update(filepath)
 def cpi_need_update():
     """Обновление нужно, если прошло установленное число дней с момента обновления."""
-    if time.time() - path.getmtime(cpi_path()) > UPDATE_PERIOD_IN_DAYS * 60 * 60 * 24:
+    if time.time() - path.getmtime(DATA_PATH) > UPDATE_PERIOD_IN_DAYS * 60 * 60 * 24:
         return True
     return False
 
@@ -69,6 +64,7 @@ def validate(df_old, df_updated):
 #        лучше остановаиться на том, что фрейм всегда получает load_cpi()
 # ANSWER: будет реализовано в виде класса на основе dividends
 # EP: без класса пока проще отрефакторить, с классом новые сложности появятся
+
 
 def update_cpi():
     df = load_cpi()
@@ -96,7 +92,7 @@ def get_cpi():
     pd.Series
         В строках значения инфляции для каждого месяца.
     """
-    if cpi_path().exists():
+    if DATA_PATH.exists():
         # FIXME: здесь должны быть
         # update_cpi()
         return update_cpi()

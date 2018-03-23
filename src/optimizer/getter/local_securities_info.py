@@ -19,18 +19,13 @@ from optimizer import download
 from optimizer import settings
 from optimizer.settings import LAST_PRICE, LOT_SIZE, COMPANY_NAME, REG_NUMBER, TICKER, TICKER_ALIASES
 
-DATA_FILE = 'securities_info.csv'
-
-
-def securities_info_path():
-    """Возвращает путь к файлу с данными и при необходимости прокладывает его."""
-    return settings.make_data_path(None, DATA_FILE)
+DATA_PATH = settings.make_data_path('securities_info', 'securities_info.csv')
 
 
 def load_securities_info():
     """загружает локальную версию данных - sep гарантирует загрузку данных с добавленными PyCharm пробелами."""
     converters = {LOT_SIZE: pd.to_numeric, LAST_PRICE: pd.to_numeric}
-    df = pd.read_csv(securities_info_path(), converters=converters, header=0, engine='python', sep='\s*,')
+    df = pd.read_csv(DATA_PATH, converters=converters, header=0, engine='python', sep='\s*,')
     return df.set_index(TICKER)
 
 
@@ -43,7 +38,7 @@ def download_securities_info(tickers):
 
 def save_security_info(df: pd.DataFrame):
     """Сохраняет фрейм с данными в директорию с данными."""
-    df.sort_index().to_csv(securities_info_path())
+    df.sort_index().to_csv(DATA_PATH)
 
 
 def validate(df, df_update):
@@ -105,7 +100,7 @@ def get_security_info(tickers: list):
         которые соответствуют такому же регистрационному номеру (обычно устаревшие ранее использовавшиеся тикеры).
     """
     # Общий запрос содержит последние цены, которые регулярно обновляются, поэтому требует обновления
-    if securities_info_path().exists():
+    if DATA_PATH.exists():
         df = update_local_securities_info(tickers)
     else:
         df = create_local_security_info(tickers)
@@ -126,7 +121,7 @@ def get_aliases_tickers(tickers: list):
     pd.Series
         В строках тикеры и тикеры аналоги для них.
     """
-    if securities_info_path().exists():
+    if DATA_PATH.exists():
         df = load_securities_info()
         # Если тикеры в локальной версии, то обновлять данные нет необходимости
         if not set(df.index).issuperset(tickers):
@@ -156,7 +151,5 @@ def get_last_prices(tickers: list):
 
 
 if __name__ == '__main__':
-    df_get = get_security_info(['SNGSP', 'GAZP'])
+    df_get = get_security_info(['SNGSP', 'SBERP'])
     print(df_get)
-    df_local = load_securities_info().loc[['SNGSP', 'GAZP']]
-    print(df_local)
