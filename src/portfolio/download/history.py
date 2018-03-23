@@ -72,10 +72,12 @@ class Quotes:
 
     @property
     def url(self):
+        """Формирует url для запроса данных с MOEX ISS."""
         return make_url(self.base, self.ticker,
                         self.start_date, self.block_position)
 
     def load(self):
+        """Загружает и проверяет json с данными."""
         self.data = get_json(self.url)
         self._validate()
 
@@ -96,10 +98,12 @@ class Quotes:
 
     @property
     def values(self):
+        """Извлекает данные и json."""
         return self.data['history']['data']
 
     @property
     def columns(self):
+        """"Возвращает наименование колонок данных."""
         return self.data['history']['columns']
 
     @property
@@ -128,6 +132,7 @@ class Quotes:
 
     @property
     def dataframe(self):
+        """Выбирает из сырого DataFrame только с необходимые колонки - даты, цены закрытия и объемы."""
         df = self.df
         df[DATE] = pd.to_datetime(df['TRADEDATE'])
         df[CLOSE_PRICE] = pd.to_numeric(df['CLOSE'])
@@ -148,6 +153,7 @@ class Index(Quotes):
 
     @property
     def dataframe(self):
+        """Выбирает из сырого DataFrame только с необходимые колонки - даты и цены закрытия."""
         df = self.df
         df[DATE] = pd.to_datetime(df['TRADEDATE'])
         df[CLOSE_PRICE] = pd.to_numeric(df['CLOSE'])
