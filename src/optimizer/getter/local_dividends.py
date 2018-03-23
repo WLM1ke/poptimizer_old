@@ -16,29 +16,6 @@ from optimizer.settings import DATE, DIVIDENDS
 LEGACY_DIVIDENDS_FILE = 'dividends.xlsx'
 LEGACY_SHEET_NAME = 'Dividends'
 DIVIDENDS_FOLDER = 'dividends'
-# QUESTION: Пункт (1) поправил.
-#           По пункту (2) вопрос - за счет чего может поменяться дата?
-
-# EP - взяли файл переписали из одной директории в другую, из репо спарсили
-            #      дата файл - физический атрибут, он гарантируемт связи с содержанием
-#      как временный варинт - можно, но слегка коряво это.
-
-#           При валидации новых данных они полностью сопоставляются со старыми или ты что-то другое подразумеваешь под
-#           проверкой целостности данных?
-
-# EP - как-то нужно гарантировать, чтобы не возникло бырок в данных,
-           #      сейчас временно оставить, но ищью можно написать.
-
-# QUESTION: 1. А как не коряво сделать, то что я сейчас с датами файла делаю?
-
-#           2. По поводу целостности данных по дивидендам, я не знаю никакого метода проверки, что в данных нет дырок:
-#           Дивиденды могут не выплачиваться, а могут выплачиваться от 1-4 раз в год, периодичность выплат может легко
-#           меняться. Даты осечек могут быть любыми.
-#           Кроме ручной проверки по квартальным отчетам эмитентов я способа не вижу.
-#           Как следствие, единственный вариант хранить какой-то флаг, что данные в ручную проверены на целостность и
-#           выдавать предупреждение, что требуется проверка при появлении новых данных или когда больше 1 квартала новые
-#           данные не появлялись  - как тебе такая идея?
-
 UPDATE_PERIOD_IN_DAYS = 1
 
 
@@ -56,14 +33,14 @@ class LocalDividends:
     def __init__(self, ticker: str):
         self.ticker = ticker
         if self.local_data_path.exists():
-            self._df = self.update_local_history()
+            self.df = self.update_local_history()
         else:
-            self._df = self.create_local_history()
+            self.df = self.create_local_history()
 
     # FIXME (urgent): сильно нечитаемо. почему .df не может быть публичным аттрибутом?
 
     def __call__(self):
-        return self._df
+        return self.df
 
     @property
     def local_data_path(self):
@@ -74,7 +51,7 @@ class LocalDividends:
         """Сохраняет локальную версию данных в csv-файл с именем тикера.
 
         Флаги заголовков необходимы для поддержки сохранения серий, а не только датафреймов."""
-        self._df.to_csv(self.local_data_path, index=True, header=True)
+        self.df.to_csv(self.local_data_path, index=True, header=True)
 
     # COMMENT: похоже на повторяющуюся в разных местах функцию
     # ANSWER: поздно сообразил - для дивидендов и котировок используется класс с наследованием части функций.
@@ -89,8 +66,8 @@ class LocalDividends:
                          header=0,
                          engine='python',
                          sep='\s*,')
-        self._df = df.set_index(DATE)
-        return self._df[self._data_columns]
+        self.df = df.set_index(DATE)
+        return self.df[self._data_columns]
 
     def need_update(self):
         """Обновление требуется по прошествии фиксированного количества дней."""
@@ -100,28 +77,28 @@ class LocalDividends:
 
     def _validate_new_data(self, df_new):
         """Проверяем, что старые данные совпадают с новыми."""
-        common_rows = list(set(self._df.index) & set(df_new.index))
-        if not np.allclose(self._df.loc[common_rows], df_new.loc[common_rows]):
+        common_rows = list(set(self.df.index) & set(df_new.index))
+        if not np.allclose(self.df.loc[common_rows], df_new.loc[common_rows]):
             raise ValueError(f'Новые данные по дивидендам {self.ticker} не совпадают с локальной версией.')
 
     def update_local_history(self):
         """Обновляет локальные данные данными из интернета и возвращает полную историю дивидендных выплат."""
-        self._df = self.load_local_history()
+        self.df = self.load_local_history()
         if self.need_update():
             df_update = download.dividends(self.ticker)
             self._validate_new_data(df_update)
-            new_rows = list(set(df_update.index) - set(self._df.index))
+            new_rows = list(set(df_update.index) - set(self.df.index))
             if new_rows:
-                df = pd.concat([self._df, df_update[new_rows]])
-                self._df = df.sort_index()
+                df = pd.concat([self.df, df_update[new_rows]])
+                self.df = df.sort_index()
                 self._save_history()
-        return self._df
+        return self.df
 
     def create_local_history(self):
         """Формирует, сохраняет и возвращает локальную версию истории дивидендных выплат."""
-        self._df = download.dividends(self.ticker)
+        self.df = download.dividends(self.ticker)
         self._save_history()
-        return self._df
+        return self.df
 
 
 def get_dividends(tickers: list):
