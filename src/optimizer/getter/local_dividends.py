@@ -1,7 +1,6 @@
 """Load and update local data for dividends history and returns pandas DataFrames.
 
     get_dividends(tickers)
-    get_legacy_dividends(tickers)
 """
 
 import time
@@ -13,15 +12,9 @@ import pandas as pd
 from optimizer import settings, download
 from optimizer.settings import DATE, DIVIDENDS
 
-LEGACY_DIVIDENDS_FILE = 'dividends.xlsx'
-LEGACY_SHEET_NAME = 'Dividends'
 DIVIDENDS_FOLDER = 'dividends'
 UPDATE_PERIOD_IN_DAYS = 1
 
-
-def legacy_dividends_path():
-    """Файл со 'старыми' данными по дивидендам хранится в корне каталога данных."""
-    return settings.make_data_path(None, LEGACY_DIVIDENDS_FILE)
 
 
 class LocalDividends:
@@ -122,30 +115,6 @@ def get_dividends(tickers: list):
     df = pd.concat([LocalDividends(ticker)() for ticker in tickers], axis=1)
     df.columns = tickers
     return df
-
-
-def get_legacy_dividends(tickers: list):
-    """
-    Возвращает ряды годовых дивидендов для тикеров.
-
-    Основывается на статических локальных данных, которые хранятся в xlsx файле. Данная функция нужна для первоначальной
-    реализации и сопоставления с xlsx версией модели оптимизации. При дальнейшем развитии будет использоваться более
-    современная реализация на основе динамического обновления данных из интернета.
-
-    Parameters
-    ----------
-    tickers
-        Список тикеров.
-
-    Returns
-    -------
-    pandas.DataFrame
-        В строках даты годы.
-        В столбцах цены годовые дивиденды для тикеров.
-    """
-
-    df = pd.read_excel(legacy_dividends_path(), sheet_name=LEGACY_SHEET_NAME, header=0, index_col=0)
-    return df.transpose()[tickers]
 
 
 if __name__ == '__main__':

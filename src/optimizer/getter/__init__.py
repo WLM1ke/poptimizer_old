@@ -1,8 +1,8 @@
 """Load local copy of data and updates it."""
 
+from optimizer.getter.legacy_dividends import get_legacy_dividends as legacy_dividends
 from optimizer.getter.local_cpi import get_cpi as cpi
 from optimizer.getter.local_dividends import get_dividends as dividends
-from optimizer.getter.local_dividends import get_legacy_dividends as legacy_dividends
 from optimizer.getter.local_history import get_index_history as index_history
 from optimizer.getter.local_history import get_prices_history as prices_history
 from optimizer.getter.local_history import get_volumes_history as volumes_history
