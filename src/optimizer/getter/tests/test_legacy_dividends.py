@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from portfolio.getter import local_dividends
+from optimizer.getter import local_dividends
 
 
 def test_get_legacy_dividends():

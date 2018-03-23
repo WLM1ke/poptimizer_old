@@ -19,10 +19,10 @@ from os import path
 import arrow
 import pandas as pd
 
-from portfolio import download
-from portfolio.getter import local_securities_info
-from portfolio.getter.local_dividends import LocalDividends
-from portfolio.settings import DATE, CLOSE_PRICE, VOLUME
+from optimizer import download
+from optimizer.getter import local_securities_info
+from optimizer.getter.local_dividends import LocalDividends
+from optimizer.settings import DATE, CLOSE_PRICE, VOLUME
 
 MARKET_TIME_ZONE = 'Europe/Moscow'
 # Реально торги заканчиваются в 19.00, но данные транслируются с задержкой в 15 минут

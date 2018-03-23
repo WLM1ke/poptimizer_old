@@ -3,7 +3,7 @@ import urllib.error
 
 import pytest
 
-from portfolio.download.dividends import get_dividends, make_url
+from optimizer.download.dividends import get_dividends, make_url
 
 
 def test_url():

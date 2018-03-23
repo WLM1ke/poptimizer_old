@@ -9,9 +9,9 @@ from os import path
 import numpy as np
 import pandas as pd
 
-from portfolio import download
-from portfolio import settings
-from portfolio.settings import DATE, CPI
+from optimizer import download
+from optimizer import settings
+from optimizer.settings import DATE, CPI
 
 FILE_NAME = 'CPI.csv'
 

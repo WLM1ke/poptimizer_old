@@ -8,7 +8,7 @@
 import pandas as pd
 import requests
 
-from portfolio.settings import LAST_PRICE, LOT_SIZE, COMPANY_NAME, REG_NUMBER, TICKER
+from optimizer.settings import LAST_PRICE, LOT_SIZE, COMPANY_NAME, REG_NUMBER, TICKER
 
 
 def make_url(tickers):

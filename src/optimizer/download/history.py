@@ -14,7 +14,7 @@ import datetime
 import pandas as pd
 import requests
 
-from portfolio.settings import DATE, CLOSE_PRICE, VOLUME
+from optimizer.settings import DATE, CLOSE_PRICE, VOLUME
 
 
 def get_json(url: str):

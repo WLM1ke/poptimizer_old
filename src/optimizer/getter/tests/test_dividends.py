@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from portfolio import settings
-from portfolio.getter import local_dividends
+from optimizer import settings
+from optimizer.getter import local_dividends
 
 
 @pytest.fixture(scope='module', autouse=True)

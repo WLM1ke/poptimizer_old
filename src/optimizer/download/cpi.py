@@ -4,7 +4,7 @@ from datetime import date
 
 import pandas as pd
 
-from portfolio.settings import CPI, DATE
+from optimizer.settings import CPI, DATE
 
 URL_CPI = 'http://www.gks.ru/free_doc/new_site/prices/potr/I_ipc.xlsx'
 PARSING_PARAMETERS = dict(sheet_name='ИПЦ', header=3, skiprows=[4], skip_footer=3)

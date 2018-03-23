@@ -15,9 +15,9 @@
 
 import pandas as pd
 
-from portfolio import download
-from portfolio import settings
-from portfolio.settings import LAST_PRICE, LOT_SIZE, COMPANY_NAME, REG_NUMBER, TICKER, TICKER_ALIASES
+from optimizer import download
+from optimizer import settings
+from optimizer.settings import LAST_PRICE, LOT_SIZE, COMPANY_NAME, REG_NUMBER, TICKER, TICKER_ALIASES
 
 DATA_FILE = 'securities_info.csv'
 
@@ -102,7 +102,7 @@ def get_security_info(tickers: list):
     pandas.DataFrame
         В строках тикеры.
         В столбцах данные по размеру лота, регистрационному номеру, краткому наименованию, последней цене и тикерам,
-        которые соответсвуют такому же регистрационному номеру (обычно устаревшие ранее использовавшиеся тикеры).
+        которые соответствуют такому же регистрационному номеру (обычно устаревшие ранее использовавшиеся тикеры).
     """
     # Общий запрос содержит последние цены, которые регулярно обновляются, поэтому требует обновления
     if securities_info_path().exists():

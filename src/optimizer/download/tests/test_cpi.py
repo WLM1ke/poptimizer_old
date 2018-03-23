@@ -1,6 +1,6 @@
 import pytest
 
-from portfolio.download.cpi import get_monthly_cpi
+from optimizer.download.cpi import get_monthly_cpi
 
 CHECK_POINTS = [('1991-01-31', 1.0620),
                 ('2018-01-31', 1.0031)]

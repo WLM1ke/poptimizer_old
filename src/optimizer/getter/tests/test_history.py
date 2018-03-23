@@ -4,11 +4,11 @@ import arrow
 import pandas as pd
 import pytest
 
-from portfolio import download, settings
-from portfolio.getter import local_history
-from portfolio.getter.local_history import get_prices_history, get_volumes_history
-from portfolio.getter.local_history import get_quotes_history, get_index_history, LocalQuotes, LocalIndex
-from portfolio.settings import VOLUME, CLOSE_PRICE
+from optimizer import download, settings
+from optimizer.getter import local_history
+from optimizer.getter.local_history import get_prices_history, get_volumes_history
+from optimizer.getter.local_history import get_quotes_history, get_index_history, LocalQuotes, LocalIndex
+from optimizer.settings import VOLUME, CLOSE_PRICE
 
 
 def updated_df():

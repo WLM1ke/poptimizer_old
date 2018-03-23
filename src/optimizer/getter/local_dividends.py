@@ -10,8 +10,8 @@ from os import path
 import numpy as np
 import pandas as pd
 
-from portfolio import settings, download
-from portfolio.settings import DATE, DIVIDENDS
+from optimizer import settings, download
+from optimizer.settings import DATE, DIVIDENDS
 
 LEGACY_DIVIDENDS_FILE = 'dividends.xlsx'
 LEGACY_SHEET_NAME = 'Dividends'

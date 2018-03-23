@@ -5,10 +5,10 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from portfolio import settings
-from portfolio.getter import local_cpi
-from portfolio.getter.local_cpi import get_cpi, load_cpi, validate, cpi_path, update_cpi
-from portfolio.settings import CPI
+from optimizer import settings
+from optimizer.getter import local_cpi
+from optimizer.getter.local_cpi import get_cpi, load_cpi, validate, cpi_path, update_cpi
+from optimizer.settings import CPI
 
 
 @pytest.fixture(scope='module', name='dfs', autouse=True)

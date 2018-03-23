@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pytest
 
-from portfolio import settings
-from portfolio.getter import local_securities_info
-from portfolio.settings import LOT_SIZE, COMPANY_NAME, REG_NUMBER
+from optimizer import settings
+from optimizer.getter import local_securities_info
+from optimizer.settings import LOT_SIZE, COMPANY_NAME, REG_NUMBER
 
 
 @pytest.fixture(scope='class')
