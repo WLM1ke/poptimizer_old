@@ -12,8 +12,10 @@ def security_info_fake_data_path(tmpdir_factory):
     saved_path = settings.DATA_PATH
     temp_dir = tmpdir_factory.mktemp('security_info')
     settings.DATA_PATH = Path(temp_dir)
+    local_securities_info.DATA_PATH = settings.make_data_path('securities_info', 'securities_info.csv')
     yield
     settings.DATA_PATH = saved_path
+    local_securities_info.DATA_PATH = settings.make_data_path('securities_info', 'securities_info.csv')
 
 
 @pytest.mark.usefixtures('security_info_fake_data_path')
@@ -55,8 +57,10 @@ def get_reg_number_tickers_fake_data_path(tmpdir_factory):
     saved_path = settings.DATA_PATH
     temp_dir = tmpdir_factory.mktemp('data_get_tickers')
     settings.DATA_PATH = Path(temp_dir)
+    local_securities_info.DATA_PATH = settings.make_data_path('securities_info', 'securities_info.csv')
     yield
     settings.DATA_PATH = saved_path
+    local_securities_info.DATA_PATH = settings.make_data_path('securities_info', 'securities_info.csv')
 
 
 @pytest.mark.usefixtures('get_reg_number_tickers_fake_data_path')

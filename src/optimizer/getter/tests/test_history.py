@@ -49,10 +49,12 @@ def test_get_quotes_history(df):
 def make_index_cases():
     df1 = get_index_history()
     index = LocalIndex()
-    df2 = index.update_local_history()
+    index.update_local_history()
+    df2 = index.df
     save_need_update = index.need_update
     index.need_update = lambda: True
-    df3 = index.update_local_history()
+    index.update_local_history()
+    df3 = index.df
     index.need_update = save_need_update
     return df1, df2, df3
 

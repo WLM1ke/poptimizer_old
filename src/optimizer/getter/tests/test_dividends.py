@@ -31,7 +31,7 @@ def test_forced_update_fake_new_rows(monkeypatch):
     monkeypatch.setattr(local_dividends, 'UPDATE_PERIOD_IN_DAYS', 1 / (60 * 60 * 24))
     time.sleep(1)
     dividends_object.update_local_history()
-    df = dividends_object()
+    df = dividends_object.df
     assert df.index.is_monotonic_increasing
     assert df.index.unique
     assert df.loc['2002-05-13'] == 0.44

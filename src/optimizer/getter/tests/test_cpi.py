@@ -7,7 +7,7 @@ import pytest
 
 from optimizer import settings
 from optimizer.getter import local_cpi
-from optimizer.getter.local_cpi import get_cpi, load_cpi, validate, cpi_path, update_cpi
+from optimizer.getter.local_cpi import get_cpi, load_cpi, validate, update_cpi, DATA_PATH
 from optimizer.settings import CPI
 
 
@@ -39,9 +39,9 @@ def test_get_quotes_history(df):
 def test_update_cpi_need_update(monkeypatch):
     time.sleep(1)
     monkeypatch.setattr(local_cpi, 'UPDATE_PERIOD_IN_DAYS', 1 / (60 * 60 * 24))
-    file_time = path.getmtime(cpi_path())
+    file_time = path.getmtime(DATA_PATH)
     update_cpi()
-    assert path.getmtime(cpi_path()) > file_time
+    assert path.getmtime(DATA_PATH) > file_time
 
 
 def test_validate():

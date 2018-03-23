@@ -5,7 +5,7 @@ import optimizer.getter.legacy_dividends
 
 
 def test_get_legacy_dividends():
-    df = optimizer.getter.legacy_dividends.get_legacy_dividends(['UPRO', 'RTKMP', 'MSTT', 'MAGN', 'LSRG'])
+    df = optimizer.getter.legacy_dividends(['UPRO', 'RTKMP', 'MSTT', 'MAGN', 'LSRG'])
     assert df.index.equals(pd.Index([2012, 2013, 2014, 2015, 2016]))
     assert df.columns.equals(pd.Index(['UPRO', 'RTKMP', 'MSTT', 'MAGN', 'LSRG']))
     assert df.loc[2012, 'UPRO'] == pytest.approx(0.289541278733806)
