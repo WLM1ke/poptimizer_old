@@ -7,7 +7,7 @@ import requests
 
 
 def get_json(reg_number):
-    url = f'https://iss.moex.com/iss/securities.json?q={reg_number}'
+    url = f'http://iss.moex.com/iss/securities.json?q={reg_number}'
     respond = requests.get(url)
     json = respond.json()
     return json
