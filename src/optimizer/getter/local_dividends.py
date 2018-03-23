@@ -16,7 +16,6 @@ DIVIDENDS_FOLDER = 'dividends'
 UPDATE_PERIOD_IN_DAYS = 1
 
 
-
 class LocalDividends:
     """Реализует хранение, обновление и хранение локальных данных по индексу дивидендам."""
     _data_folder = DIVIDENDS_FOLDER
@@ -25,15 +24,11 @@ class LocalDividends:
 
     def __init__(self, ticker: str):
         self.ticker = ticker
+        self.df = None
         if self.local_data_path.exists():
-            self.df = self.update_local_history()
+            self.update_local_history()
         else:
-            self.df = self.create_local_history()
-
-    # FIXME (urgent): сильно нечитаемо. почему .df не может быть публичным аттрибутом?
-
-    def __call__(self):
-        return self.df
+            self.create_local_history()
 
     @property
     def local_data_path(self):
@@ -46,9 +41,6 @@ class LocalDividends:
         Флаги заголовков необходимы для поддержки сохранения серий, а не только датафреймов."""
         self.df.to_csv(self.local_data_path, index=True, header=True)
 
-    # COMMENT: похоже на повторяющуюся в разных местах функцию
-    # ANSWER: поздно сообразил - для дивидендов и котировок используется класс с наследованием части функций.
-    #         CPI и информацию по акциям, наверное стоит тоже переделать под общую гребенку - добавил ишью.
     def load_local_history(self):
         """Загружает историю котировок из локальных данных.
 
@@ -85,13 +77,11 @@ class LocalDividends:
                 df = pd.concat([self.df, df_update[new_rows]])
                 self.df = df.sort_index()
                 self._save_history()
-        return self.df
 
     def create_local_history(self):
         """Формирует, сохраняет и возвращает локальную версию истории дивидендных выплат."""
         self.df = download.dividends(self.ticker)
         self._save_history()
-        return self.df
 
 
 def get_dividends(tickers: list):
@@ -110,9 +100,7 @@ def get_dividends(tickers: list):
         В столбцах - тикеры.
         Значения - выплаченные дивиденды.
     """
-    # FIXME (urgent): сильно нечитаемо. почему .df не может быть публичным аттрибутом?
-
-    df = pd.concat([LocalDividends(ticker)() for ticker in tickers], axis=1)
+    df = pd.concat([LocalDividends(ticker).df for ticker in tickers], axis=1)
     df.columns = tickers
     return df
 

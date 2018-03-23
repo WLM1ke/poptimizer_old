@@ -11,7 +11,7 @@ from optimizer.settings import PORTFOLIO, CASH, LAST_VALUE, LAST_WEIGHT, PRICE, 
 class Portfolio:
     """Базовый класс портфеля.
 
-    Хранит общую информацию по входящим тикерам, рассчитывает стоимость и доли текущие  ина момент формирования.
+    Хранит общую информацию по входящим тикерам, рассчитывает стоимость и доли текущие и на момент формирования.
     """
     _COLUMNS = [LOT_SIZE, LOTS, PRICE, VALUE, WEIGHT, LAST_PRICE, LAST_VALUE, LAST_WEIGHT]
 
