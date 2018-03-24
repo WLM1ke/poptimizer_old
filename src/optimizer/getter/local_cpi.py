@@ -9,11 +9,11 @@ from os import path
 import numpy as np
 import pandas as pd
 
+import optimizer.getter.storage
 from optimizer import download
-from optimizer import settings
 from optimizer.settings import DATE, CPI
 
-DATA_PATH = settings.make_data_path('macro', 'cpi.csv')
+DATA_PATH = optimizer.getter.storage.make_data_path('macro', 'cpi.csv')
 
 # FIXME: это не глабльная ли переменная на несколько модулей?
 # MIKE: нет, периодичность может быть разная для разных данных - просто пока поставил одинаковую

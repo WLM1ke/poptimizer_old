@@ -25,11 +25,3 @@ WEIGHT = 'WEIGHT'
 
 # Путь к данным - данные состоящие из нескольких серий хранятся в отдельных директориях внутри базовой директории
 DATA_PATH = Path(__file__).parents[2] / 'data'
-
-
-def make_data_path(subfolder, file_name: str):
-    """Создает директорию в директории данных и возвращает путь к файлу в ней."""
-    folder = DATA_PATH / subfolder
-    if not folder.exists():
-        folder.mkdir(parents=True)
-    return folder / file_name

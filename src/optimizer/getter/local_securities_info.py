@@ -15,11 +15,11 @@
 
 import pandas as pd
 
+import optimizer.getter.storage
 from optimizer import download
-from optimizer import settings
 from optimizer.settings import LAST_PRICE, LOT_SIZE, COMPANY_NAME, REG_NUMBER, TICKER, TICKER_ALIASES
 
-DATA_PATH = settings.make_data_path('securities_info', 'securities_info.csv')
+DATA_PATH = optimizer.getter.storage.make_data_path('securities_info', 'securities_info.csv')
 
 
 def load_securities_info():

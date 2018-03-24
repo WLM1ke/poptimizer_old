@@ -1,13 +1,13 @@
-"""Load and update local data for dividends history and returns pandas DataFrames.
+"""Load local data for legacy dividends history and returns pandas DataFrames.
 
     get_legacy_dividends(tickers)
 """
 
 import pandas as pd
 
-from optimizer import settings
+import optimizer.getter.storage
 
-DATA_PATH = settings.make_data_path('legacy_dividends', 'dividends.xlsx')
+DATA_PATH = optimizer.getter.storage.make_data_path('legacy_dividends', 'dividends.xlsx')
 LEGACY_SHEET_NAME = 'Dividends'
 
 
