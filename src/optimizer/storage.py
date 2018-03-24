@@ -1,55 +1,79 @@
-"""Local file storage for pandas dataframes"""
+"""Local file storage for pandas DataFrames."""
 
 import time
+from collections import OrderedDict
 from pathlib import Path
 
 import pandas as pd
 
-DATA_PATH = Path(__file__).parents[2] / 'data'
+from optimizer import settings
 
 
-def make_path(filename: str, subfolder: str = '') -> str:
-    """Returns path to file"""
-    folder = DATA_PATH / subfolder
+def make_data_path(subfolder: str, file_name: str):
+    """Создает директорию в директории данных и возвращает путь к файлу в ней."""
+    folder = settings.DATA_PATH / subfolder
     if not folder.exists():
         folder.mkdir(parents=True)
-    return str(folder / filename)
+    return folder / file_name
 
 
 class LocalFile:
-    allowed_subfolders = ['dividend']
+    """Обеспечивает функционал сохранения, проверки наличия, загрузки и даты изменения для файла.
 
-    def __init__(self, filename: str, subfolder: str = ''):
-        if subfolder and subfolder not in self.allowed_subfolders:
-            raise ValueError(f'{subfolder} not supported')
-        self.path = make_path(filename, subfolder)
+     Реализована поддержка для DataFrames и Series с корректным сохранением заголовков.
+     """
 
-    # FIXME: must change from physical to logical check of updates
-    def _time_updated(self):
-        # https://docs.python.org/3/library/os.html#os.stat_result.st_mtime
-        return Path(self.path).stat().st_mtime
+    def __init__(self, subfolder: str, filename: str, converters: OrderedDict):
+        """
+        Инициирует объект.
 
-    def _updated_days_ago(self):
-        lag_sec = time.time() -  self._time_updated()
+        Parameters
+        ----------
+        subfolder
+            Подкаталог, где хранятся данные.
+        filename
+            Наименование файла с данными.
+        converters
+            Упорядочений словарь с конвертерами данных. Первый элементы индекс, последующие столбцы данных.
+            Если колонка одна, то функции загрузки будут возвращать Series.
+        """
+        self.path = make_data_path(subfolder, filename)
+        self.converters = converters
+        columns = list(converters.keys())
+        self._index = columns[0]
+        self._data_columns = columns[1:]
+        # Если колонок с данными 1, то надо выдавать Series при загрузке
+        if len(self._data_columns) == 1:
+            self._data_columns = self._data_columns[0]
+
+    def exists(self):
+        """Проверка существования файла."""
+        if self.path.exists():
+            return True
+        return False
+
+    def updated_days_ago(self):
+        """Количество дней с последнего обновления файла.
+
+        https://docs.python.org/3/library/os.html#os.stat_result.st_mtime
+        """
+        time_updated = Path(self.path).stat().st_mtime
+        lag_sec = time.time() - time_updated
         return lag_sec / (60 * 60 * 24)
 
-    def is_updated(self):
-        """Обновление нужно, если прошло менее 1 дня с момента обновления файла."""
-        return self._updated_days_ago() < 1
-    # end FIXME
-
-    def save_dataframe(self, df):
+    def save(self, df):
+        """Сохраняет DataFrame или Series с заголовками."""
         df.to_csv(self.path, index=True, header=True)
 
-    #TODO: manage colunmn converters
-    def read_dataframe(self):
+    def read(self):
+        """Загружает данные из файла.
+
+        Значение sep обеспечивает корректную загрузку с лидирующими пробелами, вставленными PyCharm.
+        """
         df = pd.read_csv(self.path,
-                     converters={'DATE': pd.to_datetime},
-                     header=0,
-                     engine='python',
-                     sep='\s*,')
-        df = df.set_index('DATE')
-        return df
-
-
-FILE_CPI = LocalFile('CPI.csv')
+                         converters=self.converters,
+                         header=0,
+                         engine='python',
+                         sep='\s*,')
+        df = df.set_index(self._index)
+        return df[self._data_columns]
