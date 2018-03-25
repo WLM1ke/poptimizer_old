@@ -34,8 +34,7 @@ class LocalFile:
         filename
             Наименование файла с данными.
         converters
-            Упорядочений словарь с конвертерами данных. Первый элементы индекс, последующие столбцы данных.
-            Если колонка одна, то функции загрузки будут возвращать Series.
+            Словарь с конвертерами данных.
         """
         self.path = make_data_path(subfolder, filename)
         self.converters = converters
