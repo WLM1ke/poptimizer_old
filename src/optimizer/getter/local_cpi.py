@@ -3,8 +3,6 @@
     get_cpi()
 """
 
-from collections import OrderedDict
-
 import numpy as np
 import pandas as pd
 
@@ -56,8 +54,8 @@ def get_cpi():
         В строках значения инфляции для каждого месяца.
         Инфляция 1,2% за месяц соответствует 1.012.
     """
-    converters = OrderedDict([(DATE, pd.to_datetime),
-                              (CPI, pd.to_numeric)])
+    converters = {DATE: pd.to_datetime,
+                  CPI: pd.to_numeric}
     data_file = LocalFile(CPI_FOLDER, CPI_FILE, converters)
     if data_file.exists():
         update_cpi(data_file)
