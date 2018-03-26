@@ -11,7 +11,7 @@ from optimizer.settings import PORTFOLIO, CASH, PRICE, WEIGHT, VALUE, LOT_SIZE
 class Portfolio:
     """Базовый класс портфеля.
 
-    Хранит информацию на отчетную дату о денежных средствах и количестве лотов для набора тикеров.
+    Хранит информацию на отчетную дату о денежных средствах и количестве лотов для набора тикеров из словаря.
     Для проверки может быть передана стоимость портфеля, которая не должна сильно отличаться от расчетной стоимости, на
     основе котировок на отчетную дату.
 
@@ -73,7 +73,7 @@ class Portfolio:
         self.df.loc[self.tickers, LOTS] = [positions[ticker] for ticker in self.tickers]
 
     def _fill_price(self):
-        """Заполняет цены на отчетную дату."""
+        """Заполняет цены на отчетную дату или предыдущую торговую."""
         if self.prices is None:
             prices = getter.prices_history(self.tickers)
             self.prices = prices.fillna(method='ffill')
@@ -103,12 +103,21 @@ class Portfolio:
         self.df.loc[:, WEIGHT] = self.df[VALUE] / self.df.loc[PORTFOLIO, VALUE]
 
     def change_date(self, date: str):
-        pass
+        """Изменяет дату портфеля и пересчитывает значения всех показателей."""
+        self.date = pd.to_datetime(date).date()
+        self._fill_price()
+        self._fill_value()
 
 
 if __name__ == '__main__':
-    port = Portfolio(date='2018-03-24',
+    port = Portfolio(date='2018-03-19',
                      cash=1000.21,
                      positions=dict(GAZP=682, VSMO=145, TTLK=123),
-                     value=3_742_615.21)
+                     value=3_699_111.41)
     print(port)
+    port.change_date('2018-03-25')
+    print(port)
+    print(Portfolio(date='2018-03-25',
+                    cash=1000.21,
+                    positions=dict(GAZP=682, VSMO=145, TTLK=123),
+                    value=3_742_615.21))
