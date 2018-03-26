@@ -1,3 +1,5 @@
+"""Реализация класса портфеля."""
+
 import warnings
 
 import numpy as np
