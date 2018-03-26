@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import pandas as pd
 
@@ -14,6 +16,22 @@ class Portfolio:
     основе котировок на отчетную дату.
 
     Рассчитывает стоимость портфеля и отдельных позиций, а так же доли позиций в портфеле.
+
+    Атрибуты:
+
+    date: datetime.datetime
+        Дата, на которую рассчитаны параметры портфеля.
+
+    df: pandas.DataFrame
+        Все метрики портфеля.
+
+    prices: pandas.DataFrame
+        Ряды цен для тикеров портфеля. Отсутствующие значения заменены последними предыдущими.
+
+    Методы:
+
+    change_date(date: str):
+        Изменяет дату портфеля, цены и пересчитывает все остальные параметры.
     """
     _COLUMNS = [LOT_SIZE, LOTS, PRICE, VALUE, WEIGHT]
 
@@ -23,6 +41,7 @@ class Portfolio:
         self.cash_and_tickers = self.tickers + [CASH]
         self._create_df(cash)
         self._fill_lots(positions)
+        self.prices = None
         self._fill_price()
         self._fill_value()
         if value:
@@ -55,9 +74,17 @@ class Portfolio:
 
     def _fill_price(self):
         """Заполняет цены на отчетную дату."""
-        prices = getter.prices_history(self.tickers)
-        self.prices = prices.fillna(method='ffill')
-        self.df.loc[self.tickers, PRICE] = self.prices.loc[self.date]
+        if self.prices is None:
+            prices = getter.prices_history(self.tickers)
+            self.prices = prices.fillna(method='ffill')
+        date = self.date
+        index = self.prices.index
+        if date not in index:
+            date = index[index.get_loc(date, method='ffill')].date()
+            non_trading_date = (f'\n\nТорги не проводились {self.date} - '
+                                f'будут использованы котировки предыдущей торговой даты {date}.\n')
+            warnings.warn(non_trading_date)
+        self.df.loc[self.tickers, PRICE] = self.prices.loc[date]
 
     def _fill_value(self):
         """Рассчитывает стоимость отдельных позиций и вызывает метод расчета стоимости портфеля."""
@@ -75,10 +102,13 @@ class Portfolio:
         """Рассчитывает веса отдельных позиций."""
         self.df.loc[:, WEIGHT] = self.df[VALUE] / self.df.loc[PORTFOLIO, VALUE]
 
+    def change_date(self, date: str):
+        pass
+
 
 if __name__ == '__main__':
-    port = Portfolio(date='2018-03-21',
+    port = Portfolio(date='2018-03-24',
                      cash=1000.21,
                      positions=dict(GAZP=682, VSMO=145, TTLK=123),
-                     value=3_728_568.41)
+                     value=3_742_615.21)
     print(port)
