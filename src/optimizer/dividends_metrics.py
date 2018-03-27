@@ -1,3 +1,5 @@
+"""Реализация основных метрик дивидендного потока"""
+
 import pandas as pd
 
 from optimizer import getter
@@ -8,7 +10,7 @@ from optimizer.settings import LOTS, LOT_SIZE, PORTFOLIO
 class DividendsMetrics:
     """Реализует основные метрики дивидендного потока для портфеля
 
-    За основу берутся legacy dividends для интервала ле с first_year до last_year включительно
+    За основу берутся legacy dividends для интервала лет с first_year до last_year включительно
     """
 
     def __init__(self, portfolio: Portfolio, first_year: int, last_year: int):
