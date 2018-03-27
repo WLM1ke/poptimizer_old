@@ -2,6 +2,9 @@
 
 from pathlib import Path
 
+# Основной парметр для доверительных интервалов
+T_STATISTICS = 2.0
+
 # Основные метки столбцов в фреймах данных
 CASH = 'CASH'
 CLOSE_PRICE = 'CLOSE_PRICE'
