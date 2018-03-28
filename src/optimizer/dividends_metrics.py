@@ -19,7 +19,6 @@ class DividendsMetrics:
         self._columns = list(range(first_year, last_year + 1))
         self._index = portfolio.df.index
         self._tickers = self._index[:-2]
-        self._amount = portfolio.df[[LOT_SIZE, LOTS]].prod(axis=1)
 
     def nominal_pretax(self):
         """Дивиденды в номинальном выражении"""
