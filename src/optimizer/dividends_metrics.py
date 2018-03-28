@@ -27,9 +27,10 @@ class DividendsMetrics:
         df.loc[PORTFOLIO, self._columns] = df.multiply(self._amount, axis='index').sum(axis=0)
         return df
 
-    def real_dividends(self):
-        """Дивиденды в реальном выражении - в ценах последнего года"""
-        pass
+    def real_after_tax_dividends(self):
+        """Дивиденды после уплаты налогов в реальном выражении - в ценах последнего года"""
+        cum_cpi = getter.cpi().cumprod()
+
 
 
 if __name__ == '__main__':
@@ -37,4 +38,4 @@ if __name__ == '__main__':
                      cash=1000.21,
                      positions=dict(GAZP=682, VSMO=145, TTLK=123))
     dividends = DividendsMetrics(port, 2012, 2016)
-    print(dividends.dividends())
+    print(dividends.real_after_tax_dividends())

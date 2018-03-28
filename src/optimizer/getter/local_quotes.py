@@ -17,6 +17,7 @@
 from os import path
 
 import arrow
+import numpy as np
 import pandas as pd
 
 from optimizer import download
@@ -64,8 +65,7 @@ class LocalQuotes(LocalDividends):
         last_date = self.df_last_date
         df_old_last = self.df.loc[last_date]
         df_new_last = df_new.loc[last_date]
-        columns_for_validation = [CLOSE_PRICE, VOLUME]
-        if any([df_old_last[column] != df_new_last[column] for column in columns_for_validation]):
+        if not np.allclose(df_new_last.values, df_old_last.values):
             raise ValueError(f'Загруженные данные {self.ticker} не стыкуются с локальными. \n' +
                              f'{df_old_last} \n' +
                              f'{df_new_last}')
