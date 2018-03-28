@@ -29,7 +29,7 @@ class DividendsMetrics:
         df.loc[PORTFOLIO, self._columns] = df.multiply(amount, axis='index').sum(axis=0)
         return df
 
-    def real_after_tax_dividends(self):
+    def real_after_tax(self):
         """Дивиденды после уплаты налогов в реальном выражении (в ценах последнего года)
 
         Все метрики опираются именно на реальные посленалоговые выплаты
@@ -43,7 +43,7 @@ class DividendsMetrics:
 
     def yields(self):
         """Дивидендная доходность"""
-        dividends = self.real_after_tax_dividends()
+        dividends = self.real_after_tax()
         inverse_prices = 1 / self._df[PRICE]
         return dividends.multiply(inverse_prices, axis='index')
 
