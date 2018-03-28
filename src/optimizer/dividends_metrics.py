@@ -10,7 +10,8 @@ from optimizer.settings import LOTS, LOT_SIZE, PORTFOLIO, AFTER_TAX, PRICE, WEIG
 class DividendsMetrics:
     """Реализует основные метрики дивидендного потока для портфеля
 
-    За основу берутся legacy dividends для интервала лет с first_year до last_year включительно
+    За основу берутся legacy dividends для интервала лет с first_year до last_year включительно, которые переводятся в
+    реальные посленалоговые величины и используются для расчета разнообразных метрик
     """
 
     def __init__(self, portfolio: Portfolio, first_year: int, last_year: int):
@@ -27,20 +28,23 @@ class DividendsMetrics:
         df.loc[PORTFOLIO, self._columns] = df.multiply(self._amount, axis='index').sum(axis=0)
         return df
 
-    def nominal_pretax_yields(self):
-        """Номинальная дивидендная доходность"""
-        nominal_dividends = self.nominal_pretax_dividends()
-        inverse_prices = 1 / self._df[PRICE]
-        return nominal_dividends.multiply(inverse_prices, axis='index')
+    def real_after_tax_dividends(self):
+        """Дивиденды после уплаты налогов в реальном выражении (в ценах последнего года)
 
-    def dividends_yield(self):
-        """Дивидендная доходность после уплаты налогов в реальном выражении (в ценах последнего года)"""
+        Все метрики опираются именно на реальные посленалоговые выплаты
+        """
         cum_cpi = getter.cpi().cumprod()
         years = [pd.to_datetime(f'{year}-12-31') for year in self._columns]
         last_year_cpi_values = (cum_cpi[years[-1]] / cum_cpi[years]).values
-        nominal_pretax_yields = self.nominal_pretax_yields()
-        real_pretax_yields = nominal_pretax_yields.multiply(last_year_cpi_values, axis='columns')
-        return real_pretax_yields * AFTER_TAX
+        nominal_pretax_dividends = self.nominal_pretax_dividends()
+        real_pretax_dividends = nominal_pretax_dividends.multiply(last_year_cpi_values, axis='columns')
+        return real_pretax_dividends * AFTER_TAX
+
+    def dividends_yield(self):
+        """Дивидендная доходность"""
+        dividends = self.real_after_tax_dividends()
+        inverse_prices = 1 / self._df[PRICE]
+        return dividends.multiply(inverse_prices, axis='index')
 
     def m_dividends_yield(self):
         """Матожидание дивидендной доходности"""
@@ -63,5 +67,5 @@ if __name__ == '__main__':
     port = Portfolio(date='2018-03-19',
                      cash=1000.21,
                      positions=dict(GAZP=682, VSMO=145, TTLK=123))
-    dividends = DividendsMetrics(port, 2012, 2016)
-    print(dividends.s_dividends_yield())
+    div = DividendsMetrics(port, 2012, 2016)
+    print(div.real_after_tax_dividends())
