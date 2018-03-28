@@ -21,11 +21,12 @@ class DividendsMetrics:
         self._tickers = self._index[:-2]
         self._amount = portfolio.df[[LOT_SIZE, LOTS]].prod(axis=1)
 
-    def nominal_pretax_dividends(self):
+    def nominal_pretax(self):
         """Дивиденды в номинальном выражении"""
         df = pd.DataFrame(0.0, index=self._index, columns=self._columns)
         df.loc[self._tickers, self._columns] = getter.legacy_dividends(self._tickers).transpose()
-        df.loc[PORTFOLIO, self._columns] = df.multiply(self._amount, axis='index').sum(axis=0)
+        amount = self._df[[LOT_SIZE, LOTS]].prod(axis=1)
+        df.loc[PORTFOLIO, self._columns] = df.multiply(amount, axis='index').sum(axis=0)
         return df
 
     def real_after_tax_dividends(self):
@@ -36,31 +37,40 @@ class DividendsMetrics:
         cum_cpi = getter.cpi().cumprod()
         years = [pd.to_datetime(f'{year}-12-31') for year in self._columns]
         last_year_cpi_values = (cum_cpi[years[-1]] / cum_cpi[years]).values
-        nominal_pretax_dividends = self.nominal_pretax_dividends()
+        nominal_pretax_dividends = self.nominal_pretax()
         real_pretax_dividends = nominal_pretax_dividends.multiply(last_year_cpi_values, axis='columns')
         return real_pretax_dividends * AFTER_TAX
 
-    def dividends_yield(self):
+    def yields(self):
         """Дивидендная доходность"""
         dividends = self.real_after_tax_dividends()
         inverse_prices = 1 / self._df[PRICE]
         return dividends.multiply(inverse_prices, axis='index')
 
-    def m_dividends_yield(self):
+    def mean(self):
         """Матожидание дивидендной доходности"""
-        return self.dividends_yield().mean(axis='columns', skipna=False)
+        return self.yields().mean(axis='columns', skipna=False)
 
-    def s_dividends_yield(self):
+    def std(self):
         """СКО дивидендной доходности
 
         СКО портфеля рассчитывается из допущения нулевой корреляции между дивидендами отдельных позиций. Допущение о
         нулевой корреляции необходимо в качестве простого приема регуляризации, так как число лет существенно меньше
         количества позиции. Данное допущение используется во всех дальнейших расчетах
         """
-        std = self.dividends_yield().std(axis='columns', ddof=1, skipna=False)
+        std = self.yields().std(axis='columns', ddof=1, skipna=False)
         weighted_std = std.loc[self._tickers] * self._df.loc[self._tickers, WEIGHT]
         std[PORTFOLIO] = (weighted_std ** 2).sum(axis='index') ** 0.5
         return std
+
+    def beta(self):
+        pass
+
+    def lower_bound(self):
+        pass
+
+    def gradient_of_lower_bound(self):
+        pass
 
 
 if __name__ == '__main__':
@@ -68,4 +78,4 @@ if __name__ == '__main__':
                      cash=1000.21,
                      positions=dict(GAZP=682, VSMO=145, TTLK=123))
     div = DividendsMetrics(port, 2012, 2016)
-    print(div.real_after_tax_dividends())
+    print(div.std())
