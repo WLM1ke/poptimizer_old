@@ -13,7 +13,7 @@ import optimizer.storage
 from optimizer import download
 from optimizer.settings import DATE, DIVIDENDS
 
-DIVIDENDS_FOLDER = 'dividends'
+DIVIDENDS_FOLDER = 'nominal_retax_dividends'
 UPDATE_PERIOD_IN_DAYS = 1
 
 

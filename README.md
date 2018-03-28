@@ -12,7 +12,7 @@
 ## Этапы работы
 1. Пакет [download](https://github.com/WLM1ke/PortfolioOptimizer/tree/master/src/portfolio/download) -  функции-загрузчики необходимых данных из интернета, которые используются пакетом getter для создания локальных данных. Функции максимально приближены к API выдачи данных, поэтому принимают иногда набор тикеров, а иногда отдельный тикер:
 - [x] CPI [источник данных](http://www.gks.ru/) - **cpi()**
-- [x] Дивиденды [источник данных](https://www.dohod.ru/) - **dividends(ticker)**
+- [x] Дивиденды [источник данных](https://www.dohod.ru/) - **nominal_retax_dividends(ticker)**
 - [x] История котировок акций [источник данных](https://www.moex.com) - **quotes_history(ticker, start_date)**
 - [x] История значений индекса MOEX Russia Net Total Return (Resident) [источник данных](https://www.moex.com/ru/index/totalreturn.aspx) - **index_history(ticker, start_date)**
 - [x] Информация по кратким наименованиям, регистрационным номерам, размерам лотов и последним ценам [источник данных](https://www.moex.com)- **securities_info(tickers)**
@@ -21,7 +21,7 @@
 2. Пакет [getter](https://github.com/WLM1ke/PortfolioOptimizer/tree/master/src/portfolio/getter) - функции, обновляющие и загружающие локальную версию данных, используя информацию загруженную с помощью функций из пакета getter. Функции максимально унифицированы - принимают в качестве аргумента набор тикеров:
 - [x] CPI - **cpi()**
 - [x] 'Старые' дивиденды (статические данные существующей модели - загружаются из локального xlsx-файла) - **legacy_dividends(tickers)**
-- [x] Дивиденды (данные обновляются из интернета) - **dividends(tickers)**
+- [x] Дивиденды (данные обновляются из интернета) - **nominal_retax_dividends(tickers)**
 - [x] История цен закрытия акций - **prices_history(tickers)**
 - [x] История объемов торгов акций - **volumes_history(tickers)**
 - [x] История значений индекса MOEX Russia Net Total Return (Resident) - **index_history()**
