@@ -13,7 +13,6 @@ class DividendsMetrics:
     За основу берутся legacy dividends для интервала лет с first_year до last_year включительно, которые переводятся в
     реальные посленалоговые величины и используются для расчета разнообразных метрик
     """
-
     def __init__(self, portfolio: Portfolio, first_year: int, last_year: int):
         self._portfolio = portfolio
         self._df = portfolio.df
@@ -118,5 +117,4 @@ if __name__ == '__main__':
     port = Portfolio(date='2018-03-19',
                      cash=1000.21,
                      positions=dict(GAZP=682, VSMO=145, TTLK=123))
-    div = DividendsMetrics(port, 2012, 2016)
-    print(div)
+    print(DividendsMetrics(port, 2012, 2016))
