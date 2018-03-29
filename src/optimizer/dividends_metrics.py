@@ -55,7 +55,7 @@ class DividendsMetrics:
 
         СКО портфеля рассчитывается из допущения нулевой корреляции между дивидендами отдельных позиций. Допущение о
         нулевой корреляции необходимо в качестве простого приема регуляризации, так как число лет существенно меньше
-        количества позиции. Данное допущение используется во всех дальнейших расчетах
+        количества позиций. Данное допущение используется во всех дальнейших расчетах
         """
         std = self.yields().std(axis='columns', ddof=1, skipna=False)
         weighted_std = std.loc[self._tickers] * self._df.loc[self._tickers, WEIGHT]
@@ -63,7 +63,16 @@ class DividendsMetrics:
         return std
 
     def beta(self):
-        pass
+        """Беты дивидендных доходностей относительно дивидендной доходности портфеля
+
+        Традиционно бета равна cov(r,rp) / var(rp), где r и rp - доходность актива и портфеля, соответственно.
+        При используемых допущениях можно показать, что бета равна w * var(r) / var(rp), где w - доля актива в портфеле
+
+        При правильной реализации взвешенная по долям бета отдельных позиций равна бете портфеля и равна 1, а бета кэша
+        равна 0
+        """
+        var = self.std() ** 2
+        return (self._df[WEIGHT] * var) / (var[PORTFOLIO])
 
     def lower_bound(self):
         pass
@@ -77,4 +86,5 @@ if __name__ == '__main__':
                      cash=1000.21,
                      positions=dict(GAZP=682, VSMO=145, TTLK=123))
     div = DividendsMetrics(port, 2012, 2016)
-    print(div.std())
+    print(div.beta())
+    print((div.beta()[div._tickers] * div._df.loc[div._tickers, WEIGHT]).sum())
