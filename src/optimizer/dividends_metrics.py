@@ -84,7 +84,21 @@ class DividendsMetrics:
         return self.mean() - T_STATISTICS * self.std()
 
     def gradient_of_lower_bound(self):
-        pass
+        """Рассчитывает производную нижней границы по доле актива в портфеле
+
+        В общем случае равна (r - rp) - t * sp * (b - 1), r и rp - доходность актива и портфеля, соответственно,
+        t - t-статистика, sp - СКО портфеля, b - бета актива
+
+        Долю актива с максимальным градиентом необходимо наращивать, а с минимальным сокращать. Так как важную роль в
+        градиенте играет бета, то во многих случаях выгодно наращивать долю не той бумаги, у которой самая высокая
+        нижняя граница, а той у которой достаточно низкая бета при высокой дивидендной доходности
+
+        При правильной реализации взвешенный по долям отдельных позиций градиент равен градиенту по портфелю в целом
+        равна и равен 0
+        """
+        mean_gradient = self.mean() - self.mean()[PORTFOLIO]
+        risk_gradient = self.std()[PORTFOLIO] * (self.beta() - 1)
+        return mean_gradient - T_STATISTICS * risk_gradient
 
 
 if __name__ == '__main__':
@@ -93,4 +107,4 @@ if __name__ == '__main__':
                      positions=dict(GAZP=682, VSMO=145, TTLK=123))
     div = DividendsMetrics(port, 2012, 2016)
     print(div.lower_bound())
-    print(div.mean())
+    print(div.gradient_of_lower_bound())
