@@ -52,7 +52,7 @@ class Portfolio:
                                  f'не равна расчетной {self.df.loc[PORTFOLIO, VALUE]}.')
 
     def __str__(self):
-        return f'\nДата портфеля - {self.date}\n\n{self.df}'
+        return f'\n\nДата портфеля - {self.date}\n\n{self.df}'
 
     def _create_df(self, cash):
         """Создает DataFrame:

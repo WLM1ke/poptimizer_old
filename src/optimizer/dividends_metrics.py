@@ -15,15 +15,27 @@ class DividendsMetrics:
     """
 
     def __init__(self, portfolio: Portfolio, first_year: int, last_year: int):
+        self._portfolio = portfolio
         self._df = portfolio.df
         self._columns = list(range(first_year, last_year + 1))
-        self._index = portfolio.df.index
-        self._tickers = self._index[:-2]
+
+    def __str__(self):
+        frames = [self.mean(),
+                  self.std(),
+                  self.beta(),
+                  self.lower_bound(),
+                  self.gradient_of_lower_bound()]
+        columns = ['MEAN', 'STD', 'BETA', 'LOWER_BOUND', 'GRADIENT']
+        df = pd.concat(frames, axis=1)
+        df.columns = columns
+        return f'{self._portfolio}\n\nКлючевые метрики дивидендов:\n\n{df}'
 
     def nominal_pretax(self):
         """Дивиденды в номинальном выражении"""
-        df = pd.DataFrame(0.0, index=self._index, columns=self._columns)
-        df.loc[self._tickers, self._columns] = getter.legacy_dividends(self._tickers).transpose()
+        index = self._df.index
+        df = pd.DataFrame(0.0, index=index, columns=self._columns)
+        tickers = index[:-2]
+        df.loc[tickers, self._columns] = getter.legacy_dividends(tickers).transpose()
         amount = self._df[[LOT_SIZE, LOTS]].prod(axis=1)
         df.loc[PORTFOLIO, self._columns] = df.multiply(amount, axis='index').sum(axis=0)
         return df
@@ -58,7 +70,8 @@ class DividendsMetrics:
         количества позиций. Данное допущение используется во всех дальнейших расчетах
         """
         std = self.yields().std(axis='columns', ddof=1, skipna=False)
-        weighted_std = std.loc[self._tickers] * self._df.loc[self._tickers, WEIGHT]
+        tickers = self._df.index[:-2]
+        weighted_std = std.loc[tickers] * self._df.loc[tickers, WEIGHT]
         std[PORTFOLIO] = (weighted_std ** 2).sum(axis='index') ** 0.5
         return std
 
@@ -106,5 +119,4 @@ if __name__ == '__main__':
                      cash=1000.21,
                      positions=dict(GAZP=682, VSMO=145, TTLK=123))
     div = DividendsMetrics(port, 2012, 2016)
-    print(div.lower_bound())
-    print(div.gradient_of_lower_bound())
+    print(div)
