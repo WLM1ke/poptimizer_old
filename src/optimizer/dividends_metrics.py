@@ -4,7 +4,7 @@ import pandas as pd
 
 from optimizer import getter
 from optimizer.portfolio import Portfolio
-from optimizer.settings import LOTS, LOT_SIZE, PORTFOLIO, AFTER_TAX, PRICE, WEIGHT
+from optimizer.settings import LOTS, LOT_SIZE, PORTFOLIO, AFTER_TAX, PRICE, WEIGHT, T_STATISTICS
 
 
 class DividendsMetrics:
@@ -75,7 +75,13 @@ class DividendsMetrics:
         return (self._df[WEIGHT] * var) / (var[PORTFOLIO])
 
     def lower_bound(self):
-        pass
+        """Рассчитывает нижнюю границу доверительного интервала для дивидендной доходности
+
+        Используемая t-статистика берется из файла настроек
+
+        Для оптимизированных портфелей, нижняя граница доверительного интервала выше, чем у отдельных позиций
+        """
+        return self.mean() - T_STATISTICS * self.std()
 
     def gradient_of_lower_bound(self):
         pass
@@ -86,5 +92,5 @@ if __name__ == '__main__':
                      cash=1000.21,
                      positions=dict(GAZP=682, VSMO=145, TTLK=123))
     div = DividendsMetrics(port, 2012, 2016)
-    print(div.beta())
-    print((div.beta()[div._tickers] * div._df.loc[div._tickers, WEIGHT]).sum())
+    print(div.lower_bound())
+    print(div.mean())
