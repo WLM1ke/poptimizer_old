@@ -13,8 +13,8 @@ def test_portfolio():
     date = pd.to_datetime('2018-03-19').date()
     assert port.date == date
     assert f'Дата портфеля - {date}' in port.__str__()
-    assert port.df.loc[PORTFOLIO, VALUE] == 3_699_111.41
-    assert port.df.loc['VSMO', WEIGHT] == pytest.approx(0.691071)
+    assert port._df.loc[PORTFOLIO, VALUE] == 3_699_111.41
+    assert port._df.loc['VSMO', WEIGHT] == pytest.approx(0.691071)
 
 
 def test_portfolio_warnings():
@@ -27,8 +27,8 @@ def test_portfolio_warnings():
     date = pd.to_datetime('2018-03-19').date()
     assert port.date == date
     assert f'Дата портфеля - {date}' in port.__str__()
-    assert port.df.loc[PORTFOLIO, VALUE] == 3_699_111.41
-    assert port.df.loc['VSMO', WEIGHT] == pytest.approx(0.691071)
+    assert port._df.loc[PORTFOLIO, VALUE] == 3_699_111.41
+    assert port._df.loc['VSMO', WEIGHT] == pytest.approx(0.691071)
 
 
 def test_portfolio_without_value():
@@ -38,5 +38,5 @@ def test_portfolio_without_value():
     date = pd.to_datetime('2018-03-19').date()
     assert port.date == date
     assert f'Дата портфеля - {date}' in port.__str__()
-    assert port.df.loc[PORTFOLIO, VALUE] == 3_699_111.41
-    assert port.df.loc['VSMO', WEIGHT] == pytest.approx(0.691071)
+    assert port._df.loc[PORTFOLIO, VALUE] == 3_699_111.41
+    assert port._df.loc['VSMO', WEIGHT] == pytest.approx(0.691071)

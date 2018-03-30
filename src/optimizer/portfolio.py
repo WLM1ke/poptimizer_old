@@ -47,12 +47,12 @@ class Portfolio:
         self._fill_price()
         self._fill_value()
         if value:
-            if not np.isclose(self.df.loc[PORTFOLIO, VALUE], value):
+            if not np.isclose(self._df.loc[PORTFOLIO, VALUE], value):
                 raise ValueError(f'Введенная стоимость портфеля {value} '
-                                 f'не равна расчетной {self.df.loc[PORTFOLIO, VALUE]}.')
+                                 f'не равна расчетной {self._df.loc[PORTFOLIO, VALUE]}.')
 
     def __str__(self):
-        return f'\n\nДата портфеля - {self.date}\n\n{self.df}'
+        return f'\n\nДата портфеля - {self.date}\n\n{self._df}'
 
     def _create_df(self, cash):
         """Создает DataFrame:
@@ -66,13 +66,13 @@ class Portfolio:
         """
         df = getter.security_info(self.tickers)
         rows = df.index.append(pd.Index([CASH, PORTFOLIO]))
-        self.df = df.reindex(index=rows, columns=self._COLUMNS, fill_value=0)
-        self.df.loc[CASH, [LOT_SIZE, LOTS, PRICE]] = [1, cash, 1]
-        self.df.loc[PORTFOLIO, [LOT_SIZE, LOTS]] = [1, 1]
+        self._df = df.reindex(index=rows, columns=self._COLUMNS, fill_value=0)
+        self._df.loc[CASH, [LOT_SIZE, LOTS, PRICE]] = [1, cash, 1]
+        self._df.loc[PORTFOLIO, [LOT_SIZE, LOTS]] = [1, 1]
 
     def _fill_lots(self, positions):
         """Заполняет данные по количеству лотов для тикеров."""
-        self.df.loc[self.tickers, LOTS] = [positions[ticker] for ticker in self.tickers]
+        self._df.loc[self.tickers, LOTS] = [positions[ticker] for ticker in self.tickers]
 
     def _fill_price(self):
         """Заполняет цены на отчетную дату или предыдущую торговую."""
@@ -86,29 +86,57 @@ class Portfolio:
             non_trading_date = (f'\n\nТорги не проводились {self.date} - '
                                 f'будут использованы котировки предыдущей торговой даты {date}.\n')
             warnings.warn(non_trading_date)
-        self.df.loc[self.tickers, PRICE] = self.prices.loc[date]
+        self._df.loc[self.tickers, PRICE] = self.prices.loc[date]
 
     def _fill_value(self):
         """Рассчитывает стоимость отдельных позиций и вызывает метод расчета стоимости портфеля."""
-        value_components = self.df.loc[self.cash_and_tickers, [LOT_SIZE, LOTS, PRICE]]
-        self.df.loc[self.cash_and_tickers, VALUE] = value_components.prod(axis=1)
+        value_components = self._df.loc[self.cash_and_tickers, [LOT_SIZE, LOTS, PRICE]]
+        self._df.loc[self.cash_and_tickers, VALUE] = value_components.prod(axis=1)
         self._fill_portfolio_value()
 
     def _fill_portfolio_value(self):
         """Рассчитывает стоимость портфеля и запускает расчет весов отдельных позиций."""
-        portfolio_value = self.df.loc[self.cash_and_tickers, VALUE].sum(axis=0)
-        self.df.loc[PORTFOLIO, [PRICE, VALUE]] = [portfolio_value, portfolio_value]
+        portfolio_value = self._df.loc[self.cash_and_tickers, VALUE].sum(axis=0)
+        self._df.loc[PORTFOLIO, [PRICE, VALUE]] = [portfolio_value, portfolio_value]
         self._fill_weight()
 
     def _fill_weight(self):
         """Рассчитывает веса отдельных позиций."""
-        self.df.loc[:, WEIGHT] = self.df[VALUE] / self.df.loc[PORTFOLIO, VALUE]
+        self._df.loc[:, WEIGHT] = self._df[VALUE] / self._df.loc[PORTFOLIO, VALUE]
 
     def change_date(self, date: str):
         """Изменяет дату портфеля и пересчитывает значения всех показателей."""
         self.date = pd.to_datetime(date).date()
         self._fill_price()
         self._fill_value()
+
+    @property
+    def index(self):
+        return self._df.index
+
+    @property
+    def lot_size(self):
+        return self._df[LOT_SIZE]
+
+    @property
+    def lots(self):
+        return self._df[LOTS]
+
+    @property
+    def amount(self):
+        return self._df[[LOT_SIZE, LOTS]].prod(axis=1)
+
+    @property
+    def price(self):
+        return self._df[PRICE]
+
+    @property
+    def value(self):
+        return self._df[VALUE]
+
+    @property
+    def weight(self):
+        return self._df[WEIGHT]
 
 
 if __name__ == '__main__':
