@@ -43,6 +43,7 @@ class DividendsMetrics:
         """Дивиденды после уплаты налогов в реальном выражении (в ценах последнего года)
 
         Все метрики опираются именно на реальные посленалоговые выплаты
+        1 - ставка налога = AFTER_TAX указывается в модуле настроек
         """
         cum_cpi = getter.cpi().cumprod()
         years = [pd.to_datetime(f'{year}-12-31') for year in self._columns]
