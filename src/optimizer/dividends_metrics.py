@@ -114,7 +114,12 @@ class DividendsMetrics:
 
 
 if __name__ == '__main__':
+    positions = dict(MSTT=8650,
+                     RTKMP=1826,
+                     UPRO=3370,
+                     LKOH=2230,
+                     MVID=3260)
     port = Portfolio(date='2018-03-19',
                      cash=1000.21,
-                     positions=dict(GAZP=682, VSMO=145, TTLK=123))
+                     positions=positions)
     print(DividendsMetrics(port, 2012, 2016))
