@@ -9,7 +9,7 @@ from os import path
 import numpy as np
 import pandas as pd
 
-import optimizer.storage
+import optimizer.getter.storage
 from optimizer import download
 from optimizer.settings import DATE, DIVIDENDS
 
@@ -34,7 +34,7 @@ class LocalDividends:
     @property
     def local_data_path(self):
         """Возвращает и при необходимости создает путь к файлу с котировками."""
-        return optimizer.storage.make_data_path(self._data_folder, f'{self.ticker}.csv')
+        return optimizer.getter.storage.make_data_path(self._data_folder, f'{self.ticker}.csv')
 
     def _save_history(self):
         """Сохраняет локальную версию данных в csv-файл с именем тикера.

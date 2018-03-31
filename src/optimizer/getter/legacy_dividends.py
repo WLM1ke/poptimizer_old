@@ -5,7 +5,7 @@
 
 import pandas as pd
 
-from optimizer import storage
+from optimizer.getter import storage
 
 DATA_PATH = storage.make_data_path('legacy_dividends', 'dividends.xlsx')
 LEGACY_SHEET_NAME = 'Dividends'

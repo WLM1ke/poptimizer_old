@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 
 from optimizer import download
+from optimizer.getter.storage import LocalFile
 from optimizer.settings import DATE, CPI
-from optimizer.storage import LocalFile
 
 CPI_FOLDER = 'macro'
 CPI_FILE = 'cpi.csv'
