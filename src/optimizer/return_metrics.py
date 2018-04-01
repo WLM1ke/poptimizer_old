@@ -1,5 +1,7 @@
 """Реализация основных метрик доходности"""
 
+import pandas as pd
+
 from optimizer.portfolio import Portfolio
 from optimizer.settings import PORTFOLIO
 
@@ -48,6 +50,20 @@ class ReturnMetrics:
         returns[PORTFOLIO] = returns[self._tickers].multiply(weight).sum(axis=1)
         return returns
 
+    @property
+    def decay(self):
+        return 0.92
+
+    @property
+    def _weighting(self):
+        weights = pd.Series(1 / self.decay, index=self.returns.index)
+        weights = weights.cumprod()
+        return weights / weights.sum()
+
+    @property
+    def mean(self):
+        return self.returns.multiply(self._weighting, axis='index').sum(axis='index')
+
 
 if __name__ == '__main__':
     positions = dict(MSTT=8650,
@@ -59,4 +75,4 @@ if __name__ == '__main__':
                      cash=1000.21,
                      positions=positions)
     metrics = ReturnMetrics(port)
-    print(metrics.returns)
+    print(metrics.mean)
