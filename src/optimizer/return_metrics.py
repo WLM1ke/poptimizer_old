@@ -70,6 +70,7 @@ class ReturnMetrics:
         return returns
 
     def fit(self):
+        """Осуществляет поиск константы сглаживания методом максимального правдоподобия"""
         result = optimize.minimize_scalar(self._llh, bracket=BRACKET)
         if result.success:
             decay = result.x
@@ -99,6 +100,11 @@ class ReturnMetrics:
 
     @property
     def decay(self):
+        """Константа сглаживания
+
+        Первоначально вычисляется методом максимального правдоподобия при создании объекта. Если портфель изменен, можно
+        уточнить ее значение вызовом метода fit(). Обычно она меняется не сильно, и повторные вызовы носят
+        необязательный характер"""
         return self._decay
 
     @property
