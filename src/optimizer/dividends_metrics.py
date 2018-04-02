@@ -4,7 +4,7 @@ import pandas as pd
 
 from optimizer import getter
 from optimizer.portfolio import Portfolio
-from optimizer.settings import PORTFOLIO, AFTER_TAX, T_STATISTICS
+from optimizer.settings import PORTFOLIO, AFTER_TAX, T_SCORE
 
 
 class DividendsMetrics:
@@ -101,13 +101,13 @@ class DividendsMetrics:
 
         Для оптимизированных портфелей, нижняя граница доверительного интервала выше, чем у отдельных позиций
         """
-        return self.mean - T_STATISTICS * self.std
+        return self.mean - T_SCORE * self.std
 
     @property
     def gradient_of_lower_bound(self):
         """Рассчитывает производную нижней границы по доле актива в портфеле
 
-        В общем случае равна (r - rp) - t * sp * (b - 1), r и rp - доходность актива и портфеля, соответственно,
+        В общем случае равна (m - mp) - t * sp * (b - 1), m и mp - доходность актива и портфеля, соответственно,
         t - t-статистика, sp - СКО портфеля, b - бета актива
 
         Долю актива с максимальным градиентом необходимо наращивать, а с минимальным сокращать. Так как важную роль в
@@ -119,7 +119,7 @@ class DividendsMetrics:
         """
         mean_gradient = self.mean - self.mean[PORTFOLIO]
         risk_gradient = self.std[PORTFOLIO] * (self.beta - 1)
-        return mean_gradient - T_STATISTICS * risk_gradient
+        return mean_gradient - T_SCORE * risk_gradient
 
 
 if __name__ == '__main__':
