@@ -1,6 +1,6 @@
 import pytest
 
-from optimizer import dividends_metrics
+from optimizer import dividends_metrics, portfolio
 from optimizer.settings import AFTER_TAX, CASH, PORTFOLIO
 
 
@@ -11,9 +11,9 @@ def case_metrics():
                      UPRO=3370,
                      LKOH=2230,
                      MVID=3260)
-    port = dividends_metrics.Portfolio(date='2018-03-19',
-                                       cash=7_079_940,
-                                       positions=positions)
+    port = portfolio.Portfolio(date='2018-03-19',
+                               cash=7_079_940,
+                               positions=positions)
     return dividends_metrics.DividendsMetrics(port, 2012, 2016)
 
 

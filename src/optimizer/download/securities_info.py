@@ -27,8 +27,8 @@ def get_raw_json(tickers):
 
 def validate_response(data, tickers):
     n = len(tickers)
-    msg = ('Количество тикеров в ответе не соответствует запросу'
-           ' - возможно ошибка в написании')
+    msg = (f'Количество тикеров в ответе не соответствует запросу {tickers}'
+           f' - возможно ошибка в написании')
     if len(data['securities']['data']) != n:
         raise ValueError(msg)
     if len(data['marketdata']['data']) != n:

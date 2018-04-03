@@ -1,17 +1,18 @@
 """Реализация основных метрик доходности"""
 
-import numpy as np
 import pandas as pd
-from scipy import optimize
+from scipy import optimize, stats
 
 from optimizer.portfolio import Portfolio
 from optimizer.settings import PORTFOLIO, T_SCORE, CASH
 
 # Интервал поиска константы сглаживания
-BRACKET = (0.85, 0.90)
+BOUNDS = (0.0, 1.0)
+# Интервал обычного расположения константы сглаживания
+BRACKET = (0.95, 0.96)
 
 
-class ReturnMetrics:
+class ReturnsMetrics:
     """Метрики доходности рассчитываются на дату формирования портфеля для месячных таймфреймов"""
 
     def __init__(self, portfolio: Portfolio):
@@ -71,7 +72,10 @@ class ReturnMetrics:
 
     def fit(self):
         """Осуществляет поиск константы сглаживания методом максимального правдоподобия"""
-        result = optimize.minimize_scalar(self._llh, bracket=BRACKET)
+        result = optimize.minimize_scalar(self._llh,
+                                          bracket=BRACKET,
+                                          bounds=BOUNDS,
+                                          method='Bounded')
         if result.success:
             decay = result.x
             if BRACKET[0] < decay < BRACKET[1]:
@@ -81,22 +85,18 @@ class ReturnMetrics:
         else:
             raise ValueError('Оптимальная константа сглаживания не найдена')
 
-    def _llh(self, decay):
+    def _llh(self, decay: float):
         """-llh для портфеля с отброшенными константами
 
-        Используется логарифмическое сглаживание и предположение нормальности.
-
-        PDF = ((s * (2 * pi) ** 0,5) ** -1) * exp(- ((x - m) ** 2) / (2 * s ** 2))
-        ln PDF = - ln s - 0,5 ln (2 * pi) - ((x - m) ** 2) / (2 * s ** 2)
-        Если отбросить константы -ln PDF = ln s + ((x - m) ** 2) / (2 * s ** 2)
+        Используется экспоненциальное сглаживание и предположение нормальности
         """
         ewm = self.returns[PORTFOLIO].ewm(alpha=1 - decay)
         std = ewm.std()
         mean = ewm.mean()
         x = self.returns[PORTFOLIO].shift(periods=-1)
-        llh = np.log(std) + ((x - mean) ** 2) / (2 * std ** 2)
-        # TODO: сделать разумную обрезку
-        return llh.iloc[100:].sum()
+        # TODO: последние значение откидывается верно, а первые должны откидываться по некому формальному принципу
+        llh = stats.norm.logpdf(x.iloc[100:-1], mean.iloc[100:-1], std.iloc[100:-1])
+        return - llh.sum()
 
     @property
     def decay(self):
@@ -179,12 +179,13 @@ class ReturnMetrics:
 
 
 if __name__ == '__main__':
-    positions = dict(MSTT=8650,
-                     RTKMP=1826,
-                     UPRO=3370,
-                     LKOH=2230,
-                     MVID=3260)
+    positions = dict(MSTT=4650,
+                     LSNGP=162,
+                     MTSS=749,
+                     AKRN=795,
+                     GMKN=223)
     port = Portfolio(date='2018-03-19',
-                     cash=1000.21,
+                     cash=1_415_988,
                      positions=positions)
-    print(ReturnMetrics(port))
+    metrics = ReturnsMetrics(port)
+    print(metrics)
