@@ -26,12 +26,11 @@ class ReturnsMetrics:
                   self.std,
                   self.beta,
                   self.draw_down,
-                  self.gradient_of_draw_down]
+                  self.gradient]
         columns = ['MEAN', 'STD', 'BETA', 'DRAW_DOWN', 'GRADIENT']
         df = pd.concat(frames, axis=1)
         df.columns = columns
-        return (f'{self._portfolio}\n\n'
-                f'Ключевые метрики доходности при константе сглаживания - '
+        return (f'Ключевые метрики доходности при константе сглаживания - '
                 f'{self._decay:.4f}:\n\n{df}')
 
     @property
@@ -159,7 +158,7 @@ class ReturnsMetrics:
         return draw_down
 
     @property
-    def gradient_of_draw_down(self):
+    def gradient(self):
         """Производная нижней границы портфеля по доле актива в портфеле
 
         Можно показать, что градиент равен:

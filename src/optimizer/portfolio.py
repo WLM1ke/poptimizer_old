@@ -112,30 +112,37 @@ class Portfolio:
 
     @property
     def index(self):
+        """Тикеров, кэш и портфель"""
         return self._df.index
 
     @property
     def lot_size(self):
+        """Размер лотов"""
         return self._df[LOT_SIZE]
 
     @property
     def lots(self):
+        """Количество лотов"""
         return self._df[LOTS]
 
     @property
     def amount(self):
+        """Количество акций"""
         return self._df[[LOT_SIZE, LOTS]].prod(axis=1)
 
     @property
     def price(self):
+        """Цены акций на отчетную дату"""
         return self._df[PRICE]
 
     @property
     def value(self):
+        """Стоимость отдельных позиций"""
         return self._df[VALUE]
 
     @property
     def weight(self):
+        """Доля в стоимости портфеля отдельных позиций"""
         return self._df[WEIGHT]
 
 

@@ -46,7 +46,7 @@ def test_lower_bound(div):
 
 
 def test_gradient_of_lower_bound(div):
-    mean = div.gradient_of_lower_bound
+    mean = div.gradient
     assert mean['LKOH'] / AFTER_TAX == pytest.approx(-0.000722104546789663)
     assert mean[CASH] / AFTER_TAX == pytest.approx(-0.0435005075930532)
     assert mean[PORTFOLIO] / AFTER_TAX == pytest.approx(0)

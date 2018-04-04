@@ -23,11 +23,11 @@ class DividendsMetrics:
                   self.std,
                   self.beta,
                   self.lower_bound,
-                  self.gradient_of_lower_bound]
+                  self.gradient]
         columns = ['MEAN', 'STD', 'BETA', 'LOWER_BOUND', 'GRADIENT']
         df = pd.concat(frames, axis=1)
         df.columns = columns
-        return f'{self._portfolio}\n\nКлючевые метрики дивидендов:\n\n{df}'
+        return f'Ключевые метрики дивидендов:\n\n{df}'
 
     @property
     def nominal_pretax(self):
@@ -104,7 +104,7 @@ class DividendsMetrics:
         return self.mean - T_SCORE * self.std
 
     @property
-    def gradient_of_lower_bound(self):
+    def gradient(self):
         """Рассчитывает производную нижней границы по доле актива в портфеле
 
         В общем случае равна (m - mp) - t * sp * (b - 1), m и mp - доходность актива и портфеля, соответственно,
@@ -123,12 +123,12 @@ class DividendsMetrics:
 
 
 if __name__ == '__main__':
-    positions = dict(MSTT=8650,
-                     RTKMP=1826,
-                     UPRO=3370,
-                     LKOH=2230,
-                     MVID=3260)
+    positions = dict(MSTT=4650,
+                     LSNGP=162,
+                     MTSS=749,
+                     AKRN=795,
+                     GMKN=223)
     port = Portfolio(date='2018-03-19',
-                     cash=1000.21,
+                     cash=1_415_988,
                      positions=positions)
     print(DividendsMetrics(port, 2012, 2016))

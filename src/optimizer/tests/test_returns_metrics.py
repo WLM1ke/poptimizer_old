@@ -60,7 +60,7 @@ def test_draw_down(returns):
 
 def test_gradient(returns):
     returns._decay = 0.93
-    gradient = returns.gradient_of_draw_down
+    gradient = returns.gradient
     # В xls рассчитываются смещенные оценки - для сопоставимости нужна поправка в квадрате
     bias = returns.std[PORTFOLIO] / returns.returns.ewm(alpha=1 - returns.decay).std(bias=True).iloc[-1][PORTFOLIO]
     bias = bias ** 2
