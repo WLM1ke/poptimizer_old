@@ -42,6 +42,8 @@ class PortfolioOptimizer:
         columns = ['D_GRADIENT', 'R_GRADIENT', 'DOMINATED', 'GRADIENT_GROWTH']
         df = pd.concat(frames, axis=1)
         df.columns = columns
+        df.sort_values('D_GRADIENT', ascending=False, inplace=True)
+
         return (f'{need_optimization}\n\nКлючевые метрики оптимальности по Парето'
                 f'\n\n{df}\n\n{self.best_trade}')
 
@@ -69,7 +71,6 @@ class PortfolioOptimizer:
         dividends_gradient = self.dividends.gradient
         returns_gradient = self.returns.gradient
         index = self.portfolio.index
-        df = pd.Series(index=index)
         weight = self.portfolio.weight
         non_zero_positions = index[weight.nonzero()]
         for position in non_zero_positions:
