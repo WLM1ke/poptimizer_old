@@ -14,7 +14,7 @@ def case_metrics():
     port = portfolio.Portfolio(date='2018-03-19',
                                cash=7_079_940,
                                positions=positions)
-    return dividends_metrics.DividendsMetrics(port, 2012, 2016)
+    return dividends_metrics.DividendsMetrics(port)
 
 
 def test_mean(div):

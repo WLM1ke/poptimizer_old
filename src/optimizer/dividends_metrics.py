@@ -4,18 +4,18 @@ import pandas as pd
 
 from optimizer import getter
 from optimizer.portfolio import Portfolio
-from optimizer.settings import PORTFOLIO, AFTER_TAX, T_SCORE
+from optimizer.settings import PORTFOLIO, AFTER_TAX, T_SCORE, CASH
 
 
 class DividendsMetrics:
     """Реализует основные метрики дивидендного потока для портфеля
 
-    За основу берутся legacy dividends для интервала лет с first_year до last_year включительно, которые переводятся в
+    За основу берутся legacy dividends, которые переводятся в
     реальные посленалоговые величины и используются для расчета разнообразных метрик
     """
-    def __init__(self, portfolio: Portfolio, first_year: int, last_year: int):
+
+    def __init__(self, portfolio: Portfolio):
         self._portfolio = portfolio
-        self._columns = list(range(first_year, last_year + 1))
         self._index = portfolio.index
 
     def __str__(self):
@@ -33,11 +33,12 @@ class DividendsMetrics:
     def nominal_pretax(self):
         """Дивиденды в номинальном выражении"""
         index = self._index
-        df = pd.DataFrame(0.0, index=index, columns=self._columns)
         tickers = index[:-2]
-        df.loc[tickers, self._columns] = getter.legacy_dividends(tickers).transpose()
+        df = getter.legacy_dividends(tickers).transpose()
+        df.reindex(index=index)
+        df.loc[CASH] = 0
         amount = self._portfolio.amount
-        df.loc[PORTFOLIO, self._columns] = df.multiply(amount, axis='index').sum(axis=0)
+        df.loc[PORTFOLIO] = df.multiply(amount, axis='index').sum(axis=0)
         return df
 
     @property
@@ -47,10 +48,11 @@ class DividendsMetrics:
         Все метрики опираются именно на реальные посленалоговые выплаты
         1 - ставка налога = AFTER_TAX указывается в модуле настроек
         """
-        cum_cpi = getter.cpi().cumprod()
-        years = [pd.to_datetime(f'{year}-12-31') for year in self._columns]
-        last_year_cpi_values = (cum_cpi[years[-1]] / cum_cpi[years]).values
         nominal_pretax_dividends = self.nominal_pretax
+        columns = nominal_pretax_dividends.columns
+        cum_cpi = getter.cpi().cumprod()
+        years = [pd.to_datetime(f'{year}-12-31') for year in columns]
+        last_year_cpi_values = (cum_cpi[years[-1]] / cum_cpi[years]).values
         real_pretax_dividends = nominal_pretax_dividends.multiply(last_year_cpi_values, axis='columns')
         return real_pretax_dividends * AFTER_TAX
 
@@ -131,4 +133,4 @@ if __name__ == '__main__':
     port = Portfolio(date='2018-03-19',
                      cash=1_415_988,
                      positions=positions)
-    print(DividendsMetrics(port, 2012, 2016))
+    print(DividendsMetrics(port).nominal_pretax)

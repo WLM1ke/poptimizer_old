@@ -9,7 +9,7 @@ from optimizer.settings import PORTFOLIO, T_SCORE, CASH
 # Интервал поиска константы сглаживания
 BOUNDS = (0.0, 1.0)
 # Интервал обычного расположения константы сглаживания
-BRACKET = (0.95, 0.96)
+BRACKET = (0.93, 0.98)
 
 
 class ReturnsMetrics:
