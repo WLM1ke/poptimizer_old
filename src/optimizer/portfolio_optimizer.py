@@ -123,7 +123,8 @@ class PortfolioOptimizer:
         Лучшая покупка осуществляется на объем доступного кэша и разбивается на 5 лотов
         """
         portfolio = self.portfolio
-        best_sell = self.gradient_growth.idxmax()
+        # Отбрасывается портфель и кэш из рекомендаций
+        best_sell = self.gradient_growth.iloc[:-2].idxmax()
         sell_share = min(portfolio.weight[best_sell], MAX_TRADE)
         sell_value = sell_share * portfolio.value[PORTFOLIO]
         sell_5_lots = int(sell_value / portfolio.lot_size[best_sell] / portfolio.price[best_sell] / 5 + 0.5)
@@ -146,7 +147,7 @@ if __name__ == '__main__':
                PRTK=101 + 0 + 18,
                LSNGP=81,
                ENRU=319 + 148,
-               # PMSBP=450+232,
+               PMSBP=450 + 232,
                MSRS=699,
                LSRG=561 + 0 + 80,
                CHMF=15 + 0 + 40,
