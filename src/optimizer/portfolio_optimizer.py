@@ -86,7 +86,7 @@ class PortfolioOptimizer:
 
         Если доминирующих несколько, то выбирается позиция с максимальным градиентом
         Позиции с нулевым весом не учитываются, так как их нельзя продать"""
-        df = pd.Series(index=self.portfolio.index)
+        df = pd.Series("", index=self.portfolio.index)
         for position, dominated in self._yield_dominated():
             df[position] = dominated
         return df
