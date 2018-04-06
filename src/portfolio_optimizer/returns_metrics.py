@@ -33,7 +33,8 @@ class ReturnsMetrics:
         df = pd.concat(frames, axis=1)
         df.columns = columns
         return (f'\nКЛЮЧЕВЫЕ МЕТРИКИ ДОХОДНОСТИ'
-                f'\n\nКонстанта сглаживания - {self._decay:.4f}:\n\n{df}')
+                f'\n\nНачальная дата для расчета сглаживания - {self.returns.index[self._llh_start()].date()}'
+                f'\nКонстанта сглаживания - {self._decay:.4f}:\n\n{df}')
 
     @property
     def monthly_prices(self):
@@ -86,6 +87,10 @@ class ReturnsMetrics:
         else:
             raise ValueError('Оптимальная константа сглаживания не найдена')
 
+    def _llh_start(self):
+        """Значение с которого считается llh"""
+        return int(len(self.returns) * SAMPLE_DROP_OUT)
+
     def _llh(self, decay: float):
         """-llh для портфеля с отброшенными константами
 
@@ -95,7 +100,7 @@ class ReturnsMetrics:
         std = ewm.std()
         mean = ewm.mean()
         x = self.returns[PORTFOLIO].shift(periods=-1)
-        start = int(len(mean) * SAMPLE_DROP_OUT)
+        start = self._llh_start()
         # Первые значения отбрасываются для стабилизации сглаживания, а для последнего значения нет llh
         llh = stats.norm.logpdf(x.iloc[start:-1],
                                 mean.iloc[start:-1],
@@ -194,13 +199,13 @@ if __name__ == '__main__':
                PRTK=101 + 0 + 18,
                LSNGP=81,
                ENRU=319 + 148,
-               PMSBP=(450 + 232),  # Внесена корректировка
+               PMSBP=(450 + 232),
                MSRS=699,
                LSRG=561 + 0 + 80,
                CHMF=15 + 0 + 40,
                LKOH=123,
                RSTIP=238 + 27,
-               MFON=55,  # Внесена корректировка
+               MFON=55,
                MRSB=23,
                MRKC=343,
                SNGSP=31,
@@ -210,4 +215,4 @@ if __name__ == '__main__':
                      cash=0 + 2749.64 + 4330.3,
                      positions=pos)
     metrics = ReturnsMetrics(port)
-    print(metrics.decay)
+    print(metrics)
