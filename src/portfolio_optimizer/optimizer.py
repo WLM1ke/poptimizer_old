@@ -11,7 +11,7 @@ from portfolio_optimizer.settings import PORTFOLIO, T_SCORE, CASH
 MAX_TRADE = 0.01
 
 
-class PortfolioOptimizer:
+class Optimizer:
     """Принимает портфель и выбирает наиболее оптимальное направление его улучшения
 
     При выборе направления улучшения выбираются только те, которые обеспечивают улучшение по каждому из критериев:
@@ -162,5 +162,5 @@ if __name__ == '__main__':
     port = Portfolio(date='2018-04-05',
                      cash=0 + 2749.64 + 4330.3,
                      positions=pos)
-    optimizer = PortfolioOptimizer(port)
+    optimizer = Optimizer(port)
     print(optimizer)

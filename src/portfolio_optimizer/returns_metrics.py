@@ -9,7 +9,7 @@ from portfolio_optimizer.settings import PORTFOLIO, T_SCORE, CASH
 # Интервал поиска константы сглаживания
 BOUNDS = (0.0, 1.0)
 # Интервал обычного расположения константы сглаживания
-BRACKET = (0.87, 0.89)
+BRACKET = (0.86, 0.88)
 # Сколько процентов данных отбрасывается при оптимизации llh, чтобы экспоненциальное сглаживание стабилизировалось
 SAMPLE_DROP_OUT = 0.20
 
@@ -32,8 +32,8 @@ class ReturnsMetrics:
         columns = ['MEAN', 'STD', 'BETA', 'DRAW_DOWN', 'GRADIENT']
         df = pd.concat(frames, axis=1)
         df.columns = columns
-        return (f'Ключевые метрики доходности при константе сглаживания - '
-                f'{self._decay:.4f}:\n\n{df}')
+        return (f'\nКЛЮЧЕВЫЕ МЕТРИКИ ДОХОДНОСТИ'
+                f'\n\nКонстанта сглаживания - {self._decay:.4f}:\n\n{df}')
 
     @property
     def monthly_prices(self):
@@ -210,4 +210,4 @@ if __name__ == '__main__':
                      cash=0 + 2749.64 + 4330.3,
                      positions=pos)
     metrics = ReturnsMetrics(port)
-    print(metrics)
+    print(metrics.decay)

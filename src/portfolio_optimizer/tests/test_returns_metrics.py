@@ -18,7 +18,7 @@ def case_metrics():
 
 
 def test_decay(returns):
-    assert returns.decay == pytest.approx(0.9523715335295834)
+    assert returns.decay == pytest.approx(0.87297494460045133)
 
 
 def test_mean(returns):
@@ -71,7 +71,7 @@ def test_gradient(returns):
 
 def test_str(returns):
     text = str(returns)
-    assert 'Ключевые метрики доходности при константе сглаживания' in text
+    assert 'КЛЮЧЕВЫЕ МЕТРИКИ ДОХОДНОСТИ' in text
     assert 'MEAN' in text
     assert 'STD' in text
     assert 'BETA' in text
