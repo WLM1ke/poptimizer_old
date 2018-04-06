@@ -39,8 +39,8 @@ class Portfolio:
 
     def __init__(self, date: str, cash: float, positions: dict, value: float = None):
         self.date = pd.to_datetime(date).date()
-        self.tickers = sorted(positions.keys())
-        self.cash_and_tickers = self.tickers + [CASH]
+        self._tickers = sorted(positions.keys())
+        self.cash_and_tickers = self._tickers + [CASH]
         self._create_df(cash)
         self._fill_lots(positions)
         self.prices = None
@@ -64,7 +64,7 @@ class Portfolio:
         CASH - 1, денежные средства и 1.
         PORTFOLIO - 1, 1, а цена может быть заполнена только после расчета стоимости отдельных позиций.
         """
-        df = getter.security_info(self.tickers)
+        df = getter.security_info(self._tickers)
         rows = df.index.append(pd.Index([CASH, PORTFOLIO]))
         self._df = df.reindex(index=rows, columns=self._COLUMNS, fill_value=0)
         self._df.loc[CASH, [LOT_SIZE, LOTS, PRICE]] = [1, cash, 1]
@@ -72,12 +72,12 @@ class Portfolio:
 
     def _fill_lots(self, positions):
         """Заполняет данные по количеству лотов для тикеров."""
-        self._df.loc[self.tickers, LOTS] = [positions[ticker] for ticker in self.tickers]
+        self._df.loc[self._tickers, LOTS] = [positions[ticker] for ticker in self._tickers]
 
     def _fill_price(self):
         """Заполняет цены на отчетную дату или предыдущую торговую."""
         if self.prices is None:
-            prices = getter.prices_history(self.tickers)
+            prices = getter.prices_history(self._tickers)
             self.prices = prices.fillna(method='ffill')
         date = self.date
         index = self.prices.index
@@ -86,7 +86,7 @@ class Portfolio:
             non_trading_date = (f'\n\nТорги не проводились {self.date} - '
                                 f'будут использованы котировки предыдущей торговой даты {date}.\n')
             warnings.warn(non_trading_date)
-        self._df.loc[self.tickers, PRICE] = self.prices.loc[date]
+        self._df.loc[self._tickers, PRICE] = self.prices.loc[date]
 
     def _fill_value(self):
         """Рассчитывает стоимость отдельных позиций и вызывает метод расчета стоимости портфеля."""
@@ -114,6 +114,11 @@ class Portfolio:
     def index(self):
         """Тикеров, кэш и портфель"""
         return self._df.index
+
+    @property
+    def tickers(self):
+        """Тикеры портфеля"""
+        return self._tickers
 
     @property
     def lot_size(self):

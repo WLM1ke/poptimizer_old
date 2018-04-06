@@ -2,6 +2,7 @@
 
 import pandas as pd
 
+from portfolio_optimizer import getter
 from portfolio_optimizer.dividends_metrics import DividendsMetrics
 from portfolio_optimizer.portfolio import Portfolio
 from portfolio_optimizer.returns_metrics import ReturnsMetrics
@@ -9,6 +10,8 @@ from portfolio_optimizer.settings import PORTFOLIO, T_SCORE, CASH
 
 # Максимальный объем операций в долях портфеля
 MAX_TRADE = 0.01
+# Оборот, при котором обнуляются градиенты, в процентах от размера портфеля
+VOLUME_CUT_OFF = 0.0010
 
 
 class Optimizer:
@@ -38,8 +41,9 @@ class Optimizer:
         frames = [self.dividends.gradient,
                   self.returns.gradient,
                   self.dominated,
+                  self.volume_factor,
                   self.gradient_growth]
-        columns = ['D_GRADIENT', 'R_GRADIENT', 'DOMINATED', 'GRADIENT_GROWTH']
+        columns = ['D_GRADIENT', 'R_GRADIENT', 'DOMINATED', 'VOLUME_FACTOR', 'GRADIENT_GROWTH']
         df = pd.concat(frames, axis=1)
         df.columns = columns
         df.sort_values('D_GRADIENT', ascending=False, inplace=True)
@@ -62,6 +66,20 @@ class Optimizer:
         """Метрики доходности, оптимизируемого портфеля"""
         return self._returns
 
+    @property
+    def volume_factor(self):
+        """Понижающий коэффициент для акций с малым объемом оборотов
+
+        Ликвидность в первом приближении убывает пропорционально квадрату оборота, что отражено в формулах расчета
+        """
+        portfolio = self.portfolio
+        tickers = portfolio.tickers
+        last_volume = getter.volumes_history(tickers).iloc[-1]
+        volume_share_of_portfolio = last_volume * portfolio.price[tickers] / portfolio.value[PORTFOLIO]
+        volume_factor = 1 - (VOLUME_CUT_OFF / volume_share_of_portfolio) ** 2
+        volume_factor[volume_factor < 0] = 0
+        return volume_factor.reindex(index=portfolio.index, fill_value=1)
+
     def _yield_dominated(self):
         """Для каждой позиции выдает доминирующую ее по Парето
 
@@ -71,8 +89,8 @@ class Optimizer:
         dividends_gradient = self.dividends.gradient
         returns_gradient = self.returns.gradient
         index = self.portfolio.index
-        weight = self.portfolio.weight
-        non_zero_positions = index[weight.nonzero()]
+        non_zero_weight_and_factor = self.portfolio.weight * self.volume_factor
+        non_zero_positions = index[non_zero_weight_and_factor.nonzero()]
         for position in non_zero_positions:
             greater_dividend_gradient = dividends_gradient > dividends_gradient[position]
             greater_return_gradient = returns_gradient > returns_gradient[position]
@@ -96,11 +114,13 @@ class Optimizer:
         """Для каждой позиции выдает прирост градиента при покупке доминирующей
 
         Для позиций не имеющих доминирующих - прирост 0
+        Учитывается понижающий коэффициент для низколиквидных доминирующих акций
         """
         df = pd.Series(0.0, index=self.portfolio.index)
         dividends_gradient = self.dividends.gradient
+        factor = self.volume_factor
         for position, dominated in self._yield_dominated():
-            df[position] = dividends_gradient[dominated] - dividends_gradient[position]
+            df[position] = (dividends_gradient[dominated] - dividends_gradient[position]) * factor[dominated]
         return df
 
     @property
@@ -147,13 +167,13 @@ if __name__ == '__main__':
                PRTK=101 + 0 + 18,
                LSNGP=81,
                ENRU=319 + 148,
-               PMSBP=(450 + 232) * 8,  # Внесена корректировка
+               PMSBP=450 + 232,
                MSRS=699,
                LSRG=561 + 0 + 80,
                CHMF=15 + 0 + 40,
                LKOH=123,
                RSTIP=238 + 27,
-               MFON=55 * 2,  # Внесена корректировка
+               MFON=55,
                MRSB=23,
                MRKC=343,
                SNGSP=31,
