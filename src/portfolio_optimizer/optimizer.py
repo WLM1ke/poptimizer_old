@@ -11,7 +11,7 @@ from portfolio_optimizer.settings import PORTFOLIO, T_SCORE, CASH
 # Максимальный объем операций в долях портфеля
 MAX_TRADE = 0.01
 # Оборот, при котором обнуляются градиенты, в процентах от размера портфеля
-VOLUME_CUT_OFF = 0.0010
+VOLUME_CUT_OFF = 0.0024
 
 
 class Optimizer:
@@ -89,14 +89,17 @@ class Optimizer:
         dividends_gradient = self.dividends.gradient
         returns_gradient = self.returns.gradient
         index = self.portfolio.index
-        non_zero_weight_and_factor = self.portfolio.weight * self.volume_factor
-        non_zero_positions = index[non_zero_weight_and_factor.nonzero()]
+        weight = self.portfolio.weight
+        non_zero_positions = index[weight > 0]
+        volume_factor = self.volume_factor
+        non_zero_factor = volume_factor > 0
         for position in non_zero_positions:
             greater_dividend_gradient = dividends_gradient > dividends_gradient[position]
             greater_return_gradient = returns_gradient > returns_gradient[position]
-            pareto_dominance = index[greater_dividend_gradient & greater_return_gradient]
+            pareto_dominance = index[greater_dividend_gradient & greater_return_gradient & non_zero_factor]
             if not pareto_dominance.empty:
-                yield position, dividends_gradient[pareto_dominance].idxmax()
+                factor_gradient = (dividends_gradient - dividends_gradient[position]) * volume_factor
+                yield position, factor_gradient[pareto_dominance].idxmax()
 
     @property
     def dominated(self):
