@@ -19,6 +19,8 @@ class DividendsMetrics:
         self._index = portfolio.index
 
     def __str__(self):
+        expected_dividends = self.mean[PORTFOLIO] * self._portfolio.value[PORTFOLIO]
+        minimal_dividends = self.lower_bound[PORTFOLIO] * self._portfolio.value[PORTFOLIO]
         frames = [self.mean,
                   self.std,
                   self.beta,
@@ -27,7 +29,10 @@ class DividendsMetrics:
         columns = ['MEAN', 'STD', 'BETA', 'LOWER_BOUND', 'GRADIENT']
         df = pd.concat(frames, axis=1)
         df.columns = columns
-        return f'Ключевые метрики дивидендов:\n\n{df}'
+        return (f'\nКЛЮЧЕВЫЕ МЕТРИКИ ДИВИДЕНДОВ:\n\n'
+                f'Ожидаемые дивиденды - {expected_dividends:.0f}\n'
+                f'Минимальные дивиденды дивиденды - {minimal_dividends:.0f}\n\n'
+                f'{df}')
 
     @property
     def nominal_pretax(self):
@@ -125,12 +130,30 @@ class DividendsMetrics:
 
 
 if __name__ == '__main__':
-    positions = dict(MSTT=4650,
-                     LSNGP=162,
-                     MTSS=749,
-                     AKRN=795,
-                     GMKN=223)
-    port = Portfolio(date='2018-03-19',
-                     cash=1_415_988,
-                     positions=positions)
-    print(DividendsMetrics(port).nominal_pretax)
+    pos = dict(RTKMP=1475 + 312 + 39,
+               MSTT=4650,
+               UPRO=1267,
+               AKRN=795,
+               VSMO=133 + 12,
+               GMKN=166 + 57,
+               MTSS=749,
+               MVID=264 + 62,
+               PRTK=101 + 0 + 18,
+               LSNGP=81,
+               ENRU=319 + 148,
+               PMSBP=(450 + 232),
+               MSRS=699,
+               LSRG=561 + 0 + 80,
+               CHMF=15 + 0 + 40,
+               LKOH=123,
+               RSTIP=238 + 27,
+               MFON=55,
+               MRSB=23,
+               MRKC=343,
+               SNGSP=31,
+               AFLT=5,
+               KBTK=9)
+    port = Portfolio(date='2018-04-04',
+                     cash=0 + 2749.64 + 4330.3,
+                     positions=pos)
+    print(DividendsMetrics(port))
