@@ -188,7 +188,7 @@ if __name__ == '__main__':
                SNGSP=31,
                AFLT=5,
                KBTK=9)
-    port = Portfolio(date='2018-04-05',
+    port = Portfolio(date='2018-04-06',
                      cash=0 + 2749.64 + 4330.3,
                      positions=pos)
     optimizer = Optimizer(port)

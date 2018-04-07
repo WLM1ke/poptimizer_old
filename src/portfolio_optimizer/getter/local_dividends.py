@@ -11,17 +11,14 @@ import pandas as pd
 
 import portfolio_optimizer.getter.storage
 from portfolio_optimizer import download
-from portfolio_optimizer.settings import DATE, DIVIDENDS
 
-DIVIDENDS_FOLDER = 'nominal_retax_dividends'
+DIVIDENDS_FOLDER = 'dividends'
 UPDATE_PERIOD_IN_DAYS = 1
 
 
 class LocalDividends:
     """Реализует хранение, обновление и хранение локальных данных по индексу дивидендам."""
     _data_folder = DIVIDENDS_FOLDER
-    _load_converter = {DATE: pd.to_datetime, DIVIDENDS: pd.to_numeric}
-    _data_columns = DIVIDENDS
 
     def __init__(self, ticker: str):
         self.ticker = ticker
@@ -48,7 +45,7 @@ class LocalDividends:
         Значение sep гарантирует загрузку данных с добавленными PyCharm пробелами.
         """
         self.df = pd.read_msgpack(self.local_data_path)
-        return self.df[self._data_columns]
+        return self.df
 
     def need_update(self):
         """Обновление требуется по прошествии фиксированного количества дней."""
@@ -96,7 +93,7 @@ def get_dividends(tickers: list):
         В столбцах - тикеры.
         Значения - выплаченные дивиденды.
     """
-    df = pd.concat([LocalDividends(ticker).df for ticker in tickers], axis=1)
+    df = pd.concat([LocalDividends(ticker).df.to_frame() for ticker in tickers], axis=1)
     df.columns = tickers
     return df
 
