@@ -68,8 +68,9 @@ def update_local_securities_info(tickers):
     df = load_securities_info()
     df_update = download_securities_info(tickers)
     validate(df, df_update)
-    not_updated_tickers = list(set(df.index) - set(df_update.index))
-    df = pd.concat([df.loc[not_updated_tickers], df_update])
+    all_tickers = list(set(df_update.index) | set(df.index))
+    df.reindex(index=all_tickers)
+    df.loc[tickers, df_update.columns] = df_update
     fill_aliases_column(df)
     save_security_info(df)
     return df.loc[tickers]
