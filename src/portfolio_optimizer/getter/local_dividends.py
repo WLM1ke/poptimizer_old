@@ -34,25 +34,20 @@ class LocalDividends:
     @property
     def local_data_path(self):
         """Возвращает и при необходимости создает путь к файлу с котировками."""
-        return portfolio_optimizer.getter.storage.make_data_path(self._data_folder, f'{self.ticker}.csv')
+        return portfolio_optimizer.getter.storage.make_data_path(self._data_folder, f'{self.ticker}.msg')
 
     def _save_history(self):
         """Сохраняет локальную версию данных в csv-файл с именем тикера.
 
         Флаги заголовков необходимы для поддержки сохранения серий, а не только датафреймов."""
-        self.df.to_csv(self.local_data_path, index=True, header=True)
+        self.df.to_msgpack(self.local_data_path)
 
     def load_local_history(self):
         """Загружает историю котировок из локальных данных.
 
         Значение sep гарантирует загрузку данных с добавленными PyCharm пробелами.
         """
-        df = pd.read_csv(self.local_data_path,
-                         converters=self._load_converter,
-                         header=0,
-                         engine='python',
-                         sep='\s*,')
-        self.df = df.set_index(DATE)
+        self.df = pd.read_msgpack(self.local_data_path)
         return self.df[self._data_columns]
 
     def need_update(self):
