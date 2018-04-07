@@ -1,5 +1,8 @@
 """Класс проводит оптимизацию по Парето на основе метрик доходности и дивидендов"""
 
+import cProfile
+import pstats
+
 import pandas as pd
 
 from portfolio_optimizer import getter
@@ -159,6 +162,9 @@ class Optimizer:
 
 
 if __name__ == '__main__':
+    pr = cProfile.Profile()
+    pr.enable()
+
     pos = dict(RTKMP=1475 + 312 + 39,
                MSTT=4650,
                UPRO=1267,
@@ -187,3 +193,7 @@ if __name__ == '__main__':
                      positions=pos)
     optimizer = Optimizer(port)
     print(optimizer)
+
+    pr.disable()
+    ps = pstats.Stats(pr).sort_stats('cumulative')
+    ps.print_stats()
