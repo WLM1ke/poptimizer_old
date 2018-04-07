@@ -46,13 +46,14 @@ def validate(df, df_update):
 
     Проверка осуществляется для колонок с кратким наименованием, регистрационным номером и размером лота."""
     common_tickers = list(set(df.index) & set(df_update.index))
-    columns_for_validation = [REG_NUMBER, LOT_SIZE]
-    df = df.loc[common_tickers, columns_for_validation]
-    df_update = df_update.loc[common_tickers, columns_for_validation]
-    if not df.equals(df_update):
-        raise ValueError(f'Загруженные данные {common_tickers} не стыкуются с локальными. \n' +
-                         f'{df} \n' +
-                         f'{df_update}')
+    if common_tickers:
+        columns_for_validation = [REG_NUMBER, LOT_SIZE]
+        df = df.loc[common_tickers, columns_for_validation]
+        df_update = df_update.loc[common_tickers, columns_for_validation]
+        if not df.equals(df_update):
+            raise ValueError(f'Загруженные данные {common_tickers} не стыкуются с локальными. \n' +
+                             f'{df} \n' +
+                             f'{df_update}')
 
 
 def fill_aliases_column(df):
@@ -69,7 +70,7 @@ def update_local_securities_info(tickers):
     df_update = download_securities_info(tickers)
     validate(df, df_update)
     all_tickers = list(set(df_update.index) | set(df.index))
-    df.reindex(index=all_tickers)
+    df = df.reindex(index=all_tickers)
     df.loc[tickers, df_update.columns] = df_update
     fill_aliases_column(df)
     save_security_info(df)
