@@ -188,31 +188,13 @@ class ReturnsMetrics:
 
 
 if __name__ == '__main__':
-    pos = dict(RTKMP=1475 + 312 + 39,
-               MSTT=4650,
-               UPRO=1267,
-               AKRN=795,
-               VSMO=133 + 12,
-               GMKN=166 + 57,
-               MTSS=749,
-               MVID=264 + 62,
-               PRTK=101 + 0 + 18,
-               LSNGP=81,
-               ENRU=319 + 148,
-               PMSBP=(450 + 232),
-               MSRS=699,
-               LSRG=561 + 0 + 80,
-               CHMF=15 + 0 + 40,
+    pos = dict(VSMO=133,
+               MVID=264,
                LKOH=123,
-               RSTIP=238 + 27,
-               MFON=55,
-               MRSB=23,
-               MRKC=343,
-               SNGSP=31,
                AFLT=5,
                KBTK=9)
     port = Portfolio(date='2018-04-05',
-                     cash=0 + 2749.64 + 4330.3,
+                     cash=2749.64,
                      positions=pos)
     metrics = ReturnsMetrics(port)
     print(metrics)
