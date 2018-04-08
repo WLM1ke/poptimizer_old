@@ -74,7 +74,7 @@ class Optimizer:
         """
         portfolio = self.portfolio
         tickers = portfolio.tickers
-        last_volume = getter.volumes_history(tickers).iloc[-1]
+        last_volume = getter.volumes_history(tickers).loc[portfolio.date]
         volume_share_of_portfolio = last_volume * portfolio.price[tickers] / portfolio.value[PORTFOLIO]
         volume_factor = 1 - (VOLUME_CUT_OFF / volume_share_of_portfolio) ** 2
         volume_factor[volume_factor < 0] = 0
@@ -150,7 +150,7 @@ class Optimizer:
         best_sell = self.gradient_growth.iloc[:-2].idxmax()
         sell_share = min(portfolio.weight[best_sell], MAX_TRADE)
         sell_value = sell_share * portfolio.value[PORTFOLIO]
-        sell_5_lots = int(sell_value / portfolio.lot_size[best_sell] / portfolio.price[best_sell] / 5 + 0.5)
+        sell_5_lots = int(sell_value / portfolio.lot_size[best_sell] / portfolio.price[best_sell] / 5 + 1.0)
         best_buy = self.dominated[best_sell]
         buy_5_lots = int(portfolio.value[CASH] / portfolio.lot_size[best_buy] / portfolio.price[best_buy] / 5)
         return (f'РЕКОМЕНДУЕТСЯ:\n'
@@ -193,10 +193,11 @@ if __name__ == '__main__':
                LKOH=123,
                ENRU=467,
                MVID=326)
-    port = Portfolio(date='2018-02-19',
+    port = Portfolio(date='2018-04-06',
                      cash=0 + 2749.64 + 4330.3,
                      positions=pos)
     optimizer = Optimizer(port)
+
     print(optimizer)
 
     """pr.disable()
