@@ -1,8 +1,5 @@
 """Класс проводит оптимизацию по Парето на основе метрик доходности и дивидендов"""
 
-import cProfile
-import pstats
-
 import pandas as pd
 
 from portfolio_optimizer import getter
@@ -162,38 +159,46 @@ class Optimizer:
 
 
 if __name__ == '__main__':
-    pr = cProfile.Profile()
-    pr.enable()
+    """pr = cProfile.Profile()
+    pr.enable()"""
 
-    pos = dict(RTKMP=1475 + 312 + 39,
-               MSTT=4650,
-               UPRO=1267,
-               AKRN=795,
-               VSMO=133 + 12,
-               GMKN=166 + 57,
-               MTSS=749,
-               MVID=264 + 62,
-               PRTK=101 + 0 + 18,
-               LSNGP=81,
-               ENRU=319 + 148,
-               PMSBP=450 + 232,
-               MSRS=699,
-               LSRG=561 + 0 + 80,
-               CHMF=15 + 0 + 40,
-               LKOH=123,
-               RSTIP=238 + 27,
+    pos = dict(BANEP=0,
                MFON=55,
-               MRSB=23,
-               MRKC=343,
                SNGSP=31,
+               RTKM=0,
+               MAGN=0,
+               MSTT=4650,
+               KBTK=9,
+               MOEX=0,
+               RTKMP=1826,
+               NMTP=0,
+               TTLK=0,
+               LSRG=641,
+               LSNGP=81,
+               PRTK=119,
+               MTSS=749,
+               AKRN=795,
+               MRKC=343,
+               GAZP=0,
                AFLT=5,
-               KBTK=9)
-    port = Portfolio(date='2018-04-05',
+               MSRS=699,
+               UPRO=1267,
+               PMSBP=682,
+               CHMF=55,
+               GMKN=223,
+               VSMO=145,
+               RSTIP=265,
+               PHOR=0,
+               MRSB=23,
+               LKOH=123,
+               ENRU=467,
+               MVID=326)
+    port = Portfolio(date='2018-02-19',
                      cash=0 + 2749.64 + 4330.3,
                      positions=pos)
     optimizer = Optimizer(port)
     print(optimizer)
 
-    pr.disable()
+    """pr.disable()
     ps = pstats.Stats(pr).sort_stats('cumulative')
-    ps.print_stats()
+    ps.print_stats()"""

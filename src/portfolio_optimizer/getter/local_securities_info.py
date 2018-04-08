@@ -13,6 +13,7 @@
         get_aliases_tickers(tickers)
 """
 
+import numpy as np
 import pandas as pd
 
 from portfolio_optimizer import download
@@ -48,12 +49,13 @@ def validate(df, df_update):
     common_tickers = list(set(df.index) & set(df_update.index))
     if common_tickers:
         columns_for_validation = [REG_NUMBER, LOT_SIZE]
-        df = df.loc[common_tickers, columns_for_validation]
-        df_update = df_update.loc[common_tickers, columns_for_validation]
-        if not df.equals(df_update):
+        df = df.loc[common_tickers]
+        df_update = df_update.loc[common_tickers]
+        equal = df[REG_NUMBER].equals(df_update[REG_NUMBER]) and np.allclose(df[LOT_SIZE], df_update[LOT_SIZE])
+        if not equal:
             raise ValueError(f'Загруженные данные {common_tickers} не стыкуются с локальными. \n' +
-                             f'{df} \n' +
-                             f'{df_update}')
+                             f'{df[columns_for_validation]} \n' +
+                             f'{df_update[columns_for_validation]}')
 
 
 def fill_aliases_column(df):
