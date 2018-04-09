@@ -193,11 +193,10 @@ if __name__ == '__main__':
                LKOH=123,
                ENRU=467,
                MVID=326)
-    port = Portfolio(date='2018-04-06',
+    port = Portfolio(date='2018-03-19',
                      cash=0 + 2749.64 + 4330.3,
                      positions=pos)
     optimizer = Optimizer(port)
-
     print(optimizer)
 
     """pr.disable()
