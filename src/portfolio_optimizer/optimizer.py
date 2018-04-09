@@ -159,46 +159,17 @@ class Optimizer:
 
 
 if __name__ == '__main__':
-    """pr = cProfile.Profile()
-    pr.enable()"""
-
-    pos = dict(BANEP=0,
-               MFON=55,
-               SNGSP=31,
-               RTKM=0,
-               MAGN=0,
-               MSTT=4650,
-               KBTK=9,
-               MOEX=0,
-               RTKMP=1826,
-               NMTP=0,
-               TTLK=0,
-               LSRG=641,
+    pos = dict(MFON=55,
                LSNGP=81,
-               PRTK=119,
                MTSS=749,
                AKRN=795,
-               MRKC=343,
-               GAZP=0,
-               AFLT=5,
                MSRS=699,
                UPRO=1267,
-               PMSBP=682,
-               CHMF=55,
-               GMKN=223,
-               VSMO=145,
-               RSTIP=265,
-               PHOR=0,
                MRSB=23,
-               LKOH=123,
-               ENRU=467,
-               MVID=326)
-    port = Portfolio(date='2018-03-19',
-                     cash=0 + 2749.64 + 4330.3,
+               LKOH=123)
+    port = Portfolio(date='2018-04-06',
+                     cash=4330.3,
                      positions=pos)
     optimizer = Optimizer(port)
     print(optimizer)
 
-    """pr.disable()
-    ps = pstats.Stats(pr).sort_stats('cumulative')
-    ps.print_stats()"""
