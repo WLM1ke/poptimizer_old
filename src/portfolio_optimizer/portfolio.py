@@ -5,7 +5,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from portfolio_optimizer import getter
+from portfolio_optimizer import local
 from portfolio_optimizer.settings import LOTS
 from portfolio_optimizer.settings import PORTFOLIO, CASH, PRICE, WEIGHT, VALUE, LOT_SIZE
 
@@ -64,7 +64,7 @@ class Portfolio:
         CASH - 1, денежные средства и 1.
         PORTFOLIO - 1, 1, а цена может быть заполнена только после расчета стоимости отдельных позиций.
         """
-        df = getter.security_info(self._tickers)
+        df = local.security_info(self._tickers)
         rows = df.index.append(pd.Index([CASH, PORTFOLIO]))
         self._df = df.reindex(index=rows, columns=self._COLUMNS, fill_value=0)
         self._df.loc[CASH, [LOT_SIZE, LOTS, PRICE]] = [1, cash, 1]
@@ -77,7 +77,7 @@ class Portfolio:
     def _fill_price(self):
         """Заполняет цены на отчетную дату или предыдущую торговую."""
         if self.prices is None:
-            prices = getter.prices_history(self._tickers)
+            prices = local.prices_history(self._tickers)
             self.prices = prices.fillna(method='ffill')
         date = self.date
         index = self.prices.index

@@ -1,9 +1,4 @@
-"""Download and transform dividends data to pandas DataFrames.
-
-   Single ticker close dates and dividends:
-
-       get_dividends(ticker)
-"""
+"""Загружает дивиденды и даты закрытия с сайта www.dohod.ru"""
 
 import urllib.error
 import urllib.request
@@ -23,13 +18,15 @@ VALUE_COLUMN = 2
 
 
 def make_url(ticker: str):
-    """Формирует url - тикер необходимо перевести в маленькие буквы."""
+    """Формирует url - тикер необходимо перевести в маленькие буквы"""
     ticker = ticker.lower()
     return f'http://www.dohod.ru/ik/analytics/dividend/{ticker}'
 
 
-def get_html(url):
-    """Получает html - *requests* fails on SSL, using *urllib.request."""
+def get_html(url: str):
+    """Получает html
+
+    requests fails on SSL, using urllib.request"""
     try:
         with urllib.request.urlopen(url) as response:
             return response.read().decode('utf-8')
@@ -40,40 +37,41 @@ def get_html(url):
             raise error
 
 
-def pick_table(url, html: str, n: int = TABLE_INDEX):
-    """Выбирает таблицу с дивидендами на странице."""
+def pick_table(url: str, html: str):
+    """Выбирает таблицу с дивидендами на странице"""
     soup = BeautifulSoup(html, 'lxml')
     try:
-        return soup.find_all('table')[n]
+        return soup.find_all('table')[TABLE_INDEX]
     except IndexError:
         raise IndexError(f'На странице {url} нет таблицы с дивидендами.')
 
 
 class RowParser:
-    """Выбирает ячейки в ряду с датой закрытия реестра и дивидендами."""
-    def __init__(self, row, tag='td'):
+    """Выбирает столбцы в ряду с датой закрытия реестра и дивидендами"""
+
+    def __init__(self, row: BeautifulSoup, tag: str = 'td'):
         self.columns = [column.string for column in row.find_all(tag)]
 
     @property
     def date(self):
         """Дата закрытия реестра"""
-        return self.columns[DATE_COLUMN]  # 0
+        return self.columns[DATE_COLUMN]
 
     @property
     def value(self):
         """Размер дивиденда"""
-        return self.columns[VALUE_COLUMN]  # 2
+        return self.columns[VALUE_COLUMN]
 
 
-def validate_table_header(header):
-    """Проверка наименований столбцов с датой закрытия и дивидендами."""
+def validate_table_header(header: BeautifulSoup):
+    """Проверка наименований столбцов с датой закрытия и дивидендами"""
     cells = RowParser(header, 'th')
     if cells.date != TH_DATE or cells.value != TH_VALUE:
         raise ValueError('Некорректные заголовки таблицы дивидендов.')
 
 
-def parse_table_rows(table):
-    """Строки с прогнозом имеют class = forecast, а у заголовка и факта - класс отсутствует."""
+def parse_table_rows(table: BeautifulSoup):
+    """Строки с прогнозом имеют class = forecast, а у заголовка и факта - класс отсутствует"""
     rows = table.find_all(name='tr', class_=None)
     validate_table_header(rows[0])
     for row in rows[1:]:
@@ -82,26 +80,26 @@ def parse_table_rows(table):
 
 
 def make_df(parsed_rows):
-    """Формирует DataFrame и упорядочивает даты по возрастанию."""
+    """Формирует DataFrame и упорядочивает даты по возрастанию"""
     df = pd.DataFrame(data=parsed_rows,
                       columns=[DATE, DIVIDENDS])
     return df.set_index(DATE)[DIVIDENDS].sort_index()
 
 
-def get_dividends(ticker: str) -> pd.Series:
+def dividends(ticker: str) -> pd.Series:
     """
-    Возвращает Series с дивидендами упорядоченными по возрастанию даты закрытия реестра.
+    Возвращает Series с дивидендами упорядоченными по возрастанию даты закрытия реестра
 
     Parameters
     ----------
     ticker
-        Тикер.
+        Тикер
 
     Returns
     -------
     pandas.Series
-        Строки - даты закрытия реестра упорядоченные по возрастанию.
-        Значения - дивиденды.
+        Строки - даты закрытия реестра упорядоченные по возрастанию
+        Значения - дивиденды
     """
     url = make_url(ticker)
     html = get_html(url)
@@ -111,4 +109,4 @@ def get_dividends(ticker: str) -> pd.Series:
 
 
 if __name__ == '__main__':
-    print(get_dividends('CHMF'))
+    print(dividends('CHMF'))

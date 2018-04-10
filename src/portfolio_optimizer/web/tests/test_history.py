@@ -2,9 +2,9 @@ import datetime
 
 import pandas as pd
 
-from portfolio_optimizer.download.history import get_quotes_history, make_url, get_index_history, get_json, Index, \
-    Quotes
 from portfolio_optimizer.settings import CLOSE_PRICE, VOLUME
+from portfolio_optimizer.web.web_history import get_quotes_history, make_url, get_index_history, get_json, Index, \
+    Quotes
 
 
 def test_make_url():

@@ -1,6 +1,6 @@
 import pytest
 
-from ..tickers import get_reg_number_tickers
+from ..web_tickers import get_reg_number_tickers
 
 check_points = [('1-02-65104-D', 'UPRO EONR OGK4'),
                 ('10301481B', 'SBER SBER03'),

@@ -4,8 +4,8 @@
 """
 import pandas as pd
 
-from portfolio_optimizer import download
-from portfolio_optimizer.getter.local_quotes import LocalQuotes
+from portfolio_optimizer import web
+from portfolio_optimizer.local.local_quotes import LocalQuotes
 from portfolio_optimizer.settings import DATE, CLOSE_PRICE
 
 INDEX_FOLDER = 'index'
@@ -35,14 +35,14 @@ class LocalIndex(LocalQuotes):
         """Обновляет локальные данные данными из интернета и возвращает полную историю котировок индекса."""
         self.df = self.load_local_history()
         if self.need_update():
-            df_update = download.index_history(self.df_last_date)
+            df_update = web.index_history(self.df_last_date)
             self._validate_new_data(df_update)
             self.df = pd.concat([self.df, df_update.iloc[1:]])
             self._save_history()
 
     def create_local_history(self):
         """Формирует, сохраняет и возвращает локальную версию историю котировок индекса."""
-        self.df = download.index_history()
+        self.df = web.index_history()
         self._save_history()
 
 

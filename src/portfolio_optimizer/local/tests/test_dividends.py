@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from portfolio_optimizer import settings
-from portfolio_optimizer.getter import local_dividends
+from portfolio_optimizer.local import local_dividends
 
 
 @pytest.fixture(scope='module', autouse=True)

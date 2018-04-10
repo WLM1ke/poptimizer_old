@@ -1,8 +1,8 @@
 import pandas as pd
 import pytest
 
-from portfolio_optimizer.download.securities_info import make_url, get_raw_json, get_securities_info
 from portfolio_optimizer.settings import COMPANY_NAME, REG_NUMBER, LOT_SIZE
+from portfolio_optimizer.web.web_securities_info import make_url, get_raw_json, get_securities_info
 
 
 def test_make_url():

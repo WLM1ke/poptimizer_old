@@ -20,9 +20,9 @@ import arrow
 import numpy as np
 import pandas as pd
 
-from portfolio_optimizer import download
-from portfolio_optimizer.getter import local_securities_info
-from portfolio_optimizer.getter.local_dividends import LocalDividends
+from portfolio_optimizer import web
+from portfolio_optimizer.local import local_securities_info
+from portfolio_optimizer.local.local_dividends import LocalDividends
 from portfolio_optimizer.settings import DATE, CLOSE_PRICE, VOLUME
 
 MARKET_TIME_ZONE = 'Europe/Moscow'
@@ -74,7 +74,7 @@ class LocalQuotes(LocalDividends):
         """Обновляет локальные данные данными из интернета и возвращает полную историю котировок и объемов."""
         self.df = self.load_local_history()
         if self.need_update():
-            df_update = download.quotes_history(self.ticker, self.df_last_date)
+            df_update = web.quotes_history(self.ticker, self.df_last_date)
             self._validate_new_data(df_update)
             self.df = pd.concat([self.df, df_update.iloc[1:]])
             self._save_history()
@@ -84,7 +84,7 @@ class LocalQuotes(LocalDividends):
         aliases_series = local_securities_info.get_aliases_tickers([self.ticker])
         aliases = aliases_series.loc[self.ticker].split(sep=' ')
         for ticker in aliases:
-            yield download.quotes_history(ticker)
+            yield web.quotes_history(ticker)
 
     def create_local_history(self):
         """Формирует, сохраняет локальную версию и возвращает склеенную из всех тикеров аналогов историю котировок."""

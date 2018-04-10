@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from portfolio_optimizer import getter
+from portfolio_optimizer import local
 from portfolio_optimizer.dividends_metrics import DividendsMetrics
 from portfolio_optimizer.portfolio import Portfolio
 from portfolio_optimizer.returns_metrics import ReturnsMetrics
@@ -74,7 +74,7 @@ class Optimizer:
         """
         portfolio = self.portfolio
         tickers = portfolio.tickers
-        last_volume = getter.volumes_history(tickers).loc[portfolio.date]
+        last_volume = local.volumes_history(tickers).loc[portfolio.date]
         volume_share_of_portfolio = last_volume * portfolio.price[tickers] / portfolio.value[PORTFOLIO]
         volume_factor = 1 - (VOLUME_CUT_OFF / volume_share_of_portfolio) ** 2
         volume_factor[volume_factor < 0] = 0

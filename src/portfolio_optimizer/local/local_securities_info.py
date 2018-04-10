@@ -16,8 +16,8 @@
 import numpy as np
 import pandas as pd
 
-from portfolio_optimizer import download
-from portfolio_optimizer.getter import storage
+from portfolio_optimizer import web
+from portfolio_optimizer.local import storage
 from portfolio_optimizer.settings import LAST_PRICE, LOT_SIZE, COMPANY_NAME, REG_NUMBER, TICKER, TICKER_ALIASES
 
 DATA_PATH = storage.make_data_path('securities_info', 'securities_info.csv')
@@ -32,7 +32,7 @@ def load_securities_info():
 
 def download_securities_info(tickers):
     """Загружает информацию о тикерах из интернета и добавляет колонку пустую колонку ALIASES."""
-    df = download.securities_info(tickers)
+    df = web.securities_info(tickers)
     columns = [TICKER_ALIASES, COMPANY_NAME, REG_NUMBER, LOT_SIZE, LAST_PRICE]
     return df.reindex(columns=columns)
 
@@ -62,7 +62,7 @@ def fill_aliases_column(df):
     """Заполняет пустые ячейки в колонке с тикерами аналогами."""
     for ticker in df.index:
         if pd.isna(df.loc[ticker, TICKER_ALIASES]):
-            tickers = download.reg_number_tickers(reg_number=df.loc[ticker, REG_NUMBER])
+            tickers = web.reg_number_tickers(reg_number=df.loc[ticker, REG_NUMBER])
             df.loc[ticker, TICKER_ALIASES] = tickers
 
 

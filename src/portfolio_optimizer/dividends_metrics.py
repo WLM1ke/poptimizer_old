@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from portfolio_optimizer import getter
+from portfolio_optimizer import local
 from portfolio_optimizer.portfolio import Portfolio
 from portfolio_optimizer.settings import PORTFOLIO, AFTER_TAX, T_SCORE, CASH
 
@@ -39,7 +39,7 @@ class DividendsMetrics:
         """Дивиденды в номинальном выражении"""
         index = self._index
         tickers = index[:-2]
-        df = getter.legacy_dividends(tickers).transpose()
+        df = local.legacy_dividends(tickers).transpose()
         df.reindex(index=index)
         df.loc[CASH] = 0
         amount = self._portfolio.amount
@@ -55,7 +55,7 @@ class DividendsMetrics:
         """
         nominal_pretax_dividends = self.nominal_pretax
         columns = nominal_pretax_dividends.columns
-        cum_cpi = getter.cpi().cumprod()
+        cum_cpi = local.cpi().cumprod()
         years = [pd.to_datetime(f'{year}-12-31') for year in columns]
         last_year_cpi_values = (cum_cpi[years[-1]] / cum_cpi[years]).values
         real_pretax_dividends = nominal_pretax_dividends.multiply(last_year_cpi_values, axis='columns')

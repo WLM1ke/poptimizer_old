@@ -6,8 +6,8 @@
 import numpy as np
 import pandas as pd
 
-from portfolio_optimizer import download
-from portfolio_optimizer.getter.storage import LocalFile
+from portfolio_optimizer import web
+from portfolio_optimizer.local.storage import LocalFile
 from portfolio_optimizer.settings import DATE, CPI
 
 CPI_FOLDER = 'macro'
@@ -32,7 +32,7 @@ def update_cpi(file: LocalFile):
     """Обновляет файл с данными, проверяя совпадение со старыми."""
     df = file.read()
     if need_update(file):
-        df_updated = download.cpi()
+        df_updated = web.cpi()
         validate(df, df_updated)
         df = df_updated
         file.save(df)
@@ -40,7 +40,7 @@ def update_cpi(file: LocalFile):
 
 def create_cpi(file: LocalFile):
     """Создает с нуля файл с данными."""
-    df = download.cpi()
+    df = web.cpi()
     file.save(df)
 
 

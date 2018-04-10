@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from portfolio_optimizer import settings
-from portfolio_optimizer.getter import local_cpi
+from portfolio_optimizer.local import local_cpi
 from portfolio_optimizer.settings import CPI
 
 

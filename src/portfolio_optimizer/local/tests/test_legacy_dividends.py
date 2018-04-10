@@ -1,11 +1,11 @@
 import pandas as pd
 import pytest
 
-import portfolio_optimizer.getter.legacy_dividends
+import portfolio_optimizer.local.legacy_dividends
 
 
 def test_get_legacy_dividends():
-    df = portfolio_optimizer.getter.legacy_dividends(['UPRO', 'RTKMP', 'MSTT', 'MAGN', 'LSRG'])
+    df = portfolio_optimizer.local.legacy_dividends(['UPRO', 'RTKMP', 'MSTT', 'MAGN', 'LSRG'])
     assert df.index.equals(pd.Index([2012, 2013, 2014, 2015, 2016]))
     assert df.columns.equals(pd.Index(['UPRO', 'RTKMP', 'MSTT', 'MAGN', 'LSRG']))
     assert df.loc[2012, 'UPRO'] == pytest.approx(0.289541278733806)

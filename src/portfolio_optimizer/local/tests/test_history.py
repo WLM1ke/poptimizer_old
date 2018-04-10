@@ -4,11 +4,11 @@ import arrow
 import pandas as pd
 import pytest
 
-from portfolio_optimizer import download, settings
-from portfolio_optimizer.getter import local_quotes
-from portfolio_optimizer.getter.local_index import LocalIndex, get_index_history
-from portfolio_optimizer.getter.local_quotes import get_prices_history, get_volumes_history
-from portfolio_optimizer.getter.local_quotes import get_quotes_history, LocalQuotes
+from portfolio_optimizer import web, settings
+from portfolio_optimizer.local import local_quotes
+from portfolio_optimizer.local.local_index import LocalIndex, get_index_history
+from portfolio_optimizer.local.local_quotes import get_prices_history, get_volumes_history
+from portfolio_optimizer.local.local_quotes import get_quotes_history, LocalQuotes
 from portfolio_optimizer.settings import VOLUME, CLOSE_PRICE
 
 
@@ -75,7 +75,7 @@ def test_get_index_history(index_df):
 
 def test_validate_last_date_error():
     df_old = LocalQuotes('MSTT')
-    df_new = download.quotes_history('AKRN', df_old.df_last_date)
+    df_new = web.quotes_history('AKRN', df_old.df_last_date)
     with pytest.raises(ValueError) as info:
         df_old._validate_new_data(df_new)
     assert 'Загруженные данные MSTT не стыкуются с локальными.' in str(info.value)

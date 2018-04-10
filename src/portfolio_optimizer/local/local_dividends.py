@@ -1,6 +1,6 @@
 """Load and update local data for dividends history and returns pandas DataFrames.
 
-    get_dividends(tickers)
+    dividends(tickers)
 """
 
 import time
@@ -9,8 +9,8 @@ from os import path
 import numpy as np
 import pandas as pd
 
-import portfolio_optimizer.getter.storage
-from portfolio_optimizer import download
+import portfolio_optimizer.local.storage
+from portfolio_optimizer import web
 
 DIVIDENDS_FOLDER = 'dividends'
 UPDATE_PERIOD_IN_DAYS = 1
@@ -31,7 +31,7 @@ class LocalDividends:
     @property
     def local_data_path(self):
         """Возвращает и при необходимости создает путь к файлу с котировками."""
-        return portfolio_optimizer.getter.storage.make_data_path(self._data_folder, f'{self.ticker}.msg')
+        return portfolio_optimizer.local.storage.make_data_path(self._data_folder, f'{self.ticker}.msg')
 
     def _save_history(self):
         """Сохраняет локальную версию данных в csv-файл с именем тикера.
@@ -63,7 +63,7 @@ class LocalDividends:
         """Обновляет локальные данные данными из интернета и возвращает полную историю дивидендных выплат."""
         self.df = self.load_local_history()
         if self.need_update():
-            df_update = download.dividends(self.ticker)
+            df_update = web.dividends(self.ticker)
             self._validate_new_data(df_update)
             new_rows = list(set(df_update.index) - set(self.df.index))
             if new_rows:
@@ -73,7 +73,7 @@ class LocalDividends:
 
     def create_local_history(self):
         """Формирует, сохраняет и возвращает локальную версию истории дивидендных выплат."""
-        self.df = download.dividends(self.ticker)
+        self.df = web.dividends(self.ticker)
         self._save_history()
 
 
