@@ -3,7 +3,7 @@ import datetime
 import pandas as pd
 
 from portfolio_optimizer.settings import CLOSE_PRICE, VOLUME
-from portfolio_optimizer.web.web_history import get_quotes_history, make_url, get_index_history, get_json, Index, \
+from portfolio_optimizer.web.web_quotes import quotes, make_url, get_index_history, get_json, Index, \
     Quotes
 
 
@@ -42,7 +42,7 @@ def test_get_index_history():
 
 
 def test_get_quotes_history():
-    df = get_quotes_history('MOEX', datetime.date(2017, 10, 2))
+    df = quotes('MOEX', datetime.date(2017, 10, 2))
     assert isinstance(df, pd.DataFrame)
     assert len(df.columns) == 2
     assert df.index.is_monotonic_increasing

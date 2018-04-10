@@ -75,7 +75,7 @@ def test_get_index_history(index_df):
 
 def test_validate_last_date_error():
     df_old = LocalQuotes('MSTT')
-    df_new = web.quotes_history('AKRN', df_old.df_last_date)
+    df_new = web.quotes('AKRN', df_old.df_last_date)
     with pytest.raises(ValueError) as info:
         df_old._validate_new_data(df_new)
     assert 'Загруженные данные MSTT не стыкуются с локальными.' in str(info.value)

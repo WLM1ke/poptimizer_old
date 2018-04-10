@@ -2,7 +2,7 @@
 
     1. Load and update local data for single ticker and all its aliases daily prices and volumes:
 
-        get_quotes_history(ticker)
+        quotes(ticker)
 
     2. Load and update local data for list of tickers daily prices or volumes:
 
@@ -11,7 +11,7 @@
 
     3. Load and update local daily data for MOEX Russia Net Total Return (Resident):
 
-        get_index_history()
+        index()
 """
 
 from os import path
@@ -74,7 +74,7 @@ class LocalQuotes(LocalDividends):
         """Обновляет локальные данные данными из интернета и возвращает полную историю котировок и объемов."""
         self.df = self.load_local_history()
         if self.need_update():
-            df_update = web.quotes_history(self.ticker, self.df_last_date)
+            df_update = web.quotes(self.ticker, self.df_last_date)
             self._validate_new_data(df_update)
             self.df = pd.concat([self.df, df_update.iloc[1:]])
             self._save_history()
@@ -84,7 +84,7 @@ class LocalQuotes(LocalDividends):
         aliases_series = local_securities_info.get_aliases_tickers([self.ticker])
         aliases = aliases_series.loc[self.ticker].split(sep=' ')
         for ticker in aliases:
-            yield web.quotes_history(ticker)
+            yield web.quotes(ticker)
 
     def create_local_history(self):
         """Формирует, сохраняет локальную версию и возвращает склеенную из всех тикеров аналогов историю котировок."""

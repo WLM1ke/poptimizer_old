@@ -1,6 +1,6 @@
 """Load and update local daily data for MOEX Russia Net Total Return (Resident).
 
-    get_index_history()
+    index()
 """
 import pandas as pd
 
@@ -35,14 +35,14 @@ class LocalIndex(LocalQuotes):
         """Обновляет локальные данные данными из интернета и возвращает полную историю котировок индекса."""
         self.df = self.load_local_history()
         if self.need_update():
-            df_update = web.index_history(self.df_last_date)
+            df_update = web.index(self.df_last_date)
             self._validate_new_data(df_update)
             self.df = pd.concat([self.df, df_update.iloc[1:]])
             self._save_history()
 
     def create_local_history(self):
         """Формирует, сохраняет и возвращает локальную версию историю котировок индекса."""
-        self.df = web.index_history()
+        self.df = web.index()
         self._save_history()
 
 

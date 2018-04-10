@@ -1,13 +1,4 @@
-"""Download and transform daily quotes to pandas DataFrames.
-
-   1. Single ticker daily price and volumes:
-
-        get_quotes_history(ticker, start_date)
-
-   2. MOEX Russia Net Total Return (Resident) Index:
-
-        get_index_history(start_date)
-"""
+"""Загружает котировки и объемы торгов для тикеров с http://iss.moex.com"""
 
 import datetime
 
@@ -37,7 +28,7 @@ def make_url(base: str, ticker: str, start_date=None, block_position=0):
         - данные запрашиваются с начала имеющейся на сервере ISS
         истории котировок.
     block_position : int
-        Позиция курсора, начиная с которой необходимо получить очередной блок
+        Позиция, начиная с которой необходимо получить очередной блок
         данных. При большом запросе сервер ISS возвращает данные блоками обычно
         по 100 значений. Нумерация позиций в ответе идет с 0.
 
@@ -59,9 +50,7 @@ def make_url(base: str, ticker: str, start_date=None, block_position=0):
 
 
 class Quotes:
-    """
-    Представление ответа сервера по отдельному тикеру.
-    """
+    """Представление ответа сервера по отдельному тикеру"""
     base = 'https://iss.moex.com/iss/history/engines/stock/markets/shares/securities'
 
     def __init__(self, ticker, start_date):
@@ -72,12 +61,12 @@ class Quotes:
 
     @property
     def url(self):
-        """Формирует url для запроса данных с MOEX ISS."""
+        """Формирует url для запроса данных с MOEX ISS"""
         return make_url(self.base, self.ticker,
                         self.start_date, self.block_position)
 
     def load(self):
-        """Загружает и проверяет json с данными."""
+        """Загружает и проверяет json с данными"""
         self.data = get_json(self.url)
         self._validate()
 
@@ -93,7 +82,7 @@ class Quotes:
 
     #  В ответе сервера есть словарь:
     #   - по ключу history - словарь с историей котировок
-    #   - во вложеном словаре есть ключи columns и data с масивами описания
+    #   - во вложенном словаре есть ключи columns и data с масивами описания
     #     колонок и данными.
 
     @property
@@ -111,18 +100,15 @@ class Quotes:
         """Raw dataframe from *self.data['history']*"""
         return pd.DataFrame(data=self.values, columns=self.columns)
 
-    # WONTFIX: для итератора необходимы два метода: __iter__() и __next__()
-    #          возможно, переход к следующему элементу может быть по-другому
-    #          распределен между этими методами
     def __iter__(self):
         return self
 
     def __next__(self):
-        # если блок непустой
+        # если блок не пустой
         if self:
             # используем текущий результат парсинга
             current_dataframe = self.dataframe
-            # перещелкиваем сдаиг на следующий блок и получаем новые данные
+            # перещелкиваем сдвиг на следующий блок и получаем новые данные
             self.block_position += len(self)
             self.load()
             # выводим текущий результат парсинга
@@ -140,62 +126,25 @@ class Quotes:
         return df[[DATE, CLOSE_PRICE, VOLUME]]
 
 
-class Index(Quotes):
+def quotes(ticker, start_date=None):
     """
-    Представление ответа сервера - данные по индексу полной доходности MOEX.
+    Возвращает историю котировок тикера начиная с даты start_date
 
-    """
-    base = 'http://iss.moex.com/iss/history/engines/stock/markets/index/boards/RTSI/securities'
-    ticker = 'MCFTRR'
-
-    def __init__(self, start_date):
-        super().__init__(self.ticker, start_date)
-
-    @property
-    def dataframe(self):
-        """Выбирает из сырого DataFrame только с необходимые колонки - даты и цены закрытия."""
-        df = self.df
-        df[DATE] = pd.to_datetime(df['TRADEDATE'])
-        df[CLOSE_PRICE] = pd.to_numeric(df['CLOSE'])
-        return df[[DATE, CLOSE_PRICE]].set_index(DATE)
-
-
-def get_index_history(start_date=None):
-    """
-    Возвращает котировки индекса полной доходности с учетом российских налогов
-    начиная с даты *start_date*.
-
-    Parameters
-    ----------
-    start_date : datetime.date or None
-        Начальная дата котировок.
-
-    Returns
-    -------
-    pandas.Series
-        В строках даты торгов.
-        В столбцах цена закрытия индекса полной доходности.
-    """
-    return pd.concat(Index(start_date))[CLOSE_PRICE]
-
-
-def get_quotes_history(ticker, start_date=None):
-    """
-    Возвращает историю котировок тикера начиная с даты *start_date*.
+    Если дата None, то загружается вся доступная история котировок
 
     Parameters
     ----------
     ticker : str
-        Тикер, например, 'MOEX'.
+        Тикер, например, 'MOEX'
 
     start_date : datetime.date or None
-        Начальная дата котировок.
+        Начальная дата котировок
 
     Returns
     -------
     pandas.DataFrame
-        В строках даты торгов.
-        В столбцах [CLOSE, VOLUME] цена закрытия и оборот в штуках.
+        В строках даты торгов
+        В столбцах [CLOSE, VOLUME] цена закрытия и оборот в штуках
     """
     gen = Quotes(ticker, start_date)
     df = pd.concat(gen, ignore_index=True)
@@ -206,6 +155,6 @@ def get_quotes_history(ticker, start_date=None):
 
 
 if __name__ == '__main__':
-    z = get_index_history(start_date=datetime.date(2017, 10, 2))
+    z = quotes('AKRN', start_date=datetime.date(2017, 10, 2))
     print(z.head())
     print(z.tail())
