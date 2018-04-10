@@ -26,9 +26,9 @@ from portfolio_optimizer.getter.local_dividends import LocalDividends
 from portfolio_optimizer.settings import DATE, CLOSE_PRICE, VOLUME
 
 MARKET_TIME_ZONE = 'Europe/Moscow'
-# Реально торги заканчиваются в 19.00, но данные транслируются с задержкой в 15 минут
+# Реально торги заканчиваются в 19.00, но данные транслируются с задержкой
 END_OF_CURRENT_TRADING_DAY = arrow.get().to(MARKET_TIME_ZONE).replace(hour=19,
-                                                                      minute=15,
+                                                                      minute=45,
                                                                       second=0,
                                                                       microsecond=0)
 QUOTES_FOLDER = 'quotes'
