@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-import portfolio_optimizer.local.storage
+import portfolio_optimizer.local.storage_old
 from portfolio_optimizer import settings
 from portfolio_optimizer.local import local_securities_info
 from portfolio_optimizer.settings import LOT_SIZE, COMPANY_NAME, REG_NUMBER
@@ -13,11 +13,11 @@ def security_info_fake_data_path(tmpdir_factory):
     saved_path = settings.DATA_PATH
     temp_dir = tmpdir_factory.mktemp('security_info')
     settings.DATA_PATH = Path(temp_dir)
-    local_securities_info.DATA_PATH = portfolio_optimizer.local.storage.make_data_path('securities_info',
+    local_securities_info.DATA_PATH = portfolio_optimizer.local.storage_old.make_data_path('securities_info',
                                                                                         'securities_info.csv')
     yield
     settings.DATA_PATH = saved_path
-    local_securities_info.DATA_PATH = portfolio_optimizer.local.storage.make_data_path('securities_info',
+    local_securities_info.DATA_PATH = portfolio_optimizer.local.storage_old.make_data_path('securities_info',
                                                                                         'securities_info.csv')
 
 
@@ -60,11 +60,11 @@ def get_reg_number_tickers_fake_data_path(tmpdir_factory):
     saved_path = settings.DATA_PATH
     temp_dir = tmpdir_factory.mktemp('data_get_tickers')
     settings.DATA_PATH = Path(temp_dir)
-    local_securities_info.DATA_PATH = portfolio_optimizer.local.storage.make_data_path('securities_info',
+    local_securities_info.DATA_PATH = portfolio_optimizer.local.storage_old.make_data_path('securities_info',
                                                                                         'securities_info.csv')
     yield
     settings.DATA_PATH = saved_path
-    local_securities_info.DATA_PATH = portfolio_optimizer.local.storage.make_data_path('securities_info',
+    local_securities_info.DATA_PATH = portfolio_optimizer.local.storage_old.make_data_path('securities_info',
                                                                                         'securities_info.csv')
 
 

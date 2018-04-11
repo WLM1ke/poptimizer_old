@@ -9,7 +9,7 @@ from os import path
 import numpy as np
 import pandas as pd
 
-import portfolio_optimizer.local.storage
+import portfolio_optimizer.local.storage_old
 from portfolio_optimizer import web
 
 DIVIDENDS_FOLDER = 'dividends'
@@ -31,7 +31,7 @@ class LocalDividends:
     @property
     def local_data_path(self):
         """Возвращает и при необходимости создает путь к файлу с котировками."""
-        return portfolio_optimizer.local.storage.make_data_path(self._data_folder, f'{self.ticker}.msg')
+        return portfolio_optimizer.local.storage_old.make_data_path(self._data_folder, f'{self.ticker}.msg')
 
     def _save_history(self):
         """Сохраняет локальную версию данных в csv-файл с именем тикера.

@@ -17,10 +17,10 @@ import numpy as np
 import pandas as pd
 
 from portfolio_optimizer import web
-from portfolio_optimizer.local import storage
+from portfolio_optimizer.local import storage_old
 from portfolio_optimizer.settings import LAST_PRICE, LOT_SIZE, COMPANY_NAME, REG_NUMBER, TICKER, TICKER_ALIASES
 
-DATA_PATH = storage.make_data_path('securities_info', 'securities_info.csv')
+DATA_PATH = storage_old.make_data_path('securities_info', 'securities_info.csv')
 
 
 def load_securities_info():

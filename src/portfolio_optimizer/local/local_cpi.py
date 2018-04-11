@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from portfolio_optimizer import web
-from portfolio_optimizer.local.storage import LocalFile
+from portfolio_optimizer.local.storage_old import LocalFile
 from portfolio_optimizer.settings import DATE, CPI
 
 CPI_FOLDER = 'macro'
