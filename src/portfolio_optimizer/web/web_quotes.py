@@ -1,104 +1,69 @@
 """Загружает котировки и объемы торгов для тикеров с http://iss.moex.com"""
 
-import datetime
-
 import pandas as pd
 import requests
 
 from portfolio_optimizer.settings import DATE, CLOSE_PRICE, VOLUME
 
 
-def get_json(url: str):
-    """Return json found at *url*."""
-    response = requests.get(url)
-    return response.json()
-
-
-def make_url(base: str, ticker: str, start_date=None, block_position=0):
-    """Create url based on components.
-
-    Parameters
-    ----------
-    base
-        Основная часть url.
-    ticker
-        Наименование тикера.
-    start_date : date.time or None
-        Начальная дата котировок. Если предоставлено значение None
-        - данные запрашиваются с начала имеющейся на сервере ISS
-        истории котировок.
-    block_position : int
-        Позиция, начиная с которой необходимо получить очередной блок
-        данных. При большом запросе сервер ISS возвращает данные блоками обычно
-        по 100 значений. Нумерация позиций в ответе идет с 0.
-
-    Returns
-    -------
-    str
-        Строка url для запроса.
-    """
-    if not base.endswith('/'):
-        base += '/'
-    url = base + f'{ticker}.json'
-    query_args = [f'start={block_position}']
-    if start_date:
-        if not isinstance(start_date, datetime.date):
-            raise TypeError(start_date)
-        query_args.append(f"from={start_date:%Y-%m-%d}")
-    arg_str = '&'.join(query_args)
-    return f'{url}?{arg_str}'
-
-
 class Quotes:
-    """Представление ответа сервера по отдельному тикеру"""
-    base = 'https://iss.moex.com/iss/history/engines/stock/markets/shares/securities'
+    """Представление ответа сервера в виде итератора
 
-    def __init__(self, ticker, start_date):
-        self.ticker, self.start_date = ticker, start_date
-        self.block_position = 0
-        self.data = None
-        self.load()
+    При большом запросе сервер ISS возвращает данные блоками обычно по 100 значений, поэтому класс является итератором
+    Если начальная дата не указана, то загружается вся доступная история котировок
+    """
+    _base_url = 'https://iss.moex.com/iss/history/engines/stock/markets/shares/securities/'
+
+    def __init__(self, ticker: str, start_date):
+        self._ticker, self._start_date = ticker, start_date
+        self._block_position = 0
+        self._data = None
+        self.get_json()
 
     @property
     def url(self):
-        """Формирует url для запроса данных с MOEX ISS"""
-        return make_url(self.base, self.ticker,
-                        self.start_date, self.block_position)
+        """Создает url для запроса к серверу http://iss.moex.com"""
+        url = self._base_url + f'{self._ticker}.json'
+        query_args = [f'start={self._block_position}']
+        if self._start_date:
+            if not isinstance(self._start_date, pd.Timestamp):
+                raise TypeError(self._start_date)
+            query_args.append(f"from={self._start_date:%Y-%m-%d}")
+        arg_str = '&'.join(query_args)
+        return f'{url}?{arg_str}'
 
-    def load(self):
+    def get_json(self):
         """Загружает и проверяет json с данными"""
-        self.data = get_json(self.url)
+        response = requests.get(self.url)
+        self._data = response.json()
         self._validate()
 
     def _validate(self):
-        if self.block_position == 0 and len(self) == 0:
+        """Первый запрос должен содержать не нулевое количество строк"""
+        if self._block_position == 0 and len(self) == 0:
             raise ValueError(f'Пустой ответ. Проверьте запрос: {self.url}')
 
     def __len__(self):
-        return len(self.values)
-
-    def __bool__(self):
-        return self.__len__() > 0
-
-    #  В ответе сервера есть словарь:
-    #   - по ключу history - словарь с историей котировок
-    #   - во вложенном словаре есть ключи columns и data с масивами описания
-    #     колонок и данными.
+        return len(self.rows)
 
     @property
-    def values(self):
-        """Извлекает данные и json."""
-        return self.data['history']['data']
+    def rows(self):
+        """Извлекает массив строк с данными из json"""
+        return self._data['history']['data']
 
     @property
     def columns(self):
-        """"Возвращает наименование колонок данных."""
-        return self.data['history']['columns']
+        """"Извлекает массив наименований столбцов с данными из json"""
+        return self._data['history']['columns']
 
     @property
     def df(self):
-        """Raw dataframe from *self.data['history']*"""
-        return pd.DataFrame(data=self.values, columns=self.columns)
+        """Формирует DataFrame и выбирает необходимые колонки - даты, цены закрытия и объемы."""
+        df = pd.DataFrame(data=self.rows, columns=self.columns)
+        df[DATE] = pd.to_datetime(df['TRADEDATE'])
+        df[CLOSE_PRICE] = pd.to_numeric(df['CLOSE'])
+        df[VOLUME] = pd.to_numeric(df['VOLUME'])
+        return df[[DATE, CLOSE_PRICE, VOLUME]]
 
     def __iter__(self):
         return self
@@ -107,23 +72,14 @@ class Quotes:
         # если блок не пустой
         if self:
             # используем текущий результат парсинга
-            current_dataframe = self.dataframe
+            df = self.df
             # перещелкиваем сдвиг на следующий блок и получаем новые данные
-            self.block_position += len(self)
-            self.load()
+            self._block_position += len(self)
+            self.get_json()
             # выводим текущий результат парсинга
-            return current_dataframe
+            return df
         else:
             raise StopIteration
-
-    @property
-    def dataframe(self):
-        """Выбирает из сырого DataFrame только с необходимые колонки - даты, цены закрытия и объемы."""
-        df = self.df
-        df[DATE] = pd.to_datetime(df['TRADEDATE'])
-        df[CLOSE_PRICE] = pd.to_numeric(df['CLOSE'])
-        df[VOLUME] = pd.to_numeric(df['VOLUME'])
-        return df[[DATE, CLOSE_PRICE, VOLUME]]
 
 
 def quotes(ticker, start_date=None):
@@ -137,7 +93,7 @@ def quotes(ticker, start_date=None):
     ticker : str
         Тикер, например, 'MOEX'
 
-    start_date : datetime.date or None
+    start_date : pd.Timestamp or None
         Начальная дата котировок
 
     Returns
@@ -155,6 +111,6 @@ def quotes(ticker, start_date=None):
 
 
 if __name__ == '__main__':
-    z = quotes('AKRN', start_date=datetime.date(2017, 10, 2))
+    z = quotes('AKRN', start_date=pd.to_datetime('2017-10-02'))
     print(z.head())
     print(z.tail())

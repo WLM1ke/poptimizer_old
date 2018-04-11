@@ -10,8 +10,8 @@ from portfolio_optimizer.web.web_quotes import Quotes
 
 class Index(Quotes):
     """Представление ответа сервера - данные по индексу полной доходности MOEX"""
-    base = 'http://iss.moex.com/iss/history/engines/stock/markets/index/boards/RTSI/securities'
-    ticker = 'MCFTRR'
+    _base_url = 'http://iss.moex.com/iss/history/engines/stock/markets/index/boards/RTSI/securities'
+    _ticker = 'MCFTRR'
 
     def __init__(self, start_date):
         super().__init__(self.ticker, start_date)
