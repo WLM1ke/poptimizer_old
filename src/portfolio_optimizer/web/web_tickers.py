@@ -1,14 +1,15 @@
 """Загружает информацию о тикерах для данного регистрационного номера с http://iss.moex.com"""
 
-import requests
+import json
+from urllib import request
 
 
 def get_json(reg_number: str):
     """Получает json с http://iss.moex.com"""
     url = f'http://iss.moex.com/iss/securities.json?q={reg_number}'
-    respond = requests.get(url)
-    json = respond.json()
-    return json
+    with request.urlopen(url) as response:
+        data = json.load(response)
+    return data
 
 
 def validate(reg_number: str, tickers: tuple):
@@ -17,10 +18,10 @@ def validate(reg_number: str, tickers: tuple):
         raise ValueError(f'Некорректный регистрационный номер {reg_number}')
 
 
-def yield_parsed_tickers(json, reg_number: str):
+def yield_parsed_tickers(raw_json, reg_number: str):
     """Выбирает информацию по тикерам и последовательно возвращает ее"""
-    header = json['securities']['columns']
-    rows = json['securities']['data']
+    header = raw_json['securities']['columns']
+    rows = raw_json['securities']['data']
     ticker_index = header.index('secid')
     reg_number_index = header.index('regnumber')
     for row in rows:
@@ -42,8 +43,8 @@ def reg_number_tickers(reg_number: str):
     tuple
         Кортеж тикеров
     """
-    json = get_json(reg_number)
-    tickers = tuple(yield_parsed_tickers(json, reg_number))
+    raw_json = get_json(reg_number)
+    tickers = tuple(yield_parsed_tickers(raw_json, reg_number))
     validate(reg_number, tickers)
     return tickers
 

@@ -9,5 +9,5 @@ check_points = [('1-02-65104-D', ('UPRO', 'EONR', 'OGK4')),
 
 
 @pytest.mark.parametrize("reg_number, expected", check_points)
-def test_get_tickers(reg_number, expected):
+def test_reg_number_tickers(reg_number, expected):
     assert reg_number_tickers(reg_number) == expected

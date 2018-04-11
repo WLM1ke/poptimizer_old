@@ -1,7 +1,9 @@
 """Загружает котировки и объемы торгов для тикеров с http://iss.moex.com"""
 
+import json
+from urllib import request
+
 import pandas as pd
-import requests
 
 from portfolio_optimizer.settings import DATE, CLOSE_PRICE, VOLUME
 
@@ -34,8 +36,8 @@ class Quotes:
 
     def get_json(self):
         """Загружает и проверяет json с данными"""
-        response = requests.get(self.url)
-        self._data = response.json()
+        with request.urlopen(self.url) as response:
+            self._data = json.load(response)
         self._validate_response()
 
     def _validate_response(self):

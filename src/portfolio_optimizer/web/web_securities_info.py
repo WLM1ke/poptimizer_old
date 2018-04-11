@@ -1,8 +1,9 @@
 """Загружает информацию о тикерах с http://iss.moex.com"""
 
+import json
+from urllib import request
 
 import pandas as pd
-import requests
 
 from portfolio_optimizer.settings import LAST_PRICE, LOT_SIZE, COMPANY_NAME, REG_NUMBER, TICKER
 
@@ -17,10 +18,10 @@ def make_url(tickers: tuple):
 def get_json(tickers: tuple):
     """Загружает и проверяет json"""
     url = make_url(tickers)
-    r = requests.get(url)
-    result = r.json()
-    validate_response(result, tickers)
-    return result
+    with request.urlopen(url) as response:
+        data = json.load(response)
+    validate_response(data, tickers)
+    return data
 
 
 def validate_response(data, tickers: tuple):
@@ -37,15 +38,15 @@ def validate_response(data, tickers: tuple):
         raise ValueError(msg)
 
 
-def make_df(json):
+def make_df(raw_json):
     """Данные из двух подразделов в ответе объединяются в единый DataFrame
 
     Данные в ответе находятся в двух блоках: общая информация и котировки текущих торгов
     """
-    securities = pd.DataFrame(data=json['securities']['data'],
-                              columns=json['securities']['columns'])
-    market_data = pd.DataFrame(data=json['marketdata']['data'],
-                               columns=json['marketdata']['columns'])
+    securities = pd.DataFrame(data=raw_json['securities']['data'],
+                              columns=raw_json['securities']['columns'])
+    market_data = pd.DataFrame(data=raw_json['marketdata']['data'],
+                               columns=raw_json['marketdata']['columns'])
     securities = securities.set_index('SECID')[['SHORTNAME', 'REGNUMBER', 'LOTSIZE']]
     market_data = pd.to_numeric(market_data.set_index('SECID')['LAST'])
     df = pd.concat([securities, market_data], axis=1)
