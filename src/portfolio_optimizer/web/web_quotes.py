@@ -36,9 +36,9 @@ class Quotes:
         """Загружает и проверяет json с данными"""
         response = requests.get(self.url)
         self._data = response.json()
-        self._validate()
+        self._validate_response()
 
-    def _validate(self):
+    def _validate_response(self):
         """Первый запрос должен содержать не нулевое количество строк"""
         if self._block_position == 0 and len(self) == 0:
             raise ValueError(f'Пустой ответ. Проверьте запрос: {self.url}')

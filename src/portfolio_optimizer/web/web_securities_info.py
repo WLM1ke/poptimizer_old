@@ -1,9 +1,5 @@
-"""Download and transform securities info to pandas DataFrames.
+"""Загружает информацию о тикерах с http://iss.moex.com"""
 
-    Lots sizes, short names and last quotes for list of tickers:
-
-        get_securities_info(tickers)
-"""
 
 import pandas as pd
 import requests
@@ -11,13 +7,15 @@ import requests
 from portfolio_optimizer.settings import LAST_PRICE, LOT_SIZE, COMPANY_NAME, REG_NUMBER, TICKER
 
 
-def make_url(tickers):
+def make_url(tickers: tuple):
+    """Формирует url для запроса информации на http://iss.moex.com"""
     url_base = ('https://iss.moex.com/iss/engines/stock/markets/shares/boards/TQBR/securities.json?'
                 'securities={tickers}')
     return url_base.format(tickers=','.join(tickers))
 
 
-def get_raw_json(tickers):
+def get_json(tickers: tuple):
+    """Загружает и проверяет json"""
     url = make_url(tickers)
     r = requests.get(url)
     result = r.json()
@@ -25,7 +23,11 @@ def get_raw_json(tickers):
     return result
 
 
-def validate_response(data, tickers):
+def validate_response(data, tickers: tuple):
+    """Проверяет что количество размер массивов с информации соответствует количеству тикеров
+
+    Данные в ответе находятся в двух блоках: общая информация и котировки текущих торгов
+    """
     n = len(tickers)
     msg = (f'Количество тикеров в ответе не соответствует запросу {tickers}'
            f' - возможно ошибка в написании')
@@ -35,11 +37,15 @@ def validate_response(data, tickers):
         raise ValueError(msg)
 
 
-def make_df(raw_json):
-    securities = pd.DataFrame(data=raw_json['securities']['data'],
-                              columns=raw_json['securities']['columns'])
-    market_data = pd.DataFrame(data=raw_json['marketdata']['data'],
-                               columns=raw_json['marketdata']['columns'])
+def make_df(json):
+    """Данные из двух подразделов в ответе объединяются в единый DataFrame
+
+    Данные в ответе находятся в двух блоках: общая информация и котировки текущих торгов
+    """
+    securities = pd.DataFrame(data=json['securities']['data'],
+                              columns=json['securities']['columns'])
+    market_data = pd.DataFrame(data=json['marketdata']['data'],
+                               columns=json['marketdata']['columns'])
     securities = securities.set_index('SECID')[['SHORTNAME', 'REGNUMBER', 'LOTSIZE']]
     market_data = pd.to_numeric(market_data.set_index('SECID')['LAST'])
     df = pd.concat([securities, market_data], axis=1)
@@ -48,24 +54,24 @@ def make_df(raw_json):
     return df
 
 
-def get_securities_info(tickers: list):
+def securities_info(tickers: tuple):
     """
-    Возвращает краткое наименование, размер лота и последнюю цену.
+    Возвращает краткое наименование, размер лота и последнюю цену
 
     Parameters
     ----------
-    tickers : list
-        Список тикеров.
+    tickers
+        Кортеж тикеров
 
     Returns
     -------
     pandas.DataFrame
-        В строках тикеры (используется написание из выдачи ISS).
-        В столбцах краткое наименование, регистрационный номер, размер лота и последняя цена.
+        В строках тикеры (используется написание из выдачи ISS)
+        В столбцах краткое наименование, регистрационный номер, размер лота и последняя цена
     """
-    raw_json = get_raw_json(tickers)
+    raw_json = get_json(tickers)
     return make_df(raw_json)
 
 
 if __name__ == "__main__":
-    print(get_securities_info(['UPRO', 'MRSB']))
+    print(securities_info(('UPRO', 'MRSB')))
