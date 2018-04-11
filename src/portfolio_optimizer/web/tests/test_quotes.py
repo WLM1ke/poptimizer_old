@@ -12,11 +12,12 @@ def test_quotes_none_start_date():
 
 
 def test_quotes_is_iterable():
-    t = Quotes('AKRN', pd.Timestamp('2017-03-01'))
-    assert len(list(t)) >= 3
+    quotes_gen = Quotes('AKRN', pd.Timestamp('2017-03-01'))
+    assert quotes_gen.df.loc[0, DATE] == pd.Timestamp('2017-03-01')
+    assert len(list(quotes_gen)) >= 3
 
 
-def test_get_quotes_history():
+def test_quotes():
     df = quotes('MOEX', pd.Timestamp('2017-10-02'))
     assert isinstance(df, pd.DataFrame)
     assert len(df.columns) == 2

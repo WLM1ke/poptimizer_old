@@ -1,7 +1,5 @@
 """Загружает котировки индекса полной доходности с учетом российских налогов с http://iss.moex.com"""
 
-import datetime
-
 import pandas as pd
 
 from portfolio_optimizer.settings import DATE, CLOSE_PRICE
@@ -9,17 +7,21 @@ from portfolio_optimizer.web.web_quotes import Quotes
 
 
 class Index(Quotes):
-    """Представление ответа сервера - данные по индексу полной доходности MOEX"""
-    _base_url = 'http://iss.moex.com/iss/history/engines/stock/markets/index/boards/RTSI/securities'
+    """Представление ответа сервера по индексу полной доходности MOEX в виде итератора
+
+    При большом запросе сервер ISS возвращает данные блоками обычно по 100 значений, поэтому класс является итератором
+    Если начальная дата не указана, то загружается вся доступная история котировок
+    """
+    _base_url = 'http://iss.moex.com/iss/history/engines/stock/markets/index/boards/RTSI/securities/'
     _ticker = 'MCFTRR'
 
     def __init__(self, start_date):
-        super().__init__(self.ticker, start_date)
+        super().__init__(self._ticker, start_date)
 
     @property
-    def dataframe(self):
+    def df(self):
         """Выбирает из сырого DataFrame только с необходимые колонки - даты и цены закрытия"""
-        df = self.df
+        df = pd.DataFrame(data=self.rows, columns=self.columns)
         df[DATE] = pd.to_datetime(df['TRADEDATE'])
         df[CLOSE_PRICE] = pd.to_numeric(df['CLOSE'])
         return df[[DATE, CLOSE_PRICE]].set_index(DATE)
@@ -47,6 +49,6 @@ def index(start_date=None):
 
 
 if __name__ == '__main__':
-    z = index(start_date=datetime.date(2017, 10, 2))
+    z = index(start_date=pd.to_datetime('2017-10-02'))
     print(z.head())
     print(z.tail())
