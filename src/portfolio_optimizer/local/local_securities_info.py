@@ -63,7 +63,7 @@ def fill_aliases_column(df):
     for ticker in df.index:
         if pd.isna(df.loc[ticker, TICKER_ALIASES]):
             tickers = web.reg_number_tickers(reg_number=df.loc[ticker, REG_NUMBER])
-            df.loc[ticker, TICKER_ALIASES] = tickers
+            df.loc[ticker, TICKER_ALIASES] = ' '.join(tickers)
 
 
 def update_local_securities_info(tickers):

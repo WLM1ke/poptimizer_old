@@ -15,14 +15,14 @@ def make_json():
 
 
 class TestGetRawJson:
-    def test_get_raw_json_type(self, json):
+    def test_get_json_type(self, json):
         assert isinstance(json, dict)
 
-    def test_get_raw_json_keys(self, json):
+    def test_get_json_keys(self, json):
         assert list(json.keys()) == ['securities', 'marketdata', 'dataversion']
 
 
-def test_get_securities_info():
+def test_securities_info():
     df = securities_info(('AKRN', 'GAZP', 'TTLK'))
     assert isinstance(df, pd.DataFrame)
     assert df.loc['AKRN', COMPANY_NAME] == 'Акрон'
