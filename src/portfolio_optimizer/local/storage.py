@@ -9,7 +9,6 @@ from portfolio_optimizer import settings
 
 INDEX_FILE_NAME = 'index.json'
 DATA_FILE_EXTENSION = '.msg'
-TIME_STAMP_FORMAT = 'YYYY-MM-DD HH:mm:ss ZZ'
 
 
 class LocalFile:
@@ -28,15 +27,15 @@ class LocalFile:
         self.index_path = self._make_data_path(None, INDEX_FILE_NAME)
 
     @staticmethod
-    def _make_data_path(folder: str, file: str):
+    def _make_data_path(subfolder, file: str):
         """Возвращает путь к файлу и при необходимости создает необходимые директории
 
         Директории создаются в глобальной директории данных из файла настроек
         """
-        if folder is None:
+        if subfolder is None:
             folder = settings.DATA_PATH
         else:
-            folder = settings.DATA_PATH / folder
+            folder = settings.DATA_PATH / subfolder
         if not folder.exists():
             folder.mkdir(parents=True)
         return folder / file
@@ -51,7 +50,7 @@ class LocalFile:
                 update_dict = json.load(file)
             date = update_dict.get(f'{self.frame_category}->{self.frame_name}', None)
             if date:
-                return arrow.get(date, TIME_STAMP_FORMAT)
+                return arrow.get(date)
             return date
         return None
 
@@ -63,7 +62,7 @@ class LocalFile:
                 update_dict = json.load(file)
         else:
             update_dict = {}
-        update_dict[f'{self.frame_category}->{self.frame_name}'] = arrow.now().format(TIME_STAMP_FORMAT)
+        update_dict[f'{self.frame_category}->{self.frame_name}'] = arrow.now().for_json()
         with self.index_path.open('w') as file:
             json.dump(update_dict, file)
 
