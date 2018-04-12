@@ -1,76 +1,72 @@
 """Организация хранения локальных DataFrames"""
 
-import time
-from pathlib import Path
+import json
 
+import arrow
 import pandas as pd
 
 from portfolio_optimizer import settings
 
-
-# TODO: добавить в класс
-def make_data_path(subfolder: str, file_name: str):
-    """Создает подкаталог *subfolder* в директории данных и
-       возвращает путь к файлу *file_name* в нем."""
-    folder = settings.DATA_PATH / subfolder
-    if not folder.exists():
-        folder.mkdir(parents=True)
-    return folder / file_name
+INDEX_FILE_NAME = 'index.json'
+DATA_FILE_EXTENSION = '.msg'
+TIME_STAMP_FORMAT = 'YYYY-MM-DD HH:mm:ss ZZ'
 
 
 class LocalFile:
     """Обеспечивает функционал сохранения, проверки наличия, загрузки и даты изменения для файла
 
-    Данные хранятся в каталоге установленном в глобальных настройках. Каждая категория данных в отдельной каталоге.
-    Каждый ряд в отдельном файле в формате MessagePack.
+    Данные хранятся в каталоге установленном в глобальных настройках. Каждая категория данных в отдельной подкаталоге.
+    Каждый ряд в отдельном файле в формате MessagePack
 
-    В корне каталога данных ведется файл index.json в виде словаря (frame_category, frame_name): дата изменения
+    В корне каталога данных ведется файл index.json в виде словаря str(frame_category->frame_name): дата изменения
     """
 
     def __init__(self, frame_category: str, frame_name: str):
+        self.frame_category = frame_category
+        self.frame_name = frame_name
+        self.data_path = self._make_data_path(frame_category, f'{frame_name}{DATA_FILE_EXTENSION}')
+        self.index_path = self._make_data_path(None, INDEX_FILE_NAME)
+
+    @staticmethod
+    def _make_data_path(folder: str, file: str):
+        """Возвращает путь к файлу и при необходимости создает необходимые директории
+
+        Директории создаются в глобальной директории данных из файла настроек
         """
-        Инициирует объект.
+        if folder is None:
+            folder = settings.DATA_PATH
+        else:
+            folder = settings.DATA_PATH / folder
+        if not folder.exists():
+            folder.mkdir(parents=True)
+        return folder / file
 
-        Parameters
-        ----------
-        subfolder
-            Подкаталог, где хранятся данные.
-        filename
-            Наименование файла с данными.
-        converters
-            Словарь с конвертерами данных.
+    def last_update(self):
+        """Возвращает дату последнего обновления из индекса
+
+        Если данные отсутствуют в индексе, то возвращает None
         """
-        self.path = make_data_path(subfolder, filename)
-        self.converters = converters
+        if self.index_path.exists():
+            with self.index_path.open('r') as file:
+                update_dict = json.load(file)
+            date = update_dict.get(f'{self.frame_category}->{self.frame_name}', None)
+            if date:
+                return arrow.get(date, TIME_STAMP_FORMAT)
+            return date
+        return None
 
-    def exists(self):
-        """Проверка существования файла."""
-        return self.path.exists()
+    def dump(self, df):
+        """Сохраняет DataFrame и обновляет информацию в индексе"""
+        df.to_msgpack(self.data_path)
+        if self.index_path.exists():
+            with self.index_path.open('r') as file:
+                update_dict = json.load(file)
+        else:
+            update_dict = {}
+        update_dict[f'{self.frame_category}->{self.frame_name}'] = arrow.now().format(TIME_STAMP_FORMAT)
+        with self.index_path.open('w') as file:
+            json.dump(update_dict, file)
 
-    def updated_days_ago(self):
-        """Количество дней с последнего обновления файла.
-
-        https://docs.python.org/3/library/os.html#os.stat_result.st_mtime
-        """
-        time_updated = Path(self.path).stat().st_mtime
-        lag_sec = time.time() - time_updated
-        return lag_sec / (60 * 60 * 24)
-
-    def save(self, df):
-        """Сохраняет DataFrame или Series с заголовками."""
-        df.to_csv(self.path, index=True, header=True)
-
-    def read(self):
-        """Загружает данные из файла.
-
-        Значение sep обеспечивает корректную загрузку с лидирующими пробелами, вставленными PyCharm.
-        """
-        df = pd.read_csv(self.path,
-                         converters=self.converters,
-                         header=0,
-                         engine='python',
-                         sep='\s*,')
-        df = df.set_index(df.columns[0])
-        if len(df.columns) == 1:
-            return df[df.columns[0]]
-        return df
+    def load(self):
+        """Загружает данные из файла"""
+        return pd.read_msgpack(self.data_path)
