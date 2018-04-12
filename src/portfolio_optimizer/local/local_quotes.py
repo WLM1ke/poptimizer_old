@@ -65,7 +65,7 @@ class LocalQuotes(LocalDividends):
         last_date = self.df_last_date
         df_old_last = self.df.loc[last_date]
         df_new_last = df_new.loc[last_date]
-        if not np.allclose(df_new_last.values, df_old_last.values):
+        if not np.allclose(df_new_last, df_old_last):
             raise ValueError(f'Загруженные данные {self.ticker} не стыкуются с локальными. \n' +
                              f'{df_old_last} \n' +
                              f'{df_new_last}')

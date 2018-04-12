@@ -21,16 +21,6 @@ class LocalIndex(LocalQuotes):
     def __init__(self):
         super().__init__(INDEX_TICKER)
 
-    def _validate_new_data(self, df_new):
-        """Проверяет совпадение данных на стыке, то есть для последней даты старого DataFrame."""
-        last_date = self.df_last_date
-        df_old_last = self.df.loc[last_date]
-        df_new_last = df_new.loc[last_date]
-        if df_old_last != df_new_last:
-            raise ValueError(f'Загруженные данные {self.ticker} не стыкуются с локальными. \n' +
-                             f'{df_old_last} \n' +
-                             f'{df_new_last}')
-
     def update_local_history(self):
         """Обновляет локальные данные данными из интернета и возвращает полную историю котировок индекса."""
         self.df = self.load_local_history()

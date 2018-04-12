@@ -8,6 +8,7 @@ import pandas as pd
 from portfolio_optimizer import settings
 
 
+# TODO: добавить в класс
 def make_data_path(subfolder: str, file_name: str):
     """Создает подкаталог *subfolder* в директории данных и
        возвращает путь к файлу *file_name* в нем."""
@@ -23,10 +24,10 @@ class LocalFile:
     Данные хранятся в каталоге установленном в глобальных настройках. Каждая категория данных в отдельной каталоге.
     Каждый ряд в отдельном файле в формате MessagePack.
 
-    В корне каталога данных ведется файл index.json в виде словаря (category, frame_name): время изменения
+    В корне каталога данных ведется файл index.json в виде словаря (frame_category, frame_name): дата изменения
     """
 
-    def __init__(self, category: str, frame_name: str):
+    def __init__(self, frame_category: str, frame_name: str):
         """
         Инициирует объект.
 
