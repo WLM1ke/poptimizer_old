@@ -96,4 +96,4 @@ def volumes(tickers: tuple):
 
 
 if __name__ == '__main__':
-    print(quotes('SBER'))
+    print(quotes('SNGSP'))
