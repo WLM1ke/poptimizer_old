@@ -22,7 +22,7 @@ import pandas as pd
 
 from portfolio_optimizer import web
 from portfolio_optimizer.local import local_securities_info
-from portfolio_optimizer.local.local_dividends import LocalDividends
+from portfolio_optimizer.local.local_dividends_old import LocalDividends
 from portfolio_optimizer.settings import DATE, CLOSE_PRICE, VOLUME
 
 MARKET_TIME_ZONE = 'Europe/Moscow'

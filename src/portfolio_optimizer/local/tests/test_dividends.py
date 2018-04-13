@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+import portfolio_optimizer.local.local_dividends_old
 from portfolio_optimizer import settings
 from portfolio_optimizer.local import local_dividends
 
@@ -26,7 +27,7 @@ def test_get_dividends_first_time():
 
 
 def test_forced_update_fake_new_rows(monkeypatch):
-    dividends_object = local_dividends.LocalDividends('GAZP')
+    dividends_object = portfolio_optimizer.local.local_dividends_old.LocalDividends('GAZP')
     dividends_object.df = dividends_object.df.reindex(dividends_object.df.index[:-1])
     monkeypatch.setattr(local_dividends, 'UPDATE_PERIOD_IN_DAYS', 1 / (60 * 60 * 24))
     time.sleep(1)
