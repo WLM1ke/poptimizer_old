@@ -64,7 +64,7 @@ class DataFile:
             index_dict = {}
         index_dict[f'{self.frame_category}->{self.frame_name}'] = arrow.now().for_json()
         with self.index_path.open('w') as file:
-            json.dump(index_dict, file)
+            json.dump(index_dict, file, sort_keys=True, indent=2)
 
     def load(self):
         """Загружает данные из файла"""

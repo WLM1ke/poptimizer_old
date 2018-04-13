@@ -1,30 +1,32 @@
 """Сохраняет, обновляет и загружает локальную версию данных по дивидендам"""
 
-import pandas as pd
+import functools
 
-from portfolio_optimizer.local.local_dividends_old import LocalDividends
+from portfolio_optimizer import web
+from portfolio_optimizer.local.data_manager import DataManager
+
+DIVIDENDS_CATEGORY = 'dividends'
 
 
-def get_dividends(tickers: list):
+def dividends(ticker: str):
     """
-    Сохраняет, при необходимости обновляет и возвращает дивиденды для тикеров.
+    Сохраняет, при необходимости обновляет и возвращает дивиденды для тикеров
 
     Parameters
     ----------
-    tickers
-        Список тикеров.
+    ticker
+        Список тикеров
 
     Returns
     -------
-    pd.DataFrame
-        В строках - даты выплаты дивидендов.
-        В столбцах - тикеры.
-        Значения - выплаченные дивиденды.
+    pd.Series
+        В строках - даты выплаты дивидендов
+        Значения - выплаченные дивиденды
     """
-    df = pd.concat([LocalDividends(ticker).df.to_frame() for ticker in tickers], axis=1)
-    df.columns = tickers
-    return df
+    web_dividends_function = functools.partial(web.dividends, ticker=ticker)
+    data = DataManager(DIVIDENDS_CATEGORY, ticker, web_dividends_function)
+    return data.get()
 
 
 if __name__ == '__main__':
-    print(get_dividends(['GAZP', 'SBERP']))
+    print(dividends('CHMF'))
