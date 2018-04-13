@@ -6,7 +6,7 @@ import numpy as np
 from portfolio_optimizer.local.data_file import DataFile
 
 MARKET_TIME_ZONE = 'Europe/Moscow'
-# Реально торги заканчиваются в 19.00, но данные публикуются 19.45
+# Торги заканчиваются в 19.00, но данные публикуются 19.45
 END_OF_CURRENT_TRADING_DAY = arrow.now(MARKET_TIME_ZONE).replace(hour=19, minute=45, second=0, microsecond=0)
 
 
