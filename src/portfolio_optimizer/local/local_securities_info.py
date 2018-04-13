@@ -6,11 +6,11 @@
 
     2. Load and update local last prices data:
 
-        get_last_prices(tickers)
+        last_price(tickers)
 
     3. Load aliases for tickers and update local securities info data.
 
-        get_aliases_tickers(tickers)
+        aliases(tickers)
 """
 
 import numpy as np
@@ -111,14 +111,14 @@ def get_security_info(tickers: list):
     return df
 
 
-def get_aliases_tickers(tickers: list):
+def aliases(tickers: tuple):
     """
-    Возвращает список тикеров аналогов для заданного набора тикеров.
+    Возвращает список тикеров аналогов для заданного набора тикеров
 
     Parameters
     ----------
     tickers
-        Тикеры.
+        Тикеры
 
     Returns
     -------
@@ -135,25 +135,24 @@ def get_aliases_tickers(tickers: list):
     return df.loc[tickers, TICKER_ALIASES]
 
 
-def get_last_prices(tickers: list):
+def last_price(tickers: tuple):
     """
-    Возвращает последние цены для тикеров из списка и обновляет локальные данные.
+    Возвращает последние цены для тикеров из кортежа напрямую из интернета
 
     Parameters
     ----------
     tickers
-        Список тикеров.
+        Кортеж тикеров
 
     Returns
     -------
     pandas.Series
-        В строках тикеры и последние цены для них.
+        В строках тикеры
     """
-    # Цены обновляются постоянно - поэтому можно вызывать функцию, требующую обновления данных
-    df = get_security_info(tickers)
+    df = web.securities_info(tickers)
     return df.loc[tickers, LAST_PRICE]
 
 
 if __name__ == '__main__':
-    df_get = get_security_info(['SNGSP', 'SBERP'])
+    df_get = last_price(('SNGSP', 'SBERP'))
     print(df_get)

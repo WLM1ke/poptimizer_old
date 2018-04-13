@@ -39,8 +39,13 @@ class DataManager:
         Во время обновления проверяется совпадение новых данных со существующими
         """
         if self._need_update():
+            df_old = self.get()
             df_new = self.source_function()
-            self._validate(df_new)
+            self._validate(df_old, df_new)
+            new_elements = df_new.index.difference(df_old.index)
+            full_index = df_old.index.append(new_elements)
+            df_old = df_old.reindex(index=full_index)
+            df_old.loc[new_elements] = df_new.loc[new_elements]
             self.file.dump(df_new)
 
     def _need_update(self):
@@ -53,13 +58,14 @@ class DataManager:
             return True
         return False
 
-    def _validate(self, df_new):
+    @staticmethod
+    def _validate(df_old, df_new):
         """Проверяет соответствие новых данных существующим"""
-        df_old = self.get()
+        common_index = list(set(df_old.index) & set(df_new.index))
         message = (f'Ошибка обновления данных - существующие данные не соответствуют новым:\n'
                    f'Категория - {self.frame_category}\n'
                    f'Название - {self.frame_name}\n')
-        if not np.allclose(df_old, df_new.loc[df_old.index]):
+        if not np.allclose(df_old.loc[common_index], df_new.loc[common_index]):
             raise ValueError(f'{message}{df_old}{df_new}')
 
     def create(self):

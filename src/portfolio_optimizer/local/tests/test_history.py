@@ -6,7 +6,7 @@ import pytest
 
 from portfolio_optimizer import web, settings
 from portfolio_optimizer.local import local_quotes
-from portfolio_optimizer.local.local_index import LocalIndex, get_index_history
+from portfolio_optimizer.local.local_index import LocalIndex
 from portfolio_optimizer.local.local_quotes import get_prices_history, get_volumes_history
 from portfolio_optimizer.local.local_quotes import get_quotes_history, LocalQuotes
 from portfolio_optimizer.settings import VOLUME, CLOSE_PRICE
@@ -47,7 +47,7 @@ def test_get_quotes_history(df):
 
 @pytest.fixture(scope='module', name='index_cases')
 def make_index_cases():
-    df1 = get_index_history()
+    df1 = index()
     index = LocalIndex()
     index.update_local_history()
     df2 = index.df

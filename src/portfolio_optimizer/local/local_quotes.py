@@ -81,7 +81,7 @@ class LocalQuotes(LocalDividends):
 
     def _yield_aliases_quotes_history(self):
         """Генерирует истории котировок для все тикеров аналогов заданного тикера."""
-        aliases_series = local_securities_info.get_aliases_tickers([self.ticker])
+        aliases_series = local_securities_info.aliases([self.ticker])
         aliases = aliases_series.loc[self.ticker].split(sep=' ')
         for ticker in aliases:
             yield web.quotes(ticker)
