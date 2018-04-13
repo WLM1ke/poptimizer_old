@@ -1,4 +1,4 @@
-"""Global package settings."""
+"""Глобальные параметры"""
 
 from pathlib import Path
 

@@ -1,37 +1,34 @@
-"""Load local data for legacy dividends history and returns pandas DataFrames.
-
-    get_legacy_dividends(tickers)
-"""
+"""Загрузка 'старой версии' дивидендов для реализации xlsx модели"""
 
 import pandas as pd
 
-from portfolio_optimizer.local import storage_old
+from portfolio_optimizer.settings import DATA_PATH
 
-DATA_PATH = storage_old.make_data_path('legacy_dividends', 'dividends.xlsx')
+FILE_PATH = DATA_PATH / 'legacy_dividends' / 'dividends.xlsx'
 LEGACY_SHEET_NAME = 'Dividends'
 
 
 def get_legacy_dividends(tickers: list):
     """
-    Возвращает ряды годовых дивидендов для тикеров.
+    Возвращает ряды годовых дивидендов для тикеров
 
     Основывается на статических локальных данных, которые хранятся в xlsx файле. Данная функция нужна для первоначальной
     реализации и сопоставления с xlsx версией модели оптимизации. При дальнейшем развитии будет использоваться более
-    современная реализация на основе динамического обновления данных из интернета.
+    современная реализация на основе динамического обновления данных из интернета
 
     Parameters
     ----------
     tickers
-        Список тикеров.
+        Список тикеров
 
     Returns
     -------
     pandas.DataFrame
-        В строках даты годы.
-        В столбцах цены годовые дивиденды для тикеров.
+        В строках даты годы
+        В столбцах цены годовые дивиденды для тикеров
     """
 
-    df = pd.read_excel(DATA_PATH, sheet_name=LEGACY_SHEET_NAME, header=0, index_col=0)
+    df = pd.read_excel(FILE_PATH, sheet_name=LEGACY_SHEET_NAME, header=0, index_col=0)
     return df.transpose()[tickers]
 
 

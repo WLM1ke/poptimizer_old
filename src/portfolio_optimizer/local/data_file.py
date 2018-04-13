@@ -11,8 +11,8 @@ INDEX_FILE_NAME = 'index.json'
 DATA_FILE_EXTENSION = '.msg'
 
 
-class LocalFile:
-    """Обеспечивает функционал сохранения, проверки наличия, загрузки и даты изменения для файла
+class DataFile:
+    """Обеспечивает функционал сохранения, загрузки и даты изменения для файла
 
     Данные хранятся в каталоге установленном в глобальных настройках. Каждая категория данных в отдельной подкаталоге.
     Каждый ряд в отдельном файле в формате MessagePack
@@ -59,12 +59,12 @@ class LocalFile:
         df.to_msgpack(self.data_path)
         if self.index_path.exists():
             with self.index_path.open('r') as file:
-                update_dict = json.load(file)
+                index_dict = json.load(file)
         else:
-            update_dict = {}
-        update_dict[f'{self.frame_category}->{self.frame_name}'] = arrow.now().for_json()
+            index_dict = {}
+        index_dict[f'{self.frame_category}->{self.frame_name}'] = arrow.now().for_json()
         with self.index_path.open('w') as file:
-            json.dump(update_dict, file)
+            json.dump(index_dict, file)
 
     def load(self):
         """Загружает данные из файла"""

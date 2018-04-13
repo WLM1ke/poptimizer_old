@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from portfolio_optimizer import settings
-from portfolio_optimizer.local.storage import LocalFile
+from portfolio_optimizer.local.data_file import DataFile
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -17,12 +17,12 @@ def make_temp_dir(tmpdir_factory):
 
 
 def test_no_index():
-    data = LocalFile('folder1', 'df1')
+    data = DataFile('folder1', 'df1')
     assert data.last_update() is None
 
 
 def test_dump():
-    data = LocalFile('folder1', 'df1')
+    data = DataFile('folder1', 'df1')
     df = pd.DataFrame(data={'col1': [1, 2], 'col2': [3, 4]})
     data.dump(df)
     assert data.last_update() is not None
@@ -30,12 +30,12 @@ def test_dump():
 
 
 def test_no_file():
-    data = LocalFile('folder1', 'df2')
+    data = DataFile('folder1', 'df2')
     assert data.last_update() is None
 
 
 def test_second_dump():
-    data = LocalFile('folder1', 'df1')
+    data = DataFile('folder1', 'df1')
     df1 = data.load()
     time1 = data.last_update()
     df2 = pd.DataFrame(data={'col1': [1, 1], 'col2': [1, 1]})
