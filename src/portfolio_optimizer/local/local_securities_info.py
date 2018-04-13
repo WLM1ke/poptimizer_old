@@ -154,5 +154,5 @@ def last_price(tickers: tuple):
 
 
 if __name__ == '__main__':
-    df_get = last_price(('SNGSP', 'SBERP'))
+    df_get = last_price(('KBTK', 'MOEX'))
     print(df_get)

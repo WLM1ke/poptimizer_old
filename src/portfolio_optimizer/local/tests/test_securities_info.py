@@ -24,9 +24,8 @@ def security_info_fake_data_path(tmpdir_factory):
 @pytest.mark.usefixtures('security_info_fake_data_path')
 class TestSecurityInfo:
     def test_first_time_get_last_prices(self):
-        df = local_securities_info.last_price(['KBTK', 'MOEX'])
+        df = local_securities_info.last_price(('KBTK', 'MOEX'))
         assert len(df.index) == 2
-        assert len(local_securities_info.load_securities_info().index) == 2
 
     def test_second_time_security_info(self):
         df = local_securities_info.get_security_info(['KBTK', 'MOEX'])
@@ -71,10 +70,10 @@ def get_reg_number_tickers_fake_data_path(tmpdir_factory):
 @pytest.mark.usefixtures('get_reg_number_tickers_fake_data_path')
 class TestGetRegNumberTickers:
     def test_first_get_reg_number_tickers(self):
-        assert local_securities_info.aliases(['UPRO']).loc['UPRO'] == 'UPRO EONR OGK4'
+        assert local_securities_info.aliases(('UPRO',)).loc['UPRO'] == 'UPRO EONR OGK4'
 
     def test_download_tickers_for_get_reg_number_tickers(self):
-        assert local_securities_info.aliases(['TTLK']).loc['TTLK'] == 'TTLK'
+        assert local_securities_info.aliases(('TTLK',)).loc['TTLK'] == 'TTLK'
 
     def test_load_local_tickers_for_get_reg_number_tickers(self):
-        assert local_securities_info.aliases(['UPRO']).loc['UPRO'] == 'UPRO EONR OGK4'
+        assert local_securities_info.aliases(('UPRO',)).loc['UPRO'] == 'UPRO EONR OGK4'
