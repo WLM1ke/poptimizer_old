@@ -23,13 +23,13 @@ def test_get_quotes_history(tmpdir, monkeypatch):
 
 
 def test_volumes():
-    df = volumes(['KBTK', 'RTKMP'])
+    df = volumes(('KBTK', 'RTKMP'))
     assert df.loc['2018-03-09', 'KBTK'] == 0
     assert df.loc['2018-03-13', 'RTKMP'] == 400100
 
 
 def test_prices():
-    df = prices(['KBTK', 'RTKMP'])
+    df = prices(('KBTK', 'RTKMP'))
     assert pd.isna(df.loc['2018-03-09', 'KBTK'])
     assert df.loc['2018-03-13', 'RTKMP'] == 62
 
