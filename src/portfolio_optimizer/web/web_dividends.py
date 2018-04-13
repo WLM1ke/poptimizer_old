@@ -6,7 +6,7 @@ import urllib.request
 import pandas as pd
 from bs4 import BeautifulSoup
 
-from portfolio_optimizer.settings import DATE, DIVIDENDS
+from portfolio_optimizer.settings import DATE
 
 # Номер таблицы с дивидендами в документе
 TABLE_INDEX = 2
@@ -79,11 +79,11 @@ def parse_table_rows(table: BeautifulSoup):
         yield pd.to_datetime(cells.date), pd.to_numeric(cells.value)
 
 
-def make_df(parsed_rows):
+def make_df(ticker, parsed_rows):
     """Формирует DataFrame и упорядочивает даты по возрастанию"""
     df = pd.DataFrame(data=parsed_rows,
-                      columns=[DATE, DIVIDENDS])
-    return df.set_index(DATE)[DIVIDENDS].sort_index()
+                      columns=[DATE, ticker])
+    return df.set_index(DATE)[ticker].sort_index()
 
 
 def dividends(ticker: str) -> pd.Series:
@@ -105,7 +105,7 @@ def dividends(ticker: str) -> pd.Series:
     html = get_html(url)
     table = pick_table(url, html)
     parsed_rows = parse_table_rows(table)
-    return make_df(parsed_rows)
+    return make_df(ticker, parsed_rows)
 
 
 if __name__ == '__main__':
