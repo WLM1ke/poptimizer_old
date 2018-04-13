@@ -84,7 +84,7 @@ class Quotes:
             raise StopIteration
 
 
-def quotes(ticker, start_date=None):
+def quotes(ticker, start=None):
     """
     Возвращает историю котировок тикера начиная с даты start_date
 
@@ -95,7 +95,7 @@ def quotes(ticker, start_date=None):
     ticker : str
         Тикер, например, 'MOEX'
 
-    start_date : pd.Timestamp or None
+    start : pd.Timestamp or None
         Начальная дата котировок
 
     Returns
@@ -104,7 +104,7 @@ def quotes(ticker, start_date=None):
         В строках даты торгов
         В столбцах [CLOSE, VOLUME] цена закрытия и оборот в штуках
     """
-    gen = Quotes(ticker, start_date)
+    gen = Quotes(ticker, start)
     df = pd.concat(gen, ignore_index=True)
     # Для каждой даты выбирается режим торгов с максимальным оборотом
     df = df.loc[df.groupby(DATE)[VOLUME].idxmax()]
@@ -113,6 +113,6 @@ def quotes(ticker, start_date=None):
 
 
 if __name__ == '__main__':
-    z = quotes('AKRN', start_date=pd.to_datetime('2017-10-02'))
+    z = quotes('AKRN', start=pd.to_datetime('2017-10-02'))
     print(z.head())
     print(z.tail())

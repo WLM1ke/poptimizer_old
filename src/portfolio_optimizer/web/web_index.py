@@ -27,7 +27,7 @@ class Index(Quotes):
         return df[[DATE, CLOSE_PRICE]].set_index(DATE)
 
 
-def index(start_date=None):
+def index(start=None):
     """
     Возвращает котировки индекса полной доходности с учетом российских налогов
     начиная с даты start_date
@@ -36,7 +36,7 @@ def index(start_date=None):
 
     Parameters
     ----------
-    start_date : datetime.date or None
+    start : datetime.date or None
         Начальная дата котировок
 
     Returns
@@ -45,10 +45,10 @@ def index(start_date=None):
         В строках даты торгов
         В столбцах цена закрытия индекса полной доходности
     """
-    return pd.concat(Index(start_date))[CLOSE_PRICE]
+    return pd.concat(Index(start))[CLOSE_PRICE]
 
 
 if __name__ == '__main__':
-    z = index(start_date=pd.to_datetime('2017-10-02'))
+    z = index(start=pd.to_datetime('2017-10-02'))
     print(z.head())
     print(z.tail())

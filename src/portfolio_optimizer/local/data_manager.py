@@ -24,7 +24,7 @@ class DataManager:
         source_function
             Функция загрузки данных из web - не принимает параметры и используется для создания локальных данных
         update_function
-            Функция загрузки данных из web - принимает одно значение последний элемент индекса локальных данных и
+            Функция загрузки данных из web - принимает один аргумент start последний элемент индекса локальных данных и
             используется для обновления существующих данных. Если None, то при обновлении будут загружены все данные с
             помощью функции source_function
         """
@@ -46,7 +46,7 @@ class DataManager:
         if self._need_update():
             df_old = self.get()
             if self.update_function:
-                df_new = self.update_function(df_old.index[-1])
+                df_new = self.update_function(start=df_old.index[-1])
             else:
                 df_new = self.source_function()
             self._validate(df_old, df_new)

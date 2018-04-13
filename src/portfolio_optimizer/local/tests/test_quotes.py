@@ -6,15 +6,15 @@ import pytest
 
 from portfolio_optimizer import web, settings
 from portfolio_optimizer.local import local_quotes
-from portfolio_optimizer.local.local_quotes import get_prices_history, get_volumes_history
-from portfolio_optimizer.local.local_quotes import get_quotes_history, LocalQuotes
+from portfolio_optimizer.local.local_quotes import prices, volumes
+from portfolio_optimizer.local.local_quotes import quotes, LocalQuotes
 from portfolio_optimizer.settings import VOLUME, CLOSE_PRICE
 
 
 def updated_df():
     saved_date = local_quotes.END_OF_CURRENT_TRADING_DAY
     local_quotes.END_OF_CURRENT_TRADING_DAY = arrow.get().shift(months=1)
-    df2 = get_quotes_history('MSTT')
+    df2 = quotes('MSTT')
     local_quotes.END_OF_CURRENT_TRADING_DAY = saved_date
     return df2
 
@@ -24,7 +24,7 @@ def make_dfs_and_fake_path(tmpdir_factory):
     saved_path = settings.DATA_PATH
     temp_dir = tmpdir_factory.mktemp('data')
     settings.DATA_PATH = Path(temp_dir)
-    dfs = [get_quotes_history('MSTT'), updated_df(), get_quotes_history('MSTT')]
+    dfs = [quotes('MSTT'), updated_df(), quotes('MSTT')]
     yield dfs
     settings.DATA_PATH = saved_path
 
@@ -53,13 +53,13 @@ def test_validate_last_date_error():
 
 
 def test_get_volumes_history():
-    df = get_volumes_history(['KBTK', 'RTKMP'])
+    df = volumes(['KBTK', 'RTKMP'])
     assert df.loc['2018-03-09', 'KBTK'] == 0
     assert df.loc['2018-03-13', 'RTKMP'] == 400100
 
 
 def test_get_prices_history():
-    df = get_prices_history(['KBTK', 'RTKMP'])
+    df = prices(['KBTK', 'RTKMP'])
     assert pd.isna(df.loc['2018-03-09', 'KBTK'])
     assert df.loc['2018-03-13', 'RTKMP'] == 62
 

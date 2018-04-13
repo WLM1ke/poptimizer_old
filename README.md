@@ -13,7 +13,7 @@
 1. Пакет [download](https://github.com/WLM1ke/PortfolioOptimizer/tree/master/src/portfolio/download) -  функции-загрузчики необходимых данных из интернета, которые используются пакетом getter для создания локальных данных. Функции максимально приближены к API выдачи данных, поэтому принимают иногда набор тикеров, а иногда отдельный тикер:
 - [x] CPI [источник данных](http://www.gks.ru/) - **cpi()**
 - [x] Дивиденды [источник данных](https://www.dohod.ru/) - **nominal_retax_dividends(ticker)**
-- [x] История котировок акций [источник данных](https://www.moex.com) - **quotes_history(ticker, start_date)**
+- [x] История котировок акций [источник данных](https://www.moex.com) - **quotes(ticker, start_date)**
 - [x] История значений индекса MOEX Russia Net Total Return (Resident) [источник данных](https://www.moex.com/ru/index/totalreturn.aspx) - **index_history(ticker, start_date)**
 - [x] Информация по кратким наименованиям, регистрационным номерам, размерам лотов и последним ценам [источник данных](https://www.moex.com)- **securities_info(tickers)**
 - [x] Тикеры, соответствующие регистрационному номеру [источник данных](https://www.moex.com) - **reg_number_tickers(reg_number)**
