@@ -153,6 +153,9 @@ def last_price(tickers: tuple):
     return df.loc[tickers, LAST_PRICE]
 
 
+# TODO: нужна функция для получения регистрационного алиасов для тикера - после реализации вставить в файл загрузки котировок
+
+
 if __name__ == '__main__':
     df_get = last_price(('KBTK', 'MOEX'))
     print(df_get)

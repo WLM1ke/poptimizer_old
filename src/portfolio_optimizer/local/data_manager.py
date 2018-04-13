@@ -52,9 +52,9 @@ class DataManager:
             self._validate(df_old, df_new)
             new_elements = df_new.index.difference(df_old.index)
             full_index = df_old.index.append(new_elements)
-            df_old = df_old.reindex(index=full_index)
-            df_old.loc[new_elements] = df_new.loc[new_elements]
-            self.file.dump(df_new)
+            df_full = df_old.reindex(index=full_index)
+            df_full.loc[new_elements] = df_new.loc[new_elements]
+            self.file.dump(df_full)
 
     def _need_update(self):
         """Файлы обновляются раз в день после публикации информации по котировкам"""
