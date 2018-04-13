@@ -1,17 +1,11 @@
 """Сохраняет, обновляет и загружает локальную версию данных по индексу MOEX Russia Net Total Return (Resident)"""
 
+
 from portfolio_optimizer import web
 from portfolio_optimizer.local.data_manager import DataManager
 
 INDEX_CATEGORY = 'index'
 INDEX_NAME = 'MCFTRR'
-
-
-class DataSeriesManager(DataManager):
-    """Обновляет локальные данные, если наступило время очередного обновления
-
-    Во время обновления загружает только новые данные
-    """
 
 
 def index():
@@ -25,7 +19,7 @@ def index():
     pandas.Series
         В строках даты торгов
     """
-    data = DataManager(INDEX_CATEGORY, INDEX_NAME, web.index())
+    data = DataManager(INDEX_CATEGORY, INDEX_NAME, web.index, web.index)
     return data.get()
 
 

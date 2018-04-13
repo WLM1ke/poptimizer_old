@@ -66,8 +66,7 @@ class DataManager:
             return True
         return False
 
-    @staticmethod
-    def _validate(df_old, df_new):
+    def _validate(self, df_old, df_new):
         """Проверяет соответствие новых данных существующим"""
         common_index = df_old.index.intersection(df_new.index)
         message = (f'Ошибка обновления данных - существующие данные не соответствуют новым:\n'
