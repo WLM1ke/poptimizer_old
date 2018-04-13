@@ -42,7 +42,7 @@ def test_need_update(monkeypatch):
     assert data._need_update()
 
 
-def test_need_update(monkeypatch):
+def test_need_update2(monkeypatch):
     patch_day = arrow.now()
     monkeypatch.setattr(data_manager, 'END_OF_CURRENT_TRADING_DAY', patch_day)
     data = DataManager('test', 'test', source_function)
