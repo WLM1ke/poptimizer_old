@@ -56,8 +56,8 @@ class DividendsMetrics:
         nominal_pretax_dividends = self.nominal_pretax
         columns = nominal_pretax_dividends.columns
         cum_cpi = local.cpi().cumprod()
-        years = [pd.to_datetime(f'{year}-12-31') for year in columns]
-        last_year_cpi_values = (cum_cpi[years[-1]] / cum_cpi[years]).values
+        years_end_date = [pd.to_datetime(f'{year}-12-31') for year in columns]
+        last_year_cpi_values = (cum_cpi[years_end_date[-1]] / cum_cpi[years_end_date]).values
         real_pretax_dividends = nominal_pretax_dividends.multiply(last_year_cpi_values, axis='columns')
         return real_pretax_dividends * AFTER_TAX
 
