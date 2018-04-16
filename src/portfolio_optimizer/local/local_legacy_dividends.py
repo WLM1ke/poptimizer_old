@@ -8,7 +8,7 @@ FILE_PATH = DATA_PATH / 'legacy_dividends' / 'dividends.xlsx'
 LEGACY_SHEET_NAME = 'Dividends'
 
 
-def get_legacy_dividends(tickers: list):
+def legacy_dividends(tickers: list):
     """
     Возвращает ряды годовых дивидендов для тикеров
 
@@ -33,4 +33,4 @@ def get_legacy_dividends(tickers: list):
 
 
 if __name__ == '__main__':
-    print(get_legacy_dividends(['AKRN']))
+    print(legacy_dividends(['AKRN']))

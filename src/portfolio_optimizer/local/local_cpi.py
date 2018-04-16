@@ -9,6 +9,13 @@ CPI_CATEGORY = 'macro'
 CPI_NAME = 'cpi'
 
 
+class CPIDataManager(DataManager):
+    """Реализует особенность загрузки потребительской инфляции"""
+
+    def __init__(self):
+        super().__init__(CPI_CATEGORY, CPI_NAME, web.cpi)
+
+
 def cpi():
     """
     Сохраняет, обновляет и загружает локальную версию данных по CPI
@@ -19,7 +26,7 @@ def cpi():
         В строках значения инфляции для каждого месяца
         Инфляция 1,2% за месяц соответствует 1.012
     """
-    data = DataManager(CPI_CATEGORY, CPI_NAME, web.cpi)
+    data = CPIDataManager()
     return data.get()
 
 

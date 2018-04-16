@@ -28,7 +28,7 @@ class SecuritiesInfoDataManager(DataManager):
         return False
 
 
-def security_info(tickers: tuple):
+def securities_info(tickers: tuple):
     """
     Возвращает данные по тикерам из списка и при необходимости обновляет локальные данные
 
@@ -52,6 +52,7 @@ def aliases(ticker: str):
     Возвращает список тикеров аналогов для заданного тикера
 
     Функция нужна для выгрузки длинной истории котировок с учетом изменения тикера
+    Не используется за пределами пакета local
 
     Parameters
     ----------
@@ -63,10 +64,10 @@ def aliases(ticker: str):
     tuple
         Тикеры аналоги с таким же регистрационным номером
     """
-    reg_number = security_info((ticker,)).loc[ticker, REG_NUMBER]
+    reg_number = securities_info((ticker,)).loc[ticker, REG_NUMBER]
     return web.reg_number_tickers(reg_number)
 
 
 if __name__ == '__main__':
-    print(security_info(('KBTK', 'MOEX')))
+    print(securities_info(('SNGSP', 'GAZP')))
     print(aliases('UPRO'))

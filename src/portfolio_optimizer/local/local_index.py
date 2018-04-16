@@ -8,6 +8,13 @@ INDEX_CATEGORY = 'index'
 INDEX_NAME = 'MCFTRR'
 
 
+class IndexDataManager(DataManager):
+    """Реализует особенность загрузки исторических котировок по индексу"""
+
+    def __init__(self):
+        super().__init__(INDEX_CATEGORY, INDEX_NAME, web.index, web.index)
+
+
 def index():
     """
     Возвращает историю индекса полной доходности с учетом российских налогов из локальных данных
@@ -19,7 +26,7 @@ def index():
     pandas.Series
         В строках даты торгов
     """
-    data = DataManager(INDEX_CATEGORY, INDEX_NAME, web.index, web.index)
+    data = IndexDataManager()
     return data.get()
 
 
