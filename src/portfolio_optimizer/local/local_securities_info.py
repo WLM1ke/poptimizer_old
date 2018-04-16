@@ -1,24 +1,41 @@
-"""Load and update local securities info data.
-
-    1. Load and update local securities info data:
-
-        get_security_info(tickers)
-
-    2. Load and update local last prices data:
-
-        last_price(tickers)
-
-    3. Load aliases for tickers and update local securities info data.
-
-        aliases(tickers)
-"""
+"""Сохраняет, обновляет и загружает локальную версию информации об акциях"""
 
 import numpy as np
 import pandas as pd
 
 from portfolio_optimizer import web
 from portfolio_optimizer.local import storage_old
+from portfolio_optimizer.local.data_manager import DataManager
 from portfolio_optimizer.settings import LAST_PRICE, LOT_SIZE, COMPANY_NAME, REG_NUMBER, TICKER, TICKER_ALIASES
+
+SECURITIES_INFO_CATEGORY = 'securities_info'
+SECURITIES_INFO_MANE = 'securities_info'
+
+
+class SecuritiesInfoDataManager(DataManager):
+    """Реализует особенность валидации информации об акциях"""
+
+    def __init__(self, tickers: tuple):
+        def source_function():
+            """Возвращает web данные кроме последней цены, которая непрерывно обновляется"""
+            return web.securities_info(tickers)[COMPANY_NAME, REG_NUMBER, LOT_SIZE]
+
+        super().__init__(SECURITIES_INFO_CATEGORY, SECURITIES_INFO_MANE, source_function)
+
+    def _validate(self, df_old, df_new):
+        """Проверяет соответствие новых данных существующим"""
+        common_index = df_old.index.intersection(df_new.index)
+        message = (f'Ошибка обновления данных - существующие данные не соответствуют новым:\n'
+                   f'Категория - {self.frame_category}\n'
+                   f'Название - {self.frame_name}\n')
+        if not df_old.loc[common_index].equals(df_new.loc[common_index]):
+            raise ValueError(f'{message}{df_old}{df_new}')
+
+
+
+
+
+
 
 DATA_PATH = storage_old.make_data_path('securities_info', 'securities_info.csv')
 
