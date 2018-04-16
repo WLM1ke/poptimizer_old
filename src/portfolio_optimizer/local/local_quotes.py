@@ -4,9 +4,10 @@ import functools
 
 import pandas as pd
 
-from portfolio_optimizer import web, local
+from portfolio_optimizer import web
 from portfolio_optimizer.local.data_manager import DataManager
-from portfolio_optimizer.settings import DATE, CLOSE_PRICE, VOLUME, REG_NUMBER
+from portfolio_optimizer.local.local_securities_info import aliases
+from portfolio_optimizer.settings import DATE, CLOSE_PRICE, VOLUME
 
 QUOTES_CATEGORY = 'quotes'
 
@@ -29,8 +30,7 @@ class QuotesManager(DataManager):
     def _yield_aliases_quotes_history(self):
         """Генерирует истории котировок для все тикеров аналогов заданного тикера"""
         ticker = self.frame_name
-        reg_number = local.security_info([ticker]).loc[ticker, REG_NUMBER]
-        aliases_tickers = web.reg_number_tickers(reg_number)
+        aliases_tickers = aliases(ticker)
         for ticker in aliases_tickers:
             yield web.quotes(ticker)
 

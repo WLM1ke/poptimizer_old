@@ -2,6 +2,7 @@
 
 import arrow
 import numpy as np
+import pandas as pd
 
 from portfolio_optimizer.local.data_file import DataFile
 
@@ -69,10 +70,18 @@ class DataManager:
     def _validate(self, df_old, df_new):
         """Проверяет соответствие новых данных существующим"""
         common_index = df_old.index.intersection(df_new.index)
+        if isinstance(df_old, pd.Series):
+            condition = np.allclose(df_old.loc[common_index], df_new.loc[common_index])
+        else:
+            condition_not_object = np.allclose(df_old.select_dtypes(exclude='object').loc[common_index],
+                                               df_new.select_dtypes(exclude='object').loc[common_index])
+            df_new_object = df_new.select_dtypes(include='object').loc[common_index]
+            condition_object = df_old.select_dtypes(include='object').loc[common_index].equals(df_new_object)
+            condition = condition_not_object and condition_object
         message = (f'Ошибка обновления данных - существующие данные не соответствуют новым:\n'
                    f'Категория - {self.frame_category}\n'
                    f'Название - {self.frame_name}\n')
-        if not np.allclose(df_old.loc[common_index], df_new.loc[common_index]):
+        if not condition:
             raise ValueError(f'{message}{df_old}{df_new}')
 
     def create(self):

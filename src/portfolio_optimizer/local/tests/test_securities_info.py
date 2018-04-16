@@ -28,22 +28,22 @@ class TestSecurityInfo:
         assert len(df.index) == 2
 
     def test_second_time_security_info(self):
-        df = local_securities_info.get_security_info(['KBTK', 'MOEX'])
+        df = local_securities_info.security_info(['KBTK', 'MOEX'])
         assert len(df.index) == 2
         assert len(local_securities_info.load_securities_info().index) == 2
 
     def test_all_tickers_in_local_data_security_info(self):
-        df = local_securities_info.get_security_info(['MOEX'])
+        df = local_securities_info.security_info(['MOEX'])
         assert len(df.index) == 1
         assert len(local_securities_info.load_securities_info().index) == 2
 
     def test_not_all_tickers_in_local_data_security_info(self):
-        df = local_securities_info.get_security_info(['MOEX', 'MTSS'])
+        df = local_securities_info.security_info(['MOEX', 'MTSS'])
         assert len(df.index) == 2
         assert len(local_securities_info.load_securities_info().index) == 3
 
     def test_all_tickers_are_new_time_security_info(self):
-        df = local_securities_info.get_security_info(['SNGSP', 'GAZP'])
+        df = local_securities_info.security_info(['SNGSP', 'GAZP'])
         assert len(df.index) == 2
         assert len(df.columns) == 5
         df_local = local_securities_info.load_securities_info()

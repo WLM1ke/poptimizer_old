@@ -1,12 +1,8 @@
 """Сохраняет, обновляет и загружает локальную версию информации об акциях"""
 
-import numpy as np
-import pandas as pd
-
 from portfolio_optimizer import web
-from portfolio_optimizer.local import storage_old
 from portfolio_optimizer.local.data_manager import DataManager
-from portfolio_optimizer.settings import LAST_PRICE, LOT_SIZE, COMPANY_NAME, REG_NUMBER, TICKER, TICKER_ALIASES
+from portfolio_optimizer.settings import LOT_SIZE, COMPANY_NAME, REG_NUMBER
 
 SECURITIES_INFO_CATEGORY = 'securities_info'
 SECURITIES_INFO_MANE = 'securities_info'
@@ -16,145 +12,25 @@ class SecuritiesInfoDataManager(DataManager):
     """Реализует особенность валидации информации об акциях"""
 
     def __init__(self, tickers: tuple):
+        self.tickers = tickers
+
         def source_function():
             """Возвращает web данные кроме последней цены, которая непрерывно обновляется"""
-            return web.securities_info(tickers)[COMPANY_NAME, REG_NUMBER, LOT_SIZE]
+            return web.securities_info(tickers)[[COMPANY_NAME, REG_NUMBER, LOT_SIZE]]
 
         super().__init__(SECURITIES_INFO_CATEGORY, SECURITIES_INFO_MANE, source_function)
 
-    def _validate(self, df_old, df_new):
-        """Проверяет соответствие новых данных существующим"""
-        common_index = df_old.index.intersection(df_new.index)
-        message = (f'Ошибка обновления данных - существующие данные не соответствуют новым:\n'
-                   f'Категория - {self.frame_category}\n'
-                   f'Название - {self.frame_name}\n')
-        if not df_old.loc[common_index].equals(df_new.loc[common_index]):
-            raise ValueError(f'{message}{df_old}{df_new}')
+    def _need_update(self):
+        if super()._need_update():
+            return True
+        if not all(self.get().index.contains(ticker) for ticker in self.tickers):
+            return True
+        return False
 
 
-
-
-
-
-
-DATA_PATH = storage_old.make_data_path('securities_info', 'securities_info.csv')
-
-
-def load_securities_info():
-    """загружает локальную версию данных - sep гарантирует загрузку данных с добавленными PyCharm пробелами."""
-    converters = {LOT_SIZE: pd.to_numeric, LAST_PRICE: pd.to_numeric}
-    df = pd.read_csv(DATA_PATH, converters=converters, header=0, engine='python', sep='\s*,')
-    return df.set_index(TICKER)
-
-
-def download_securities_info(tickers):
-    """Загружает информацию о тикерах из интернета и добавляет колонку пустую колонку ALIASES."""
-    df = web.securities_info(tickers)
-    columns = [TICKER_ALIASES, COMPANY_NAME, REG_NUMBER, LOT_SIZE, LAST_PRICE]
-    return df.reindex(columns=columns)
-
-
-def save_security_info(df: pd.DataFrame):
-    """Сохраняет фрейм с данными в директорию с данными."""
-    df.sort_index().to_csv(DATA_PATH)
-
-
-def validate(df, df_update):
-    """Проверяет совпадение данных для общих тикеров.
-
-    Проверка осуществляется для колонок с кратким наименованием, регистрационным номером и размером лота."""
-    common_tickers = list(set(df.index) & set(df_update.index))
-    if common_tickers:
-        columns_for_validation = [REG_NUMBER, LOT_SIZE]
-        df = df.loc[common_tickers]
-        df_update = df_update.loc[common_tickers]
-        equal = df[REG_NUMBER].equals(df_update[REG_NUMBER]) and np.allclose(df[LOT_SIZE], df_update[LOT_SIZE])
-        if not equal:
-            raise ValueError(f'Загруженные данные {common_tickers} не стыкуются с локальными. \n' +
-                             f'{df[columns_for_validation]} \n' +
-                             f'{df_update[columns_for_validation]}')
-
-
-def fill_aliases_column(df):
-    """Заполняет пустые ячейки в колонке с тикерами аналогами."""
-    for ticker in df.index:
-        if pd.isna(df.loc[ticker, TICKER_ALIASES]):
-            tickers = web.reg_number_tickers(reg_number=df.loc[ticker, REG_NUMBER])
-            df.loc[ticker, TICKER_ALIASES] = ' '.join(tickers)
-
-
-def update_local_securities_info(tickers):
-    """Обновляет существующую локальную версию данных и проверяет соответствие новых данных старым."""
-    df = load_securities_info()
-    df_update = download_securities_info(tickers)
-    validate(df, df_update)
-    all_tickers = list(set(df_update.index) | set(df.index))
-    df = df.reindex(index=all_tickers)
-    df.loc[tickers, df_update.columns] = df_update
-    fill_aliases_column(df)
-    save_security_info(df)
-    return df.loc[tickers]
-
-
-def create_local_security_info(tickers):
-    """Создает с нуля локальную версию данных, загружая их из интернета."""
-    df = download_securities_info(tickers)
-    fill_aliases_column(df)
-    save_security_info(df)
-    return df
-
-
-def get_security_info(tickers: list):
+def security_info(tickers: tuple):
     """
     Возвращает данные по тикерам из списка и при необходимости обновляет локальные данные
-
-    Parameters
-    ----------
-    tickers
-        Список тикеров.
-
-    Returns
-    -------
-    pandas.DataFrame
-        В строках тикеры.
-        В столбцах данные по размеру лота, регистрационному номеру, краткому наименованию, последней цене и тикерам,
-        которые соответствуют такому же регистрационному номеру (обычно устаревшие ранее использовавшиеся тикеры).
-    """
-    # Общий запрос содержит последние цены, которые регулярно обновляются, поэтому требует обновления
-    if DATA_PATH.exists():
-        df = update_local_securities_info(tickers)
-    else:
-        df = create_local_security_info(tickers)
-    return df
-
-
-def aliases(tickers: tuple):
-    """
-    Возвращает список тикеров аналогов для заданного набора тикеров
-
-    Parameters
-    ----------
-    tickers
-        Тикеры
-
-    Returns
-    -------
-    pd.Series
-        В строках тикеры и тикеры аналоги для них.
-    """
-    if DATA_PATH.exists():
-        df = load_securities_info()
-        # Если тикеры в локальной версии, то обновлять данные нет необходимости
-        if not set(df.index).issuperset(tickers):
-            df = update_local_securities_info(tickers)
-    else:
-        df = create_local_security_info(tickers)
-    return df.loc[tickers, TICKER_ALIASES]
-
-
-def last_price(tickers: tuple):
-    """
-    Возвращает последние цены для тикеров из кортежа напрямую из интернета
 
     Parameters
     ----------
@@ -163,16 +39,34 @@ def last_price(tickers: tuple):
 
     Returns
     -------
-    pandas.Series
+    pandas.DataFrame
         В строках тикеры
+        В столбцах данные по размеру лота, регистрационному номеру и краткому наименованию
     """
-    df = web.securities_info(tickers)
-    return df.loc[tickers, LAST_PRICE]
+    data = SecuritiesInfoDataManager(tickers)
+    return data.get().loc[tickers, :]
 
 
-# TODO: нужна функция для получения регистрационного алиасов для тикера - после реализации вставить в файл загрузки котировок
+def aliases(ticker: str):
+    """
+    Возвращает список тикеров аналогов для заданного тикера
+
+    Функция нужна для выгрузки длинной истории котировок с учетом изменения тикера
+
+    Parameters
+    ----------
+    ticker
+        Тикер
+
+    Returns
+    -------
+    tuple
+        Тикеры аналоги с таким же регистрационным номером
+    """
+    reg_number = security_info((ticker,)).loc[ticker, REG_NUMBER]
+    return web.reg_number_tickers(reg_number)
 
 
 if __name__ == '__main__':
-    df_get = last_price(('KBTK', 'MOEX'))
-    print(df_get)
+    print(security_info(('KBTK', 'MOEX')))
+    print(aliases('UPRO'))
