@@ -11,7 +11,7 @@ from portfolio_optimizer.settings import PORTFOLIO, T_SCORE, CASH
 # Максимальный объем операций в долях портфеля
 MAX_TRADE = 0.01
 # Оборот, при котором обнуляются градиенты, в процентах от размера портфеля
-VOLUME_CUT_OFF = 0.0030
+VOLUME_CUT_OFF = 0.0037
 
 
 class Optimizer:
@@ -36,7 +36,7 @@ class Optimizer:
         main_metrics = (f'\n\nКЛЮЧЕВЫЕ МЕТРИКИ ПОРТФЕЛЯ\n'
                         f'Максимальная ожидаемая просадка - {draw_down:.4f}\n'
                         f'Ожидаемые дивиденды - {expected_dividends:.0f}\n'
-                        f'Минимальные дивиденды дивиденды - {minimal_dividends:.0f}')
+                        f'Минимальные дивиденды - {minimal_dividends:.0f}')
         t_growth = self.t_growth
         if t_growth > T_SCORE:
             need_optimization = (f'\n\nОПТИМИЗАЦИЯ ТРЕБУЕТСЯ\n'
