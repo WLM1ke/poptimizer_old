@@ -44,7 +44,7 @@ def case_optimizer():
                      positions=pos)
     opt = Optimizer(port)
     # Все кейсы составлены для константы сглаживания 0.9
-    opt.returns._decay = 0.9
+    opt.returns_metrics._decay = 0.9
     # Все кейсы составлены для константы ограничения на объем 0.0024
     save_cut_off = optimizer.VOLUME_CUT_OFF
     optimizer.VOLUME_CUT_OFF = 0.0024
@@ -74,7 +74,7 @@ def test_dominated(opt):
 
 def adjustment(optimum):
     adj = (optimum.portfolio.weight[[CASH, PORTFOLIO]] * optimum.gradient_growth[[CASH, PORTFOLIO]]).sum()
-    return adj / optimum.dividends.std[PORTFOLIO]
+    return adj / optimum.dividends_metrics.std[PORTFOLIO]
 
 
 def test_t_growth(opt):

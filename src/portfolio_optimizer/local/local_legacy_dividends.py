@@ -8,7 +8,7 @@ FILE_PATH = DATA_PATH / 'legacy_dividends' / 'dividends.xlsx'
 LEGACY_SHEET_NAME = 'Dividends'
 
 
-def legacy_dividends(tickers: list):
+def legacy_dividends(tickers: tuple):
     """
     Возвращает ряды годовых дивидендов для тикеров
 
@@ -29,8 +29,8 @@ def legacy_dividends(tickers: list):
     """
 
     df = pd.read_excel(FILE_PATH, sheet_name=LEGACY_SHEET_NAME, header=0, index_col=0)
-    return df.transpose()[tickers]
+    return df.loc[tickers, :].transpose()
 
 
 if __name__ == '__main__':
-    print(legacy_dividends(['AKRN']))
+    print(legacy_dividends(('AKRN',)))

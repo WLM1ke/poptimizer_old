@@ -69,6 +69,8 @@ class DataManager:
 
     def _validate(self, df_old, df_new):
         """Проверяет соответствие новых данных существующим"""
+        if not df_new.index.is_unique:
+            raise ValueError(f'У новых данных не уникальный индекс {df.new}')
         common_index = df_old.index.intersection(df_new.index)
         if isinstance(df_old, pd.Series):
             condition = np.allclose(df_old.loc[common_index], df_new.loc[common_index])
@@ -87,6 +89,8 @@ class DataManager:
     def create(self):
         """Создает локальный файл с нуля или перезаписывает существующий"""
         df = self.source_function()
+        if not df.index.is_unique:
+            raise ValueError(f'У новых данных не уникальный индекс {df}')
         self.file.dump(df)
 
     def get(self):

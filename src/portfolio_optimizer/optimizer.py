@@ -11,7 +11,7 @@ from portfolio_optimizer.settings import PORTFOLIO, T_SCORE, CASH
 # Максимальный объем операций в долях портфеля
 MAX_TRADE = 0.01
 # Оборот, при котором обнуляются градиенты, в процентах от размера портфеля
-VOLUME_CUT_OFF = 0.0027
+VOLUME_CUT_OFF = 0.0030
 
 
 class Optimizer:
@@ -26,20 +26,27 @@ class Optimizer:
 
     def __init__(self, portfolio: Portfolio):
         self._portfolio = portfolio
-        self._dividends = DividendsMetrics(portfolio)
-        self._returns = ReturnsMetrics(portfolio)
+        self._dividends_metrics = DividendsMetrics(portfolio)
+        self._returns_metrics = ReturnsMetrics(portfolio)
 
     def __str__(self):
+        draw_down = self._returns_metrics.draw_down[PORTFOLIO]
+        expected_dividends = self._dividends_metrics.mean[PORTFOLIO] * self._portfolio.value[PORTFOLIO]
+        minimal_dividends = self._dividends_metrics.lower_bound[PORTFOLIO] * self._portfolio.value[PORTFOLIO]
+        main_metrics = (f'\n\nКЛЮЧЕВЫЕ МЕТРИКИ ПОРТФЕЛЯ\n'
+                        f'Максимальная ожидаемая просадка - {draw_down:.4f}\n'
+                        f'Ожидаемые дивиденды - {expected_dividends:.0f}\n'
+                        f'Минимальные дивиденды дивиденды - {minimal_dividends:.0f}')
         t_growth = self.t_growth
         if t_growth > T_SCORE:
-            need_optimization = (f'\n\nОПТИМИЗАЦИЯ ТРЕБУЕТСЯ\n\n'
+            need_optimization = (f'\n\nОПТИМИЗАЦИЯ ТРЕБУЕТСЯ\n'
                                  f'Прирост дивидендов составляет {t_growth:.2f} СКО > {T_SCORE:.2f}')
         else:
-            need_optimization = (f'\n\nОПТИМИЗАЦИЯ НЕ ТРЕБУЕТСЯ\n\n'
+            need_optimization = (f'\n\nОПТИМИЗАЦИЯ НЕ ТРЕБУЕТСЯ\n'
                                  f'Прирост дивидендов составляет {t_growth:.2f} СКО < {T_SCORE:.2f}')
 
-        frames = [self.dividends.gradient,
-                  self.returns.gradient,
+        frames = [self.dividends_metrics.gradient,
+                  self.returns_metrics.gradient,
                   self.dominated,
                   self.volume_factor,
                   self.gradient_growth]
@@ -48,7 +55,7 @@ class Optimizer:
         df.columns = columns
         df.sort_values('D_GRADIENT', ascending=False, inplace=True)
 
-        return (f'{need_optimization}\n\nКлючевые метрики оптимальности по Парето'
+        return (f'{main_metrics}{need_optimization}\n\nКЛЮЧЕВЫЕ МЕТРИКИ ОПТИМАЛЬНОСТИ ПО ПАРЕТО'
                 f'\n\n{df}\n\n{self.best_trade}')
 
     @property
@@ -57,14 +64,14 @@ class Optimizer:
         return self._portfolio
 
     @property
-    def dividends(self):
+    def dividends_metrics(self):
         """Метрики дивидендов, оптимизируемого портфеля"""
-        return self._dividends
+        return self._dividends_metrics
 
     @property
-    def returns(self):
+    def returns_metrics(self):
         """Метрики доходности, оптимизируемого портфеля"""
-        return self._returns
+        return self._returns_metrics
 
     @property
     def volume_factor(self):
@@ -73,12 +80,11 @@ class Optimizer:
         Ликвидность в первом приближении убывает пропорционально квадрату оборота, что отражено в формулах расчета
         """
         portfolio = self.portfolio
-        tickers = portfolio.tickers
-        last_volume = local.volumes(tickers).loc[portfolio._date]
-        volume_share_of_portfolio = last_volume * portfolio.price[tickers] / portfolio.value[PORTFOLIO]
+        last_volume = local.volumes(portfolio.positions[:-2]).loc[portfolio.date]
+        volume_share_of_portfolio = last_volume * portfolio.price[:-2] / portfolio.value[PORTFOLIO]
         volume_factor = 1 - (VOLUME_CUT_OFF / volume_share_of_portfolio) ** 2
         volume_factor[volume_factor < 0] = 0
-        return volume_factor.reindex(index=portfolio.index, fill_value=1)
+        return volume_factor.reindex(index=portfolio.positions, fill_value=1)
 
     def _yield_dominated(self):
         """Для каждой позиции выдает доминирующую ее по Парето
@@ -86,9 +92,9 @@ class Optimizer:
         Если доминирующих несколько, то выбирается позиция с максимальным градиентом
         Позиции с нулевым весом не учитываются, так как их нельзя продать
         """
-        dividends_gradient = self.dividends.gradient
-        returns_gradient = self.returns.gradient
-        index = self.portfolio.index
+        dividends_gradient = self.dividends_metrics.gradient
+        returns_gradient = self.returns_metrics.gradient
+        index = pd.Index(self.portfolio.positions)
         weight = self.portfolio.weight
         non_zero_positions = index[weight > 0]
         volume_factor = self.volume_factor
@@ -107,7 +113,7 @@ class Optimizer:
 
         Если доминирующих несколько, то выбирается позиция с максимальным градиентом
         Позиции с нулевым весом не учитываются, так как их нельзя продать"""
-        df = pd.Series("", index=self.portfolio.index)
+        df = pd.Series("", index=self.portfolio.positions)
         for position, dominated in self._yield_dominated():
             df[position] = dominated
         return df
@@ -119,8 +125,8 @@ class Optimizer:
         Для позиций не имеющих доминирующих - прирост 0
         Учитывается понижающий коэффициент для низколиквидных доминирующих акций
         """
-        df = pd.Series(0.0, index=self.portfolio.index)
-        dividends_gradient = self.dividends.gradient
+        df = pd.Series(0.0, index=self.portfolio.positions)
+        dividends_gradient = self.dividends_metrics.gradient
         factor = self.volume_factor
         for position, dominated in self._yield_dominated():
             df[position] = (dividends_gradient[dominated] - dividends_gradient[position]) * factor[dominated]
@@ -134,7 +140,7 @@ class Optimizer:
         дивидендов портфеля для удобства сравнения с критическим уровнем t-статистик
         """
         weighted_growth = (self.portfolio.weight * self.gradient_growth).sum()
-        return weighted_growth / self.dividends.std[PORTFOLIO]
+        return weighted_growth / self.dividends_metrics.std[PORTFOLIO]
 
     @property
     def best_trade(self):
@@ -153,7 +159,7 @@ class Optimizer:
         sell_5_lots = int(sell_value / portfolio.lot_size[best_sell] / portfolio.price[best_sell] / 5 + 1.0)
         best_buy = self.dominated[best_sell]
         buy_5_lots = int(portfolio.value[CASH] / portfolio.lot_size[best_buy] / portfolio.price[best_buy] / 5)
-        return (f'РЕКОМЕНДУЕТСЯ:\n'
+        return (f'РЕКОМЕНДУЕТСЯ\n'
                 f'Продать {best_sell} - 5 сделок по {sell_5_lots} лотов\n'
                 f'Купить {best_buy} - 5 сделок по {buy_5_lots} лотов')
 

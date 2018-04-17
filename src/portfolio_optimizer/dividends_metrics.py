@@ -10,13 +10,12 @@ from portfolio_optimizer.settings import PORTFOLIO, AFTER_TAX, T_SCORE, CASH
 class DividendsMetrics:
     """Реализует основные метрики дивидендного потока для портфеля
 
-    За основу берутся legacy dividends, которые переводятся в
+    За основу берутся legacy dividends_metrics, которые переводятся в
     реальные посленалоговые величины и используются для расчета разнообразных метрик
     """
 
     def __init__(self, portfolio: Portfolio):
         self._portfolio = portfolio
-        self._index = portfolio.index
 
     def __str__(self):
         expected_dividends = self.mean[PORTFOLIO] * self._portfolio.value[PORTFOLIO]
@@ -37,10 +36,10 @@ class DividendsMetrics:
     @property
     def nominal_pretax(self):
         """Дивиденды в номинальном выражении"""
-        index = self._index
-        tickers = index[:-2]
+        positions = self._portfolio.positions
+        tickers = positions[:-2]
         df = local.legacy_dividends(tickers).transpose()
-        df.reindex(index=index)
+        df.reindex(index=positions)
         df.loc[CASH] = 0
         amount = self._portfolio.shares
         df.loc[PORTFOLIO] = df.multiply(amount, axis='index').sum(axis=0)
@@ -82,8 +81,8 @@ class DividendsMetrics:
         количества позиций. Данное допущение используется во всех дальнейших расчетах
         """
         std = self.yields.std(axis='columns', ddof=1, skipna=False)
-        tickers = self._index[:-2]
-        weighted_std = std.loc[tickers] * self._portfolio.weight[tickers]
+        tickers = std.index[:-2]
+        weighted_std = std[tickers] * self._portfolio.weight[tickers]
         std[PORTFOLIO] = (weighted_std ** 2).sum(axis='index') ** 0.5
         return std
 

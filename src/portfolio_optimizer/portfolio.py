@@ -40,11 +40,6 @@ class Portfolio:
         return self._date
 
     @property
-    def tickers(self):
-        """Кортеж тикеров портфеля"""
-        return self._tickers
-
-    @property
     def positions(self):
         """Кортеж позиций портфеля"""
         return self._positions

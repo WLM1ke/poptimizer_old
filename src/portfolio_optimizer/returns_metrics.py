@@ -3,6 +3,7 @@
 import pandas as pd
 from scipy import optimize, stats
 
+from portfolio_optimizer import local
 from portfolio_optimizer.portfolio import Portfolio
 from portfolio_optimizer.settings import PORTFOLIO, T_SCORE, CASH
 
@@ -19,7 +20,6 @@ class ReturnsMetrics:
 
     def __init__(self, portfolio: Portfolio):
         self._portfolio = portfolio
-        self._tickers = portfolio.index[:-2]
         self._decay = None
         self.fit()
 
@@ -42,18 +42,18 @@ class ReturnsMetrics:
 
         Эти ряды цен служат для расчета всех дальнейших показателей
         """
-        prices = self._portfolio.prices
-        date_tuple = self._portfolio._date.timetuple()[:3]
+        prices = local.prices(self._portfolio.positions[:-2]).fillna(method='ffill')
+        portfolio_date = self._portfolio.date.timetuple()[:3]
         reversed_index = []
         for date in reversed(prices.index):
-            if date_tuple < date.timetuple()[:3]:
+            if portfolio_date < date.timetuple()[:3]:
                 continue
             else:
                 reversed_index.append(date)
-                if date_tuple[1] != 1:
-                    date_tuple = date_tuple[0], date_tuple[1] - 1, date_tuple[2]
+                if portfolio_date[1] != 1:
+                    portfolio_date = portfolio_date[0], portfolio_date[1] - 1, portfolio_date[2]
                 else:
-                    date_tuple = date_tuple[0] - 1, 12, date_tuple[2]
+                    portfolio_date = portfolio_date[0] - 1, 12, portfolio_date[2]
         return prices.loc[reversed(reversed_index)]
 
     @property
@@ -66,10 +66,10 @@ class ReturnsMetrics:
         returns = self.monthly_prices.pct_change()
         # Для первого периода доходность отсутствует
         returns = returns.iloc[1:]
-        returns = returns.reindex(columns=self._portfolio.index)
+        returns = returns.reindex(columns=self._portfolio.positions)
         returns = returns.fillna(0)
-        weight = self._portfolio.weight[self._tickers].transpose()
-        returns[PORTFOLIO] = returns[self._tickers].multiply(weight).sum(axis=1)
+        weight = self._portfolio.weight.iloc[:-2].transpose()
+        returns[PORTFOLIO] = returns.iloc[:, :-2].multiply(weight).sum(axis=1)
         return returns
 
     def fit(self):
