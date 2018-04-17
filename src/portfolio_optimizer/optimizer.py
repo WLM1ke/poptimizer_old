@@ -11,7 +11,7 @@ from portfolio_optimizer.settings import PORTFOLIO, T_SCORE, CASH
 # Максимальный объем операций в долях портфеля
 MAX_TRADE = 0.01
 # Оборот, при котором обнуляются градиенты, в процентах от размера портфеля
-VOLUME_CUT_OFF = 0.0024
+VOLUME_CUT_OFF = 0.0027
 
 
 class Optimizer:

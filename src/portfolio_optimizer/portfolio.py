@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from portfolio_optimizer import local
-from portfolio_optimizer.settings import PORTFOLIO, CASH, WEIGHT, VALUE
+from portfolio_optimizer.settings import PORTFOLIO, CASH
 
 
 class Portfolio:
@@ -24,6 +24,15 @@ class Portfolio:
             if not np.isclose(self.value[PORTFOLIO], value):
                 raise ValueError(f'Введенная стоимость портфеля {value} '
                                  f'не равна расчетной {self.value[PORTFOLIO]}.')
+
+    def __str__(self):
+        df = pd.concat([self.lot_size,
+                        self.lots,
+                        self.price,
+                        self.value,
+                        self.weight])
+
+        return f'\n\nДата портфеля - {self._date}\n\n{df}'
 
     @property
     def date(self):
@@ -71,31 +80,19 @@ class Portfolio:
         price[PORTFOLIO] = (self.shares[:-1] * price[:-1]).sum(axis='index')
         return price
 
-
-    def __str__(self):
-        return f'\n\nДата портфеля - {self._date}\n\n{self._df}'
-
-    def change_date(self, date: str):
-        """Изменяет дату портфеля и пересчитывает значения всех показателей."""
-        self._date = pd.to_datetime(date).date()
-        self._fill_price()
-        self._fill_value()
-
-
-
-
-
-
-
     @property
     def value(self):
         """Стоимость отдельных позиций"""
-        return self._df[VALUE]
+        return self.shares * self.price
 
     @property
     def weight(self):
         """Доля в стоимости портфеля отдельных позиций"""
-        return self._df[WEIGHT]
+        return self.value / self.value[PORTFOLIO]
+
+    def change_date(self, date: str):
+        """Изменяет дату портфеля"""
+        self._date = pd.to_datetime(date).date()
 
 
 if __name__ == '__main__':
@@ -104,9 +101,3 @@ if __name__ == '__main__':
                      positions=dict(GAZP=682, VSMO=145, TTLK=123),
                      value=3_699_111.41)
     print(port)
-    port.change_date('2018-03-25')
-    print(port)
-    print(Portfolio(date='2018-03-25',
-                    cash=1000.21,
-                    positions=dict(GAZP=682, VSMO=145, TTLK=123),
-                    value=3_742_615.21))
