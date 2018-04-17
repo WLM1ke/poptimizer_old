@@ -43,7 +43,7 @@ class ReturnsMetrics:
         Эти ряды цен служат для расчета всех дальнейших показателей
         """
         prices = self._portfolio.prices
-        date_tuple = self._portfolio.date.timetuple()[:3]
+        date_tuple = self._portfolio._date.timetuple()[:3]
         reversed_index = []
         for date in reversed(prices.index):
             if date_tuple < date.timetuple()[:3]:

@@ -29,8 +29,7 @@ class SecuritiesInfoDataManager(DataManager):
 
 
 def securities_info(tickers: tuple):
-    """
-    Возвращает данные по тикерам из списка и при необходимости обновляет локальные данные
+    """Возвращает данные по тикерам из списка и при необходимости обновляет локальные данные
 
     Parameters
     ----------
@@ -47,9 +46,24 @@ def securities_info(tickers: tuple):
     return data.get().loc[tickers, :]
 
 
-def aliases(ticker: str):
+def lot_size(tickers: tuple):
+    """Возвращает размеры лотов для тикеров
+
+    Parameters
+    ----------
+    tickers
+        Кортеж тикеров
+
+    Returns
+    -------
+    pandas.Series
+        В строках тикеры
     """
-    Возвращает список тикеров аналогов для заданного тикера
+    return securities_info(tickers)[LOT_SIZE]
+
+
+def aliases(ticker: str):
+    """Возвращает список тикеров аналогов для заданного тикера
 
     Функция нужна для выгрузки длинной истории котировок с учетом изменения тикера
     Не используется за пределами пакета local

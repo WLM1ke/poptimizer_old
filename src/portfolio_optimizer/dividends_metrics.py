@@ -42,7 +42,7 @@ class DividendsMetrics:
         df = local.legacy_dividends(tickers).transpose()
         df.reindex(index=index)
         df.loc[CASH] = 0
-        amount = self._portfolio.amount
+        amount = self._portfolio.shares
         df.loc[PORTFOLIO] = df.multiply(amount, axis='index').sum(axis=0)
         return df
 

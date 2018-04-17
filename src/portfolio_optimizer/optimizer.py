@@ -74,7 +74,7 @@ class Optimizer:
         """
         portfolio = self.portfolio
         tickers = portfolio.tickers
-        last_volume = local.volumes(tickers).loc[portfolio.date]
+        last_volume = local.volumes(tickers).loc[portfolio._date]
         volume_share_of_portfolio = last_volume * portfolio.price[tickers] / portfolio.value[PORTFOLIO]
         volume_factor = 1 - (VOLUME_CUT_OFF / volume_share_of_portfolio) ** 2
         volume_factor[volume_factor < 0] = 0

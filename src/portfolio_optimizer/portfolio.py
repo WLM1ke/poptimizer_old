@@ -1,144 +1,91 @@
 """Реализация класса портфеля."""
 
-import warnings
-
 import numpy as np
 import pandas as pd
 
 from portfolio_optimizer import local
-from portfolio_optimizer.settings import LOTS
-from portfolio_optimizer.settings import PORTFOLIO, CASH, PRICE, WEIGHT, VALUE, LOT_SIZE
+from portfolio_optimizer.settings import PORTFOLIO, CASH, WEIGHT, VALUE
 
 
 class Portfolio:
-    """Базовый класс портфеля.
+    """Базовый класс портфеля
 
-    Хранит информацию на отчетную дату о денежных средствах и количестве лотов для набора тикеров из словаря.
+    Хранит информацию на отчетную дату о денежных средствах и количестве лотов для набора тикеров из словаря
     Для проверки может быть передана стоимость портфеля, которая не должна сильно отличаться от расчетной стоимости, на
-    основе котировок на отчетную дату.
-
-    Рассчитывает стоимость портфеля и отдельных позиций, а так же доли позиций в портфеле.
-
-    Атрибуты:
-
-    date: datetime.datetime
-        Дата, на которую рассчитаны параметры портфеля.
-
-    df: pandas.DataFrame
-        Все метрики портфеля.
-
-    prices: pandas.DataFrame
-        Ряды цен для тикеров портфеля. Отсутствующие значения заменены последними предыдущими.
-
-    Методы:
-
-    change_date(date: str):
-        Изменяет дату портфеля, цены и пересчитывает все остальные параметры.
+    основе котировок на отчетную дату
     """
-    _COLUMNS = [LOT_SIZE, LOTS, PRICE, VALUE, WEIGHT]
-
     def __init__(self, date: str, cash: float, positions: dict, value: float = None):
-        self.date = pd.to_datetime(date).date()
-        self._tickers = sorted(positions.keys())
-        self.cash_and_tickers = self._tickers + [CASH]
-        self._create_df(cash)
-        self._fill_lots(positions)
-        self.prices = None
-        self._fill_price()
-        self._fill_value()
+        self._date = pd.to_datetime(date).date()
+        self._tickers = tuple(sorted(positions.keys()))
+        self._positions = self._tickers + (CASH, PORTFOLIO)
+        data = (positions[ticker] for ticker in self._tickers) + (cash, 1)
+        self._lots = pd.Series(data=data, index=self._positions)
         if value:
-            if not np.isclose(self._df.loc[PORTFOLIO, VALUE], value):
+            if not np.isclose(self.value[PORTFOLIO], value):
                 raise ValueError(f'Введенная стоимость портфеля {value} '
-                                 f'не равна расчетной {self._df.loc[PORTFOLIO, VALUE]}.')
-
-    def __str__(self):
-        return f'\n\nДата портфеля - {self.date}\n\n{self._df}'
-
-    def _create_df(self, cash):
-        """Создает DataFrame:
-
-        Строки - тикеры, CASH и PORTFOLIO.
-        Столбцы - размер лота, количество лотов, цена, стоимость и вес.
-
-        Размер лота, количество лотов и цена:
-        CASH - 1, денежные средства и 1.
-        PORTFOLIO - 1, 1, а цена может быть заполнена только после расчета стоимости отдельных позиций.
-        """
-        df = local.securities_info(self._tickers)
-        rows = df.index.append(pd.Index([CASH, PORTFOLIO]))
-        self._df = df.reindex(index=rows, columns=self._COLUMNS, fill_value=0)
-        self._df.loc[CASH, [LOT_SIZE, LOTS, PRICE]] = [1, cash, 1]
-        self._df.loc[PORTFOLIO, [LOT_SIZE, LOTS]] = [1, 1]
-
-    def _fill_lots(self, positions):
-        """Заполняет данные по количеству лотов для тикеров."""
-        self._df.loc[self._tickers, LOTS] = [positions[ticker] for ticker in self._tickers]
-
-    def _fill_price(self):
-        """Заполняет цены на отчетную дату или предыдущую торговую."""
-        if self.prices is None:
-            prices = local.prices(self._tickers)
-            self.prices = prices.fillna(method='ffill')
-        date = self.date
-        index = self.prices.index
-        if date not in index:
-            date = index[index.get_loc(date, method='ffill')].date()
-            non_trading_date = (f'\n\nТорги не проводились {self.date} - '
-                                f'будут использованы котировки предыдущей торговой даты {date}.\n')
-            warnings.warn(non_trading_date)
-        self._df.loc[self._tickers, PRICE] = self.prices.loc[date]
-
-    def _fill_value(self):
-        """Рассчитывает стоимость отдельных позиций и вызывает метод расчета стоимости портфеля."""
-        value_components = self._df.loc[self.cash_and_tickers, [LOT_SIZE, LOTS, PRICE]]
-        self._df.loc[self.cash_and_tickers, VALUE] = value_components.prod(axis=1)
-        self._fill_portfolio_value()
-
-    def _fill_portfolio_value(self):
-        """Рассчитывает стоимость портфеля и запускает расчет весов отдельных позиций."""
-        portfolio_value = self._df.loc[self.cash_and_tickers, VALUE].sum(axis=0)
-        self._df.loc[PORTFOLIO, [PRICE, VALUE]] = [portfolio_value, portfolio_value]
-        self._fill_weight()
-
-    def _fill_weight(self):
-        """Рассчитывает веса отдельных позиций."""
-        self._df.loc[:, WEIGHT] = self._df[VALUE] / self._df.loc[PORTFOLIO, VALUE]
-
-    def change_date(self, date: str):
-        """Изменяет дату портфеля и пересчитывает значения всех показателей."""
-        self.date = pd.to_datetime(date).date()
-        self._fill_price()
-        self._fill_value()
+                                 f'не равна расчетной {self.value[PORTFOLIO]}.')
 
     @property
-    def index(self):
-        """Тикеров, кэш и портфель"""
-        return self._df.index
+    def date(self):
+        """Дата портфеля"""
+        return self._date
 
     @property
     def tickers(self):
-        """Тикеры портфеля"""
+        """Кортеж тикеров портфеля"""
         return self._tickers
+
+    @property
+    def positions(self):
+        """Кортеж позиций портфеля"""
+        return self._positions
 
     @property
     def lot_size(self):
         """Размер лотов"""
-        return self._df[LOT_SIZE]
+        lot_size = local.lot_size(self._tickers)
+        lot_size = lot_size.reindex(self._positions)
+        lot_size[CASH:PORTFOLIO] = (1, 1)
+        return lot_size
 
     @property
     def lots(self):
         """Количество лотов"""
-        return self._df[LOTS]
+        return self._lots
 
     @property
-    def amount(self):
+    def shares(self):
         """Количество акций"""
-        return self._df[[LOT_SIZE, LOTS]].prod(axis=1)
+        return self.lot_size * self._lots
 
     @property
     def price(self):
-        """Цены акций на отчетную дату"""
-        return self._df[PRICE]
+        """Цены акций на дату"""
+        price = pd.Series(index=self._positions)
+        prices = local.prices(self._tickers)
+        for ticker in self._tickers:
+            prices_column = prices[ticker]
+            index = prices_column.last_valid_index()
+            price[ticker] = prices_column[index]
+        price[CASH] = 1
+        price[PORTFOLIO] = (self.shares[:-1] * price[:-1]).sum(axis='index')
+        return price
+
+
+    def __str__(self):
+        return f'\n\nДата портфеля - {self._date}\n\n{self._df}'
+
+    def change_date(self, date: str):
+        """Изменяет дату портфеля и пересчитывает значения всех показателей."""
+        self._date = pd.to_datetime(date).date()
+        self._fill_price()
+        self._fill_value()
+
+
+
+
+
+
 
     @property
     def value(self):
