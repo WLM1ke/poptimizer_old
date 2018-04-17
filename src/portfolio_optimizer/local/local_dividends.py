@@ -5,7 +5,7 @@ import functools
 from portfolio_optimizer import web
 from portfolio_optimizer.local.data_manager import DataManager
 
-DIVIDENDS_CATEGORY = 'dividends_metrics'
+DIVIDENDS_CATEGORY = 'dividends'
 
 
 class DividendsDataManager(DataManager):
