@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from portfolio_optimizer import local
-from portfolio_optimizer.settings import PORTFOLIO, CASH
+from portfolio_optimizer.settings import PORTFOLIO, CASH, PRICE, LOTS, VALUE, WEIGHT
 
 
 class Portfolio:
@@ -18,8 +18,8 @@ class Portfolio:
         self._date = pd.to_datetime(date).date()
         self._tickers = tuple(sorted(positions.keys()))
         self._positions = self._tickers + (CASH, PORTFOLIO)
-        data = (positions[ticker] for ticker in self._tickers) + (cash, 1)
-        self._lots = pd.Series(data=data, index=self._positions)
+        data = [positions[ticker] for ticker in self._tickers] + [cash, 1]
+        self._lots = pd.Series(data=data, index=self._positions, name=LOTS)
         if value:
             if not np.isclose(self.value[PORTFOLIO], value):
                 raise ValueError(f'Введенная стоимость портфеля {value} '
@@ -30,7 +30,7 @@ class Portfolio:
                         self.lots,
                         self.price,
                         self.value,
-                        self.weight])
+                        self.weight], axis='columns')
 
         return f'\n\nДата портфеля - {self._date}\n\n{df}'
 
@@ -70,8 +70,9 @@ class Portfolio:
     @property
     def price(self):
         """Цены акций на дату"""
-        price = pd.Series(index=self._positions)
+        price = pd.Series(index=self._positions, name=PRICE)
         prices = local.prices(self._tickers)
+        prices = prices.loc[:self._date, :]
         for ticker in self._tickers:
             prices_column = prices[ticker]
             index = prices_column.last_valid_index()
@@ -83,12 +84,16 @@ class Portfolio:
     @property
     def value(self):
         """Стоимость отдельных позиций"""
-        return self.shares * self.price
+        df = self.shares * self.price
+        df.name = VALUE
+        return df
 
     @property
     def weight(self):
         """Доля в стоимости портфеля отдельных позиций"""
-        return self.value / self.value[PORTFOLIO]
+        df = self.value / self.value[PORTFOLIO]
+        df.name = WEIGHT
+        return df
 
     def change_date(self, date: str):
         """Изменяет дату портфеля"""
