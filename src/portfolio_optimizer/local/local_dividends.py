@@ -36,4 +36,4 @@ def dividends(ticker: str):
 
 
 if __name__ == '__main__':
-    print(dividends('CHMF'))
+    print(dividends('GAZP'))

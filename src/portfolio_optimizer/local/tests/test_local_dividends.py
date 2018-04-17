@@ -3,7 +3,7 @@ import pandas as pd
 from portfolio_optimizer.local import local_dividends
 
 
-def test_cpi():
+def test_dividends():
     df = local_dividends.dividends('GAZP')
     assert isinstance(df, pd.Series)
     assert df.name == 'GAZP'
