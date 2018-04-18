@@ -55,6 +55,7 @@ class Portfolio:
         return self._positions
 
     @property
+    @lru_cache(maxsize=1)
     def lot_size(self):
         """Размер лотов отдельных позиций
 
