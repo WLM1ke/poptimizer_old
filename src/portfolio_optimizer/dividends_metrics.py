@@ -10,39 +10,34 @@ from portfolio_optimizer.settings import PORTFOLIO, AFTER_TAX, T_SCORE, CASH
 class DividendsMetrics:
     """Реализует основные метрики дивидендного потока для портфеля
 
-    За основу берутся legacy dividends_metrics, которые переводятся в
-    реальные посленалоговые величины и используются для расчета разнообразных метрик
+    За основу берутся legacy dividends_metrics, которые переводятся в реальные посленалоговые величины и используются
+    для расчета разнообразных метрик
     """
 
     def __init__(self, portfolio: Portfolio):
         self._portfolio = portfolio
 
     def __str__(self):
-        expected_dividends = self.mean[PORTFOLIO] * self._portfolio.value[PORTFOLIO]
-        minimal_dividends = self.lower_bound[PORTFOLIO] * self._portfolio.value[PORTFOLIO]
         frames = [self.mean,
                   self.std,
                   self.beta,
                   self.lower_bound,
                   self.gradient]
-        columns = ['MEAN', 'STD', 'BETA', 'LOWER_BOUND', 'GRADIENT']
         df = pd.concat(frames, axis=1)
-        df.columns = columns
-        return (f'\nКЛЮЧЕВЫЕ МЕТРИКИ ДИВИДЕНДОВ:\n\n'
-                f'Ожидаемые дивиденды - {expected_dividends:.0f}\n'
-                f'Минимальные дивиденды дивиденды - {minimal_dividends:.0f}\n\n'
+        df.columns = ['MEAN', 'STD', 'BETA', 'LOWER_BOUND', 'GRADIENT']
+        return (f'\n\nКЛЮЧЕВЫЕ МЕТРИКИ ДИВИДЕНДОВ\n\n'
+                f'Ожидаемые дивиденды - {self.expected_dividends:.0f}\n'
+                f'Минимальные дивиденды дивиденды - {self.minimal_dividends:.0f}\n\n'
                 f'{df}')
 
     @property
     def nominal_pretax(self):
         """Дивиденды в номинальном выражении"""
         positions = self._portfolio.positions
-        tickers = positions[:-2]
-        df = local.legacy_dividends(tickers).transpose()
+        df = local.legacy_dividends(positions[:-2]).transpose()
         df.reindex(index=positions)
         df.loc[CASH] = 0
-        amount = self._portfolio.shares
-        df.loc[PORTFOLIO] = df.multiply(amount, axis='index').sum(axis=0)
+        df.loc[PORTFOLIO] = df.multiply(self._portfolio.shares, axis='index').sum(axis=0)
         return df
 
     @property
@@ -53,12 +48,17 @@ class DividendsMetrics:
         1 - ставка налога = AFTER_TAX указывается в модуле настроек
         """
         nominal_pretax_dividends = self.nominal_pretax
-        columns = nominal_pretax_dividends.columns
-        cum_cpi = local.cpi().cumprod()
-        years_end_date = [pd.to_datetime(f'{year}-12-31') for year in columns]
-        last_year_cpi_values = (cum_cpi[years_end_date[-1]] / cum_cpi[years_end_date]).values
-        real_pretax_dividends = nominal_pretax_dividends.multiply(last_year_cpi_values, axis='columns')
+        years = nominal_pretax_dividends.columns
+        real_index = self._last_year_real_index(years)
+        real_pretax_dividends = nominal_pretax_dividends.multiply(real_index, axis='columns')
         return real_pretax_dividends * AFTER_TAX
+
+    @staticmethod
+    def _last_year_real_index(years):
+        """Индексы для пересчета в реальные цены конца последнего года"""
+        cum_cpi = local.cpi().cumprod()
+        years_ends = [pd.to_datetime(f'{year}-12-31') for year in years]
+        return (cum_cpi[years_ends[-1]] / cum_cpi[years_ends]).values
 
     @property
     def yields(self):
@@ -126,6 +126,16 @@ class DividendsMetrics:
         mean_gradient = self.mean - self.mean[PORTFOLIO]
         risk_gradient = self.std[PORTFOLIO] * (self.beta - 1)
         return mean_gradient - T_SCORE * risk_gradient
+
+    @property
+    def expected_dividends(self):
+        """Ожидаемые дивиденды по портфелю в рублевом выражении"""
+        return self.mean[PORTFOLIO] * self._portfolio.value[PORTFOLIO]
+
+    @property
+    def minimal_dividends(self):
+        """Ожидаемые дивиденды по портфелю в рублевом выражении по нижней границе доверительного интервала"""
+        return self.lower_bound[PORTFOLIO] * self._portfolio.value[PORTFOLIO]
 
 
 if __name__ == '__main__':
