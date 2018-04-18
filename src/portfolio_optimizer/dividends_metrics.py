@@ -25,10 +25,12 @@ class DividendsMetrics:
                   self.gradient]
         df = pd.concat(frames, axis=1)
         df.columns = ['MEAN', 'STD', 'BETA', 'LOWER_BOUND', 'GRADIENT']
-        return (f'\n\nКЛЮЧЕВЫЕ МЕТРИКИ ДИВИДЕНДОВ\n\n'
-                f'Ожидаемые дивиденды - {self.expected_dividends:.0f}\n'
-                f'Минимальные дивиденды дивиденды - {self.minimal_dividends:.0f}\n\n'
-                f'{df}')
+        return (f'\nКЛЮЧЕВЫЕ МЕТРИКИ ДИВИДЕНДОВ'
+                f'\n'
+                f'\nОжидаемые дивиденды - {self.expected_dividends:.0f}'
+                f'\nМинимальные дивиденды дивиденды - {self.minimal_dividends:.0f}'
+                f'\n'
+                f'\n{df}')
 
     @property
     def nominal_pretax(self):

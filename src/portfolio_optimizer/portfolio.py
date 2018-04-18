@@ -35,7 +35,11 @@ class Portfolio:
                         self.value,
                         self.weight], axis='columns')
         df.columns = [LOT_SIZE, LOTS, PRICE, VALUE, WEIGHT]
-        return f'\n\nПОРТФЕЛЬ\n\nДата - {self._date}\n\n{df}'
+        return (f'\nПОРТФЕЛЬ'
+                f'\n'
+                f'\nДата - {self._date}'
+                f'\n'
+                f'\n{df}')
 
     @property
     def date(self):
@@ -103,11 +107,6 @@ class Portfolio:
         """Вес отдельных позиций в стоимости портфеля"""
         df = self.value / self.value[PORTFOLIO]
         return df
-
-    def change_date(self, date: str):
-        """Изменяет дату портфеля"""
-        self._date = pd.to_datetime(date).date()
-        self._price = None
 
 
 if __name__ == '__main__':

@@ -3,8 +3,8 @@ from pathlib import Path
 import pytest
 
 from portfolio_optimizer import settings
-from portfolio_optimizer.local import securities_info, data_manager
-from portfolio_optimizer.local.local_securities_info import aliases
+from portfolio_optimizer.local import data_manager
+from portfolio_optimizer.local.local_securities_info import aliases, securities_info
 from portfolio_optimizer.settings import LOT_SIZE, COMPANY_NAME, REG_NUMBER
 
 

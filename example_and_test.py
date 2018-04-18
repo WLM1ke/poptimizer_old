@@ -6,7 +6,6 @@ import pstats
 from portfolio_optimizer.dividends_metrics import DividendsMetrics
 from portfolio_optimizer.optimizer import Optimizer
 from portfolio_optimizer.portfolio import Portfolio
-
 # Идеи для добавления в анализ
 # HYDR
 # MTLRP
@@ -16,6 +15,7 @@ from portfolio_optimizer.portfolio import Portfolio
 # AFKS
 # TGKA
 # TGKB
+from portfolio_optimizer.returns_metrics import ReturnsMetrics
 
 POSITIONS = dict(BANEP=200,
                  MFON=55,
@@ -77,6 +77,7 @@ def speed_test():
                      positions=POSITIONS)
     print(port)
     print(DividendsMetrics(port))
+    print(ReturnsMetrics(port))
 
     pr.disable()
     ps = pstats.Stats(pr).sort_stats('cumulative')

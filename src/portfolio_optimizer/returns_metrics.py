@@ -1,5 +1,6 @@
 """Реализация основных метрик доходности"""
 
+import numpy as np
 import pandas as pd
 from scipy import optimize, stats
 
@@ -9,7 +10,7 @@ from portfolio_optimizer.settings import PORTFOLIO, T_SCORE, CASH
 
 # Интервал поиска константы сглаживания
 BOUNDS = (0.0, 1.0)
-# Интервал обычного расположения константы сглаживания
+# Интервал обычного расположения константы сглаживания - при необходимости можно расширить
 BRACKET = (0.86, 0.92)
 # Сколько процентов данных отбрасывается при оптимизации llh, чтобы экспоненциальное сглаживание стабилизировалось
 SAMPLE_DROP_OUT = 0.20
@@ -29,12 +30,14 @@ class ReturnsMetrics:
                   self.beta,
                   self.draw_down,
                   self.gradient]
-        columns = ['MEAN', 'STD', 'BETA', 'DRAW_DOWN', 'GRADIENT']
         df = pd.concat(frames, axis=1)
-        df.columns = columns
+        df.columns = ['MEAN', 'STD', 'BETA', 'DRAW_DOWN', 'GRADIENT']
         return (f'\nКЛЮЧЕВЫЕ МЕТРИКИ ДОХОДНОСТИ'
-                f'\n\nНачальная дата для расчета сглаживания - {self.returns.index[self._llh_start()].date()}'
-                f'\nКонстанта сглаживания - {self._decay:.4f}:\n\n{df}')
+                f'\n'
+                f'\nНачальная дата для расчета сглаживания - {self.returns.index[self._llh_start()].date()}'
+                f'\nКонстанта сглаживания - {self._decay:.4f}'
+                f'\n'
+                f'\n{df}')
 
     @property
     def monthly_prices(self):
@@ -43,18 +46,23 @@ class ReturnsMetrics:
         Эти ряды цен служат для расчета всех дальнейших показателей
         """
         prices = local.prices(self._portfolio.positions[:-2]).fillna(method='ffill')
+        monthly_index = self._monthly_index(prices.index)
+        return prices.loc[monthly_index]
+
+    def _monthly_index(self, index):
+        """Формирует массив дат от начального исторических данных до даты портфеля """
         portfolio_date = self._portfolio.date.timetuple()[:3]
-        reversed_index = []
-        for date in reversed(prices.index):
+        reversed_monthly_index = []
+        for date in reversed(index):
             if portfolio_date < date.timetuple()[:3]:
                 continue
             else:
-                reversed_index.append(date)
+                reversed_monthly_index.append(date)
                 if portfolio_date[1] != 1:
                     portfolio_date = portfolio_date[0], portfolio_date[1] - 1, portfolio_date[2]
                 else:
                     portfolio_date = portfolio_date[0] - 1, 12, portfolio_date[2]
-        return prices.loc[reversed(reversed_index)]
+        return reversed(reversed_monthly_index)
 
     @property
     def returns(self):
@@ -161,9 +169,9 @@ class ReturnsMetrics:
         std = self.std
         mean = self.mean
         draw_down = - (T_SCORE * std) ** 2 / (4 * mean)
-        # Если ожидаемая доходность меньше нуля, то потеряется весь капитал
-        draw_down[mean < 0] = -1
-        # Для потери нулевые
+        # Если ожидаемая доходность меньше нуля, то просадка не определена
+        draw_down[mean < 0] = np.nan
+        # Для кэша потери нулевые
         draw_down[CASH] = 0
         return draw_down
 
