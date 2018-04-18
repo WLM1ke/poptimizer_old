@@ -7,4 +7,3 @@ from portfolio_optimizer.local.local_legacy_dividends import legacy_dividends
 from portfolio_optimizer.local.local_quotes import prices
 from portfolio_optimizer.local.local_quotes import volumes
 from portfolio_optimizer.local.local_securities_info import lot_size
-from portfolio_optimizer.local.local_securities_info import securities_info

@@ -54,7 +54,7 @@ def test_gradient_of_lower_bound(div):
 
 def test_str(div):
     text = str(div)
-    assert 'КЛЮЧЕВЫЕ МЕТРИКИ ДИВИДЕНДОВ:' in text
+    assert 'КЛЮЧЕВЫЕ МЕТРИКИ ДИВИДЕНДОВ' in text
     assert 'MEAN' in text
     assert 'STD' in text
     assert 'BETA' in text
