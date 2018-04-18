@@ -21,7 +21,10 @@ class ReturnsMetrics:
 
     def __init__(self, portfolio: Portfolio):
         self._portfolio = portfolio
+        # Для кэширования самых дорогих операций
+        self._returns = None
         self._decay = None
+
         self.fit()
 
     def __str__(self):
@@ -71,14 +74,16 @@ class ReturnsMetrics:
         Доходность кэша - ноль
         Доходность портфеля рассчитывается на основе долей на отчетную дату портфеля
         """
-        returns = self.monthly_prices.pct_change()
-        # Для первого периода доходность отсутствует
-        returns = returns.iloc[1:]
-        returns = returns.reindex(columns=self._portfolio.positions)
-        returns = returns.fillna(0)
-        weight = self._portfolio.weight.iloc[:-2].transpose()
-        returns[PORTFOLIO] = returns.iloc[:, :-2].multiply(weight).sum(axis=1)
-        return returns
+        if self._returns is None:
+            returns = self.monthly_prices.pct_change()
+            # Для первого периода доходность отсутствует
+            returns = returns.iloc[1:]
+            returns = returns.reindex(columns=self._portfolio.positions)
+            returns = returns.fillna(0)
+            weight = self._portfolio.weight.iloc[:-2].transpose()
+            returns[PORTFOLIO] = returns.iloc[:, :-2].multiply(weight).sum(axis=1)
+            self._returns = returns
+        return self._returns
 
     def fit(self):
         """Осуществляет поиск константы сглаживания методом максимального правдоподобия"""

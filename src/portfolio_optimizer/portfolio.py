@@ -20,13 +20,15 @@ class Portfolio:
         self._positions = tuple(sorted(positions.keys())) + (CASH, PORTFOLIO)
         data = [positions[ticker] for ticker in self._positions[:-2]] + [cash, 1]
         self._lots = pd.Series(data=data, index=self._positions, name=LOTS)
+
+        # Для кэширования дорогих операций
+        self._price = None
+        self._lot_size = None
+
         if value:
             if not np.isclose(self.value[PORTFOLIO], value):
                 raise ValueError(f'Введенная стоимость портфеля {value} '
                                  f'не равна расчетной {self.value[PORTFOLIO]}.')
-        # Для кэширования дорогих операций
-        self._price = None
-        self._lot_size = None
 
     def __str__(self):
         df = pd.concat([self.lot_size,
