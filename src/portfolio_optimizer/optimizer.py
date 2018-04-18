@@ -131,6 +131,7 @@ class Optimizer:
             return df
 
     @property
+    @lru_cache(maxsize=1)
     def gradient_growth(self):
         """Для каждой позиции выдает прирост градиента при покупке доминирующей
 
