@@ -1,5 +1,7 @@
 """Класс проводит оптимизацию по Парето на основе метрик доходности и дивидендов"""
 
+from functools import lru_cache
+
 import pandas as pd
 
 from portfolio_optimizer import local
@@ -116,6 +118,7 @@ class Optimizer:
                 yield position, factor_gradient[pareto_dominance].idxmax()
 
     @property
+    @lru_cache(maxsize=1)
     def dominated(self):
         """Для каждой позиции выдает доминирующую ее по Парето
 
