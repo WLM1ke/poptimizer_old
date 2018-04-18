@@ -3,8 +3,8 @@
 import cProfile
 import pstats
 
-from portfolio_optimizer.optimizer import Optimizer
-from portfolio_optimizer.portfolio import Portfolio
+from portfolio_optimizer import Optimizer
+from portfolio_optimizer import Portfolio
 
 # Идеи для добавления в анализ
 # HYDR
@@ -37,7 +37,7 @@ POSITIONS = dict(BANEP=200,
                  AFLT=0,
                  MSRS=699,
                  UPRO=1267,
-                 PMSBP=561 + 322 + 139,
+                 PMSBP=561 + 322 + 219,
                  CHMF=0,
                  GMKN=166 + 28,
                  VSMO=73,
@@ -47,8 +47,8 @@ POSITIONS = dict(BANEP=200,
                  LKOH=123,
                  ENRU=319 + 148,
                  MVID=264 + 62)
-CASH = 894_386 + 470_408 + 545_847
-DATE = '2018-04-17'
+CASH = 894_386 + 470_408 + 481_849
+DATE = '2018-04-18'
 
 
 def trading():
