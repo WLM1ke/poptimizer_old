@@ -22,7 +22,6 @@ class Portfolio:
         self._positions = tuple(sorted(positions.keys())) + (CASH, PORTFOLIO)
         data = [positions[ticker] for ticker in self._positions[:-2]] + [cash, 1]
         self._lots = pd.Series(data=data, index=self._positions, name=LOTS)
-
         if value:
             if not np.isclose(self.value[PORTFOLIO], value):
                 raise ValueError(f'Введенная стоимость портфеля {value} '
