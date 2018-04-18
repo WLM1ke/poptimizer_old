@@ -16,6 +16,8 @@ class DividendsMetrics:
 
     def __init__(self, portfolio: Portfolio):
         self._portfolio = portfolio
+        # Для кэширования дорогих операций
+        self._yields = None
 
     def __str__(self):
         frames = [self.mean,
@@ -65,9 +67,11 @@ class DividendsMetrics:
     @property
     def yields(self):
         """Дивидендная доходность"""
-        dividends = self.real_after_tax
-        inverse_prices = 1 / self._portfolio.price
-        return dividends.multiply(inverse_prices, axis='index')
+        if self._yields is None:
+            dividends = self.real_after_tax
+            inverse_prices = 1 / self._portfolio.price
+            self._yields = dividends.multiply(inverse_prices, axis='index')
+        return self._yields
 
     @property
     def mean(self):

@@ -29,6 +29,9 @@ class Optimizer:
         self._portfolio = portfolio
         self._dividends_metrics = DividendsMetrics(portfolio)
         self._returns_metrics = ReturnsMetrics(portfolio)
+        # Для кэширования дорогих операций
+        self._gradient_growth = None
+        self._dominated = None
 
     def __str__(self):
         draw_down = self._returns_metrics.draw_down[PORTFOLIO]
@@ -122,10 +125,12 @@ class Optimizer:
         Если доминирующих несколько, то выбирается позиция с максимальным ростом градиента
         Учитывается понижающий коэффициент для низколиквидных доминирующих акций
         """
-        df = pd.Series("", index=self.portfolio.positions)
-        for position, dominated in self._yield_dominated():
-            df[position] = dominated
-        return df
+        if self._dominated is None:
+            df = pd.Series("", index=self.portfolio.positions)
+            for position, dominated in self._yield_dominated():
+                df[position] = dominated
+                self._dominated = df
+        return self._dominated
 
     @property
     def gradient_growth(self):
@@ -134,10 +139,12 @@ class Optimizer:
         Для позиций не имеющих доминирующих - прирост 0
         Учитывается понижающий коэффициент для низколиквидных доминирующих акций
         """
-        dividends_gradient = self.dividends_metrics.gradient
-        factor = self.volume_factor
-        df = (dividends_gradient[self.dominated].values - dividends_gradient) * factor
-        return df.fillna(0)
+        if self._gradient_growth is None:
+            dividends_gradient = self.dividends_metrics.gradient
+            factor = self.volume_factor
+            df = (dividends_gradient[self.dominated].values - dividends_gradient) * factor[self.dominated].values
+            self._gradient_growth = df.fillna(0)
+        return self._gradient_growth
 
     @property
     def t_growth(self):
@@ -163,7 +170,7 @@ class Optimizer:
         best_sell = self.gradient_growth.iloc[:-2].idxmax()
         sell_weight = min(portfolio.weight[best_sell], MAX_TRADE)
         sell_value = sell_weight * portfolio.value[PORTFOLIO]
-        sell_5_lots = round(sell_value / portfolio.lot_size[best_sell] / portfolio.price[best_sell] / 5 + 0.5)
+        sell_5_lots = int(round(sell_value / portfolio.lot_size[best_sell] / portfolio.price[best_sell] / 5 + 0.5))
         best_buy = self.dominated[best_sell]
         buy_5_lots = int(portfolio.value[CASH] / portfolio.lot_size[best_buy] / portfolio.price[best_buy] / 5)
         return (f'РЕКОМЕНДУЕТСЯ'
@@ -185,4 +192,3 @@ if __name__ == '__main__':
                      positions=pos)
     optimizer = Optimizer(port)
     print(optimizer)
-
