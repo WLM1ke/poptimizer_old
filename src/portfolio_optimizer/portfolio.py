@@ -21,10 +21,6 @@ class Portfolio:
         data = [positions[ticker] for ticker in self._positions[:-2]] + [cash, 1]
         self._lots = pd.Series(data=data, index=self._positions, name=LOTS)
 
-        # Для кэширования дорогих операций
-        self._price = None
-        self._lot_size = None
-
         if value:
             if not np.isclose(self.value[PORTFOLIO], value):
                 raise ValueError(f'Введенная стоимость портфеля {value} '
@@ -62,12 +58,10 @@ class Portfolio:
 
         Размер лота для CASH и PORTFOLIO 1
         """
-        if self._lot_size is None:
-            lot_size = pd.Series(index=self._positions)
-            lot_size.iloc[:-2] = local.lot_size(self._positions[:-2])
-            lot_size[CASH:PORTFOLIO] = (1, 1)
-            self._lot_size = lot_size
-        return self._lot_size
+        lot_size = pd.Series(index=self._positions)
+        lot_size.iloc[:-2] = local.lot_size(self._positions[:-2])
+        lot_size[CASH:PORTFOLIO] = (1, 1)
+        return lot_size
 
     @property
     def lots(self):
@@ -84,19 +78,17 @@ class Portfolio:
     @property
     def price(self):
         """Цены акций на дату портфеля для отдельных позиций"""
-        if self._price is None:
-            price = pd.Series(index=self._positions)
-            tickers = self._positions[:-2]
-            prices = local.prices(tickers)
-            prices = prices.loc[:self._date]
-            for ticker in tickers:
-                prices_column = prices[ticker]
-                index = prices_column.last_valid_index()
-                price[ticker] = prices_column[index]
-            price[CASH] = 1
-            price[PORTFOLIO] = (self.shares[:-1] * price[:-1]).sum(axis='index')
-            self._price = price
-        return self._price
+        price = pd.Series(index=self._positions)
+        tickers = self._positions[:-2]
+        prices = local.prices(tickers)
+        prices = prices.loc[:self._date]
+        for ticker in tickers:
+            prices_column = prices[ticker]
+            index = prices_column.last_valid_index()
+            price[ticker] = prices_column[index]
+        price[CASH] = 1
+        price[PORTFOLIO] = (self.shares[:-1] * price[:-1]).sum(axis='index')
+        return price
 
     @property
     def value(self):

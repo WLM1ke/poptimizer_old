@@ -21,11 +21,6 @@ class ReturnsMetrics:
 
     def __init__(self, portfolio: Portfolio):
         self._portfolio = portfolio
-        # Для кэширования самых дорогих операций
-        self._returns = None
-        self._decay = None
-
-        self.fit()
 
     def __str__(self):
         frames = [self.mean,
@@ -38,7 +33,7 @@ class ReturnsMetrics:
         return (f'\nКЛЮЧЕВЫЕ МЕТРИКИ ДОХОДНОСТИ'
                 f'\n'
                 f'\nНачальная дата для расчета сглаживания - {self.returns.index[self._llh_start()].date()}'
-                f'\nКонстанта сглаживания - {self._decay:.4f}'
+                f'\nКонстанта сглаживания - {self.decay:.4f}'
                 f'\n'
                 f'\n{df}')
 
@@ -74,18 +69,16 @@ class ReturnsMetrics:
         Доходность кэша - ноль
         Доходность портфеля рассчитывается на основе долей на отчетную дату портфеля
         """
-        if self._returns is None:
-            returns = self.monthly_prices.pct_change()
-            # Для первого периода доходность отсутствует
-            returns = returns.iloc[1:]
-            returns = returns.reindex(columns=self._portfolio.positions)
-            returns = returns.fillna(0)
-            weight = self._portfolio.weight.iloc[:-2].transpose()
-            returns[PORTFOLIO] = returns.iloc[:, :-2].multiply(weight).sum(axis=1)
-            self._returns = returns
-        return self._returns
+        returns = self.monthly_prices.pct_change()
+        # Для первого периода доходность отсутствует
+        returns = returns.iloc[1:]
+        returns = returns.reindex(columns=self._portfolio.positions)
+        returns = returns.fillna(0)
+        weight = self._portfolio.weight.iloc[:-2].transpose()
+        returns[PORTFOLIO] = returns.iloc[:, :-2].multiply(weight).sum(axis=1)
+        return returns
 
-    def fit(self):
+    def _fit(self):
         """Осуществляет поиск константы сглаживания методом максимального правдоподобия"""
         result = optimize.minimize_scalar(self._llh,
                                           bracket=BRACKET,
@@ -94,7 +87,7 @@ class ReturnsMetrics:
         if result.success:
             decay = result.x
             if BRACKET[0] < decay < BRACKET[1]:
-                self._decay = decay
+                return decay
             else:
                 raise ValueError(f'Константа сглаживания {decay} вне интервала {BRACKET}')
         else:
@@ -122,12 +115,8 @@ class ReturnsMetrics:
 
     @property
     def decay(self):
-        """Константа сглаживания
-
-        Первоначально вычисляется методом максимального правдоподобия при создании объекта. Если портфель изменен, можно
-        уточнить ее значение вызовом метода fit(). Обычно она меняется не сильно, и повторные вызовы носят
-        необязательный характер"""
-        return self._decay
+        """Константа сглаживания - вычисляется методом максимального правдоподобия"""
+        return self._fit()
 
     @property
     def mean(self):
