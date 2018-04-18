@@ -1,5 +1,7 @@
 """Класс проводит оптимизацию по Парето на основе метрик доходности и дивидендов"""
 
+from functools import lru_cache
+
 import pandas as pd
 
 from portfolio_optimizer import local
@@ -11,7 +13,7 @@ from portfolio_optimizer.settings import PORTFOLIO, T_SCORE, CASH
 # Максимальный объем операций в долях портфеля
 MAX_TRADE = 0.01
 # Минимальный оборот акции в процентах от размера портфеля - обнуляются улучшения градиентов
-VOLUME_CUT_OFF = 0.0037
+VOLUME_CUT_OFF = 0.0041
 
 
 class Optimizer:
@@ -29,9 +31,6 @@ class Optimizer:
         self._portfolio = portfolio
         self._dividends_metrics = DividendsMetrics(portfolio)
         self._returns_metrics = ReturnsMetrics(portfolio)
-        # Для кэширования дорогих операций
-        self._gradient_growth = None
-        self._dominated = None
 
     def __str__(self):
         draw_down = self._returns_metrics.draw_down[PORTFOLIO]
@@ -85,6 +84,7 @@ class Optimizer:
         return self._returns_metrics
 
     @property
+    @lru_cache(maxsize=1)
     def volume_factor(self):
         """Понижающий коэффициент для акций с малым объемом оборотов
 
@@ -119,18 +119,17 @@ class Optimizer:
                 yield position, factor_gradient[pareto_dominance].idxmax()
 
     @property
+    @lru_cache(maxsize=1)
     def dominated(self):
         """Для каждой позиции выдает доминирующую ее по Парето
 
         Если доминирующих несколько, то выбирается позиция с максимальным ростом градиента
         Учитывается понижающий коэффициент для низколиквидных доминирующих акций
         """
-        if self._dominated is None:
-            df = pd.Series("", index=self.portfolio.positions)
-            for position, dominated in self._yield_dominated():
-                df[position] = dominated
-                self._dominated = df
-        return self._dominated
+        df = pd.Series("", index=self.portfolio.positions)
+        for position, dominated in self._yield_dominated():
+            df[position] = dominated
+        return df
 
     @property
     def gradient_growth(self):
@@ -139,12 +138,10 @@ class Optimizer:
         Для позиций не имеющих доминирующих - прирост 0
         Учитывается понижающий коэффициент для низколиквидных доминирующих акций
         """
-        if self._gradient_growth is None:
-            dividends_gradient = self.dividends_metrics.gradient
-            factor = self.volume_factor
-            df = (dividends_gradient[self.dominated].values - dividends_gradient) * factor[self.dominated].values
-            self._gradient_growth = df.fillna(0)
-        return self._gradient_growth
+        dividends_gradient = self.dividends_metrics.gradient
+        factor = self.volume_factor
+        df = (dividends_gradient[self.dominated].values - dividends_gradient) * factor[self.dominated].values
+        return df.fillna(0)
 
     @property
     def t_growth(self):
