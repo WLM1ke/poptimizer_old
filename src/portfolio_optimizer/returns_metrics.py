@@ -23,6 +23,8 @@ class ReturnsMetrics:
 
     def __init__(self, portfolio: Portfolio):
         self._portfolio = portfolio
+        self._decay = None
+        self.fit()
 
     def __str__(self):
         frames = [self.mean,
@@ -35,14 +37,13 @@ class ReturnsMetrics:
         return (f'\nКЛЮЧЕВЫЕ МЕТРИКИ ДОХОДНОСТИ'
                 f'\n'
                 f'\nНачальная дата для расчета сглаживания - {self.returns.index[self._llh_start()].date()}'
-                f'\nКонстанта сглаживания - {self.decay:.4f}'
+                f'\nКонстанта сглаживания - {self._decay:.4f}'
                 f'\n'
                 f'\n{df}')
 
     @property
     def monthly_prices(self):
         """Формирует DataFrame цен с шагом в месяц
-
         Эти ряды цен служат для расчета всех дальнейших показателей
         """
         prices = local.prices(self._portfolio.positions[:-2]).fillna(method='ffill')
@@ -68,7 +69,6 @@ class ReturnsMetrics:
     @lru_cache(maxsize=1)
     def returns(self):
         """Доходности составляющих портфеля и самого портфеля
-
         Доходность кэша - ноль
         Доходность портфеля рассчитывается на основе долей на отчетную дату портфеля
         """
@@ -81,7 +81,7 @@ class ReturnsMetrics:
         returns[PORTFOLIO] = returns.iloc[:, :-2].multiply(weight).sum(axis=1)
         return returns
 
-    def _fit(self):
+    def fit(self):
         """Осуществляет поиск константы сглаживания методом максимального правдоподобия"""
         result = optimize.minimize_scalar(self._llh,
                                           bracket=BRACKET,
@@ -90,7 +90,7 @@ class ReturnsMetrics:
         if result.success:
             decay = result.x
             if BRACKET[0] < decay < BRACKET[1]:
-                return decay
+                self._decay = decay
             else:
                 raise ValueError(f'Константа сглаживания {decay} вне интервала {BRACKET}')
         else:
@@ -102,7 +102,6 @@ class ReturnsMetrics:
 
     def _llh(self, decay: float):
         """-llh для портфеля с отброшенными константами
-
         Используется экспоненциальное сглаживание и предположение нормальности
         """
         ewm = self.returns[PORTFOLIO].ewm(alpha=1 - decay)
@@ -118,13 +117,15 @@ class ReturnsMetrics:
 
     @property
     def decay(self):
-        """Константа сглаживания - вычисляется методом максимального правдоподобия"""
-        return self._fit()
+        """Константа сглаживания
+        Первоначально вычисляется методом максимального правдоподобия при создании объекта. Если портфель изменен, можно
+        уточнить ее значение вызовом метода fit(). Обычно она меняется не сильно, и повторные вызовы носят
+        необязательный характер"""
+        return self._decay
 
     @property
     def mean(self):
         """Ожидаемая доходность отдельных позиций и портфеля
-
         Используется простой процесс экспоненциального сглаживания
         """
         return self.returns.ewm(alpha=1 - self.decay).mean().iloc[-1]
@@ -132,7 +133,6 @@ class ReturnsMetrics:
     @property
     def std(self):
         """СКО отдельных позиций и портфеля
-
         Используется простой процесс экспоненциального сглаживания
         """
         return self.returns.ewm(alpha=1 - self.decay).std().iloc[-1]
@@ -140,7 +140,6 @@ class ReturnsMetrics:
     @property
     def beta(self):
         """Беты отдельных позиций и портфеля
-
         При расчет беты используется классическая формула cov(r,rp) / var(rp), где r и rp - доходность актива и
         портфеля, соответственно, при этом используется простой процесс экспоненциального сглаживания
         """
@@ -151,16 +150,12 @@ class ReturnsMetrics:
     @property
     def draw_down(self):
         """Ожидаемый draw down
-
         Динамика минимальной стоимости портфеля может быть описана следующим выражением:
         m * t - t_score * s * (t ** 0.5)
-
         Минимум при положительных m достигается:
         t = ((t_score * s) / (2 * m)) ** 2
-
         Соответственно, максимальная просадка:
         draw_down = - (t_score * s) ** 2 / (4 * m)
-
         t-статистика берется из файла настроек
         """
         std = self.std
@@ -175,13 +170,10 @@ class ReturnsMetrics:
     @property
     def gradient(self):
         """Производная нижней границы портфеля по доле актива в портфеле
-
         Можно показать, что градиент равен:
         (t_score / 2) ** 2 * (sp / mp) ** 2 * (m - mp - 2 * mp * (b - 1)), где m и mp - доходность актива и портфеля,
         соответственно, sp - СКО портфеля, b - бета актива
-
         Долю актива с максимальным градиентом необходимо наращивать, а с минимальным сокращать
-
         При правильной реализации взвешенный по долям отдельных позиций градиент равен градиенту по портфелю в целом и
         равен 0
         """
