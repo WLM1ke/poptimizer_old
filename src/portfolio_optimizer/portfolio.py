@@ -1,10 +1,10 @@
-"""Реализация класса портфеля."""
+"""Реализация класса портфеля"""
 
 import numpy as np
 import pandas as pd
 
 from portfolio_optimizer import local
-from portfolio_optimizer.settings import PORTFOLIO, CASH, PRICE, LOTS, VALUE, WEIGHT
+from portfolio_optimizer.settings import PORTFOLIO, CASH, PRICE, LOTS, VALUE, WEIGHT, LOT_SIZE
 
 
 class Portfolio:
@@ -13,12 +13,12 @@ class Portfolio:
     Хранит информацию на отчетную дату о денежных средствах и количестве лотов для набора тикеров из словаря
     Для проверки может быть передана стоимость портфеля, которая не должна сильно отличаться от расчетной стоимости, на
     основе котировок на отчетную дату
+    Отчетная дата должна быть торговым днем
     """
     def __init__(self, date: str, cash: float, positions: dict, value: float = None):
         self._date = pd.to_datetime(date).date()
-        self._tickers = tuple(sorted(positions.keys()))
-        self._positions = self._tickers + (CASH, PORTFOLIO)
-        data = [positions[ticker] for ticker in self._tickers] + [cash, 1]
+        self._positions = tuple(sorted(positions.keys())) + (CASH, PORTFOLIO)
+        data = [positions[ticker] for ticker in self._positions[:-2]] + [cash, 1]
         self._lots = pd.Series(data=data, index=self._positions, name=LOTS)
         if value:
             if not np.isclose(self.value[PORTFOLIO], value):
@@ -31,8 +31,8 @@ class Portfolio:
                         self.price,
                         self.value,
                         self.weight], axis='columns')
-
-        return f'\n\nДата портфеля - {self._date}\n\n{df}'
+        df.columns = [LOT_SIZE, LOTS, PRICE, VALUE, WEIGHT]
+        return f'\n\nПОРТФЕЛЬ\n\nДата - {self._date}\n\n{df}'
 
     @property
     def date(self):
@@ -41,34 +41,43 @@ class Portfolio:
 
     @property
     def positions(self):
-        """Кортеж позиций портфеля"""
+        """Кортеж позиций портфеля - является индексом всех характеристик портфеля
+
+        В начале идут упорядоченные по алфавиту тикеры, а потом CASH и PORTFOLIO
+        """
         return self._positions
 
     @property
     def lot_size(self):
-        """Размер лотов"""
-        lot_size = local.lot_size(self._tickers)
-        lot_size = lot_size.reindex(self._positions)
+        """Размер лотов отдельных позиций
+
+        Размер лота для CASH и PORTFOLIO 1
+        """
+        lot_size = pd.Series(index=self._positions)
+        lot_size.iloc[:-2] = local.lot_size(self._positions[:-2])
         lot_size[CASH:PORTFOLIO] = (1, 1)
         return lot_size
 
     @property
     def lots(self):
-        """Количество лотов"""
+        """Количество лотов для отдельных позиций
+
+        Количество лотов для CASH и PORTFOLIO количество денег и 1"""
         return self._lots
 
     @property
     def shares(self):
-        """Количество акций"""
+        """Количество акций для отдельных позиций"""
         return self.lot_size * self._lots
 
     @property
     def price(self):
-        """Цены акций на дату"""
-        price = pd.Series(index=self._positions, name=PRICE)
-        prices = local.prices(self._tickers)
-        prices = prices.loc[:self._date, :]
-        for ticker in self._tickers:
+        """Цены акций на дату портфеля для отдельных позиций"""
+        price = pd.Series(index=self._positions)
+        tickers = self._positions[:-2]
+        prices = local.prices(tickers)
+        prices = prices.loc[:self._date]
+        for ticker in tickers:
             prices_column = prices[ticker]
             index = prices_column.last_valid_index()
             price[ticker] = prices_column[index]
@@ -80,14 +89,12 @@ class Portfolio:
     def value(self):
         """Стоимость отдельных позиций"""
         df = self.shares * self.price
-        df.name = VALUE
         return df
 
     @property
     def weight(self):
-        """Доля в стоимости портфеля отдельных позиций"""
+        """Вес отдельных позиций в стоимости портфеля"""
         df = self.value / self.value[PORTFOLIO]
-        df.name = WEIGHT
         return df
 
     def change_date(self, date: str):
