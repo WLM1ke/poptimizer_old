@@ -1,4 +1,5 @@
 """Реализация основных метрик доходности"""
+
 from functools import lru_cache
 
 import numpy as np
