@@ -21,7 +21,7 @@ POSITIONS = dict(BANEP=200,
                  SNGSP=235,
                  RTKM=0,
                  MAGN=0,
-                 MSTT=4638,
+                 MSTT=4605,
                  KBTK=9,
                  MOEX=0,
                  RTKMP=1475 + 312 + 39,
@@ -37,7 +37,7 @@ POSITIONS = dict(BANEP=200,
                  AFLT=0,
                  MSRS=699,
                  UPRO=1267,
-                 PMSBP=596 + 322 + 219,
+                 PMSBP=705 + 322 + 219,
                  CHMF=0,
                  GMKN=166 + 28,
                  VSMO=73,
@@ -47,7 +47,7 @@ POSITIONS = dict(BANEP=200,
                  LKOH=123,
                  ENRU=319 + 148,
                  MVID=264 + 62)
-CASH = 883_365 + 470_408 + 481_849
+CASH = 843_414 + 470_408 + 481_849
 DATE = '2018-04-18'
 
 
