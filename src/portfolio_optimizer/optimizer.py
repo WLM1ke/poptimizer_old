@@ -1,7 +1,5 @@
 """Класс проводит оптимизацию по Парето на основе метрик доходности и дивидендов"""
 
-from functools import lru_cache
-
 import pandas as pd
 
 from portfolio_optimizer import local
@@ -84,7 +82,6 @@ class Optimizer:
         return self._returns_metrics
 
     @property
-    @lru_cache(maxsize=1)
     def volume_factor(self):
         """Понижающий коэффициент для акций с малым объемом оборотов
 
@@ -119,7 +116,6 @@ class Optimizer:
                 yield position, factor_gradient[pareto_dominance].idxmax()
 
     @property
-    @lru_cache(maxsize=1)
     def dominated(self):
         """Для каждой позиции выдает доминирующую ее по Парето
 
@@ -132,7 +128,6 @@ class Optimizer:
         return df
 
     @property
-    @lru_cache(maxsize=1)
     def gradient_growth(self):
         """Для каждой позиции выдает прирост градиента при покупке доминирующей
 

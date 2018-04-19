@@ -79,4 +79,4 @@ def speed_test():
 
 
 if __name__ == '__main__':
-    trading()
+    speed_test()

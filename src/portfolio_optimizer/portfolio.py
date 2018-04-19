@@ -1,7 +1,5 @@
 """Реализация класса портфеля"""
 
-from functools import lru_cache
-
 import numpy as np
 import pandas as pd
 
@@ -54,7 +52,6 @@ class Portfolio:
         return self._positions
 
     @property
-    @lru_cache(maxsize=1)
     def lot_size(self):
         """Размер лотов отдельных позиций
 
@@ -78,7 +75,6 @@ class Portfolio:
         return self.lot_size * self._lots
 
     @property
-    @lru_cache(maxsize=1)
     def price(self):
         """Цены акций на дату портфеля для отдельных позиций"""
         price = pd.Series(index=self._positions)

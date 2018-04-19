@@ -7,7 +7,7 @@ import pandas as pd
 from portfolio_optimizer import web
 from portfolio_optimizer.local.data_manager import DataManager
 from portfolio_optimizer.local.local_securities_info import aliases
-from portfolio_optimizer.settings import DATE, CLOSE_PRICE, VOLUME
+from portfolio_optimizer.settings import DATE, CLOSE_PRICE, VOLUME, MAX_TICKERS_IN_PORTFOLIO
 
 QUOTES_CATEGORY = 'quotes'
 
@@ -35,6 +35,7 @@ class QuotesManager(DataManager):
             yield web.quotes(ticker)
 
 
+@functools.lru_cache(maxsize=MAX_TICKERS_IN_PORTFOLIO)
 def quotes(ticker: str):
     """
     Возвращает данные по котировкам из локальной версии данных, при необходимости обновляя их
@@ -57,6 +58,7 @@ def quotes(ticker: str):
     return data.get()
 
 
+@functools.lru_cache(maxsize=1)
 def prices(tickers: tuple):
     """
     Возвращает историю цен закрытия по набору тикеров из локальных данных, при необходимости обновляя их

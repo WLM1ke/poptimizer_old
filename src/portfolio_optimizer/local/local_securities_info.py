@@ -1,5 +1,7 @@
 """Сохраняет, обновляет и загружает локальную версию информации об акциях"""
 
+from functools import lru_cache
+
 from portfolio_optimizer import web
 from portfolio_optimizer.local.data_manager import DataManager
 from portfolio_optimizer.settings import LOT_SIZE, COMPANY_NAME, REG_NUMBER
@@ -46,6 +48,7 @@ def securities_info(tickers: tuple):
     return data.get().loc[tickers, :]
 
 
+@lru_cache(maxsize=1)
 def lot_size(tickers: tuple):
     """Возвращает размеры лотов для тикеров
 
