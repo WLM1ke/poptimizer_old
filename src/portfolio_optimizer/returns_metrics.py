@@ -44,6 +44,7 @@ class ReturnsMetrics:
     @property
     def monthly_prices(self):
         """Формирует DataFrame цен с шагом в месяц
+
         Эти ряды цен служат для расчета всех дальнейших показателей
         """
         prices = local.prices(self._portfolio.positions[:-2]).fillna(method='ffill')
@@ -51,7 +52,7 @@ class ReturnsMetrics:
         return prices.loc[monthly_index]
 
     def _monthly_index(self, index):
-        """Формирует массив дат от начального исторических данных до даты портфеля """
+        """Формирует массив дат с шагом в месяц от начального исторических данных до даты портфеля"""
         portfolio_date = self._portfolio.date.timetuple()[:3]
         reversed_monthly_index = []
         for date in reversed(index):
@@ -69,6 +70,7 @@ class ReturnsMetrics:
     @lru_cache(maxsize=1)
     def returns(self):
         """Доходности составляющих портфеля и самого портфеля
+
         Доходность кэша - ноль
         Доходность портфеля рассчитывается на основе долей на отчетную дату портфеля
         """
@@ -101,7 +103,8 @@ class ReturnsMetrics:
         return int(len(self.returns) * SAMPLE_DROP_OUT)
 
     def _llh(self, decay: float):
-        """-llh для портфеля с отброшенными константами
+        """-llh для портфеля
+
         Используется экспоненциальное сглаживание и предположение нормальности
         """
         ewm = self.returns[PORTFOLIO].ewm(alpha=1 - decay)
@@ -118,6 +121,7 @@ class ReturnsMetrics:
     @property
     def decay(self):
         """Константа сглаживания
+
         Первоначально вычисляется методом максимального правдоподобия при создании объекта. Если портфель изменен, можно
         уточнить ее значение вызовом метода fit(). Обычно она меняется не сильно, и повторные вызовы носят
         необязательный характер"""
@@ -126,6 +130,7 @@ class ReturnsMetrics:
     @property
     def mean(self):
         """Ожидаемая доходность отдельных позиций и портфеля
+
         Используется простой процесс экспоненциального сглаживания
         """
         return self.returns.ewm(alpha=1 - self.decay).mean().iloc[-1]
@@ -133,6 +138,7 @@ class ReturnsMetrics:
     @property
     def std(self):
         """СКО отдельных позиций и портфеля
+
         Используется простой процесс экспоненциального сглаживания
         """
         return self.returns.ewm(alpha=1 - self.decay).std().iloc[-1]
@@ -140,7 +146,8 @@ class ReturnsMetrics:
     @property
     def beta(self):
         """Беты отдельных позиций и портфеля
-        При расчет беты используется классическая формула cov(r,rp) / var(rp), где r и rp - доходность актива и
+
+        При расчете беты используется классическая формула cov(r,rp) / var(rp), где r и rp - доходность актива и
         портфеля, соответственно, при этом используется простой процесс экспоненциального сглаживания
         """
         ewm = self.returns.ewm(alpha=1 - self.decay)
@@ -150,6 +157,7 @@ class ReturnsMetrics:
     @property
     def draw_down(self):
         """Ожидаемый draw down
+
         Динамика минимальной стоимости портфеля может быть описана следующим выражением:
         m * t - t_score * s * (t ** 0.5)
         Минимум при положительных m достигается:
@@ -170,6 +178,7 @@ class ReturnsMetrics:
     @property
     def gradient(self):
         """Производная нижней границы портфеля по доле актива в портфеле
+
         Можно показать, что градиент равен:
         (t_score / 2) ** 2 * (sp / mp) ** 2 * (m - mp - 2 * mp * (b - 1)), где m и mp - доходность актива и портфеля,
         соответственно, sp - СКО портфеля, b - бета актива
