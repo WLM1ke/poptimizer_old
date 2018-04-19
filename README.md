@@ -5,6 +5,7 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/18d7bd2be5f34466b1884250ffea3066)](https://www.codacy.com/app/wlmike/PortfolioOptimizer?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=WLM1ke/PortfolioOptimizer&amp;utm_campaign=Badge_Grade)
 [![BCH compliance](https://bettercodehub.com/edge/badge/WLM1ke/PortfolioOptimizer?branch=master)](https://bettercodehub.com/)
 [![CodeFactor](https://www.codefactor.io/repository/github/wlm1ke/portfoliooptimizer/badge)](https://www.codefactor.io/repository/github/wlm1ke/portfoliooptimizer)
+[![codebeat badge](https://codebeat.co/badges/104a3651-e8cb-4df9-aad5-ca7b4b38099a)](https://codebeat.co/projects/github-com-wlm1ke-portfoliooptimizer-master)
 
 ## Цель
 Воспроизвести на базе Python существующую модель управления долгосрочным инвестиционным портфелем российских акций на базе Excel и усовершенствовать ее с помощью автоматизации загрузки данных и методов машинного обучения
