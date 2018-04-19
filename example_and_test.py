@@ -21,7 +21,7 @@ POSITIONS = dict(BANEP=200,
                  SNGSP=235,
                  RTKM=0,
                  MAGN=0,
-                 MSTT=4491,
+                 MSTT=4435,
                  KBTK=9,
                  MOEX=0,
                  RTKMP=1475 + 312 + 39,
@@ -37,25 +37,27 @@ POSITIONS = dict(BANEP=200,
                  AFLT=0,
                  MSRS=699,
                  UPRO=1267,
-                 PMSBP=805 + 322 + 219,
+                 PMSBP=1188 + 322 + 219,
                  CHMF=0,
                  GMKN=166 + 28,
                  VSMO=73,
-                 RSTIP=24,
+                 RSTIP=87,
                  PHOR=0,
                  MRSB=0,
                  LKOH=123,
                  ENRU=319 + 148,
                  MVID=264 + 62)
-CASH = 922_897 + 470_408 + 481_849
-DATE = '2018-04-18'
+CASH = 596_156 + 470_259 + 481_849
+DATE = '2018-04-19'
+VALUE = None
 
 
 def trading():
     """Распечатка всей аналитики, необходимой для управления портфелем"""
     port = Portfolio(date=DATE,
                      cash=CASH,
-                     positions=POSITIONS)
+                     positions=POSITIONS,
+                     value=VALUE)
     optimizer = Optimizer(port)
     print(optimizer.portfolio)
     print(optimizer.dividends_metrics)
