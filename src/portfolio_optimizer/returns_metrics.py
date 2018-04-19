@@ -1,5 +1,7 @@
 """Реализация основных метрик доходности"""
 
+from functools import lru_cache
+
 import numpy as np
 import pandas as pd
 from scipy import optimize, stats
@@ -65,6 +67,7 @@ class ReturnsMetrics:
         return reversed(reversed_monthly_index)
 
     @property
+    @lru_cache(maxsize=1)
     def returns(self):
         """Доходности составляющих портфеля и самого портфеля
 

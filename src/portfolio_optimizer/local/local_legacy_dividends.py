@@ -1,5 +1,7 @@
 """Загрузка 'старой версии' дивидендов для реализации xlsx модели"""
 
+from functools import lru_cache
+
 import pandas as pd
 
 from portfolio_optimizer.settings import DATA_PATH
@@ -8,6 +10,7 @@ FILE_PATH = DATA_PATH / 'legacy_dividends' / 'dividends.xlsx'
 LEGACY_SHEET_NAME = 'Dividends'
 
 
+@lru_cache(maxsize=1)
 def legacy_dividends(tickers: tuple):
     """
     Возвращает ряды годовых дивидендов для тикеров

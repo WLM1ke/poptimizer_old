@@ -1,5 +1,7 @@
 """Реализация основных метрик дивидендного потока"""
 
+from functools import lru_cache
+
 import pandas as pd
 
 from portfolio_optimizer import local
@@ -63,6 +65,7 @@ class DividendsMetrics:
         return (cum_cpi[years_ends[-1]] / cum_cpi[years_ends]).values
 
     @property
+    @lru_cache(maxsize=1)
     def yields(self):
         """Дивидендная доходность"""
         dividends = self.real_after_tax

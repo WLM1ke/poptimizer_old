@@ -78,6 +78,7 @@ def prices(tickers: tuple):
     return df
 
 
+@functools.lru_cache(maxsize=1)
 def volumes(tickers: tuple):
     """
     Возвращает историю объемов торгов по набору тикеров из локальных данных, при необходимости обновляя их.
