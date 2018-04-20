@@ -8,12 +8,7 @@ from portfolio_optimizer import local
 from portfolio_optimizer.dividends_metrics import DividendsMetrics
 from portfolio_optimizer.portfolio import Portfolio
 from portfolio_optimizer.returns_metrics import ReturnsMetrics
-from portfolio_optimizer.settings import PORTFOLIO, T_SCORE, CASH
-
-# Максимальный объем операций в долях портфеля
-MAX_TRADE = 0.01
-# Минимальный оборот акции в процентах от размера портфеля - обнуляются улучшения градиентов
-VOLUME_CUT_OFF = 0.0077
+from portfolio_optimizer.settings import PORTFOLIO, T_SCORE, CASH, MAX_TRADE, VOLUME_CUT_OFF
 
 
 class Optimizer:

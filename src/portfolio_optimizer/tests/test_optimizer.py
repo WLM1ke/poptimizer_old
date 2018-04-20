@@ -1,5 +1,6 @@
 import pytest
 
+import portfolio_optimizer.settings
 from portfolio_optimizer import optimizer
 from portfolio_optimizer.optimizer import Optimizer
 from portfolio_optimizer.portfolio import Portfolio
@@ -46,10 +47,10 @@ def case_optimizer():
     # Все кейсы составлены для константы сглаживания 0.9
     opt.returns_metrics._decay = 0.9
     # Все кейсы составлены для константы ограничения на объем 0.0024
-    save_cut_off = optimizer.VOLUME_CUT_OFF
-    optimizer.VOLUME_CUT_OFF = 0.0024
+    save_cut_off = portfolio_optimizer.settings.VOLUME_CUT_OFF
+    portfolio_optimizer.settings.VOLUME_CUT_OFF = 0.0024
     yield opt
-    optimizer.VOLUME_CUT_OFF = save_cut_off
+    portfolio_optimizer.settings.VOLUME_CUT_OFF = save_cut_off
 
 
 def test_gradient_growth(opt):
