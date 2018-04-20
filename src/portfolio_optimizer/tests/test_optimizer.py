@@ -43,14 +43,15 @@ def case_optimizer():
     port = Portfolio(date='2018-02-19',
                      cash=0 + 2749.64 + 4330.3,
                      positions=pos)
+    save_cut_off = portfolio_optimizer.optimizer.VOLUME_CUT_OFF
+    portfolio_optimizer.optimizer.VOLUME_CUT_OFF = 0.0024
     opt = Optimizer(port)
     # Все кейсы составлены для константы сглаживания 0.9
     opt.returns_metrics._decay = 0.9
     # Все кейсы составлены для константы ограничения на объем 0.0024
-    save_cut_off = portfolio_optimizer.settings.VOLUME_CUT_OFF
-    portfolio_optimizer.settings.VOLUME_CUT_OFF = 0.0024
+
     yield opt
-    portfolio_optimizer.settings.VOLUME_CUT_OFF = save_cut_off
+    portfolio_optimizer.optimizer.VOLUME_CUT_OFF = save_cut_off
 
 
 def test_gradient_growth(opt):
