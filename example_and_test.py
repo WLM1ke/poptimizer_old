@@ -37,7 +37,7 @@ POSITIONS = dict(BANEP=200,
                  AFLT=0,
                  MSRS=699,
                  UPRO=1267,
-                 PMSBP=1188 + 322 + 219,
+                 PMSBP=1683 + 322 + 219,
                  CHMF=0,
                  GMKN=166 + 28,
                  VSMO=73,
@@ -47,7 +47,7 @@ POSITIONS = dict(BANEP=200,
                  LKOH=123,
                  ENRU=319 + 148,
                  MVID=264 + 62)
-CASH = 596_156 + 470_259 + 481_849
+CASH = 201_768 + 470_259 + 481_849
 DATE = '2018-04-19'
 VALUE = None
 
