@@ -112,7 +112,9 @@ class DividendsMetrics:
 
         Для оптимизированных портфелей, нижняя граница доверительного интервала выше, чем у отдельных позиций
         """
-        return self.mean - T_SCORE * self.std
+        lower_bound = self.mean - T_SCORE * self.std
+        lower_bound[lower_bound < 0] = 0
+        return lower_bound
 
     @property
     def gradient(self):

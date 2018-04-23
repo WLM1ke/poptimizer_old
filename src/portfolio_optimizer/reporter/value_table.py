@@ -10,9 +10,15 @@ from portfolio_optimizer import Portfolio
 from portfolio_optimizer.reporter.reporter import OTHER
 from portfolio_optimizer.settings import PORTFOLIO
 
+# Количество строк в таблице, которое влезает на страницу - иначе она не рисуется
+FIT_PAGE_ROWS = 10
+
 
 def drop_small_positions(portfolio: Portfolio):
-    """Объединяет самые мелкие позиции с суммарным весом меньше среднего веса остальных в Other"""
+    """Объединяет самые мелкие позиции с суммарным весом меньше среднего веса остальных в Other
+
+    Если строк очень много, они обрезаются, чтобы таблица поместилась
+    """
     value = portfolio.value
     portfolio_value = value.iloc[-1]
     sorted_value = value.iloc[:-1].sort_values()
@@ -20,6 +26,8 @@ def drop_small_positions(portfolio: Portfolio):
     condition = (cum_value * range(cum_value.shape[0] - 1, -1, -1)) >= (portfolio_value - cum_value)
     value = sorted_value[condition]
     value.sort_values(ascending=False, inplace=True)
+    if len(value) > FIT_PAGE_ROWS:
+        value = value.iloc[:FIT_PAGE_ROWS]
     value[OTHER] = portfolio_value - value.sum()
     value[PORTFOLIO] = portfolio_value
     return value
@@ -37,17 +45,15 @@ def convent_to_list_of_lists(df: pd.Series):
 
 
 def make_table(portfolio: Portfolio):
-    """Преобразует серию в список списков"""
+    """Формирует и форматирует pdf таблицу"""
     table_dataframe = drop_small_positions(portfolio)
     data = convent_to_list_of_lists(table_dataframe)
-    font_size = 10
-    font_leading = font_size * 1.2
-    style = TableStyle([('FONTSIZE', (0, 0), (-1, -1), font_size),
-                        ('LEADING', (0, 0), (-1, -1), font_leading),
-                        ('LINEBEFORE', (1, 0), (1, -1), 0.5, colors.black),
+    style = TableStyle([('LINEBEFORE', (1, 0), (1, -1), 0.5, colors.black),
                         ('LINEABOVE', (0, 1), (-1, 1), 0.5, colors.black),
                         ('LINEABOVE', (0, -1), (-1, -1), 0.5, colors.black),
                         ('ALIGN', (-1, 0), (-1, -1), 'RIGHT'),
                         ('ALIGN', (0, 0), (-1, 0), 'CENTRE'),
                         ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold')])
-    return Table(data, style=style)
+    table = Table(data, style=style)
+    table.hAlign = 'LEFT'
+    return table

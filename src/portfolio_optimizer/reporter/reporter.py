@@ -1,7 +1,7 @@
 """Хранение истории стоимости портфеля и составление отчетов"""
 
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import inch
+from reportlab.lib.units import cm
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import Frame
 
@@ -18,12 +18,27 @@ OTHER = 'OTHER'
 
 def make_report(portfolio: Portfolio):
     """Формирует отчет"""
-    canvas = Canvas(REPORT_NAME, pagesize=A4)
-    table = value_table.make_table(portfolio)
-    frame = Frame(inch, inch, 6 * inch, 9 * inch, showBoundary=1)
-    frame.addFromList([table], canvas)
-    canvas.save()
+    page_width, page_height = A4
+    margin = 1.5 * cm
+    blank_width = page_width - 2 * margin
+    blank_height = page_height - 2 * margin
 
+    frame_ul = Frame(margin, margin + blank_height / 2, blank_width / 2, blank_height / 2, showBoundary=1)
+    frame_ur = Frame(margin + blank_width / 2, margin + blank_height / 2, blank_width / 2, blank_height / 2,
+                     showBoundary=1)
+    frame_bl = Frame(margin, margin, blank_width / 2, blank_height / 2, showBoundary=1)
+    frame_br = Frame(margin + blank_width / 2, margin, blank_width / 2, blank_height / 2, showBoundary=1)
+
+    canvas = Canvas(REPORT_NAME, pagesize=(page_width, page_height))
+    table = value_table.make_table(portfolio)
+    table2 = value_table.make_table(portfolio)
+
+    frame_ul.addFromList([table, table2], canvas)
+    frame_ur.addFromList([table], canvas)
+    frame_bl.addFromList([table], canvas)
+    frame_br.addFromList([table], canvas)
+
+    canvas.save()
 
 # TODO: сделать прокладывание пути
 
