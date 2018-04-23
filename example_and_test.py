@@ -9,45 +9,33 @@ from portfolio_optimizer import Portfolio
 POSITIONS = dict(BANEP=200,
                  MFON=55,
                  SNGSP=235,
-                 RTKM=0,
-                 MAGN=0,
                  MSTT=4435,
                  KBTK=9,
-                 MOEX=0,
-                 RTKMP=1504 + 382 + 67,
-                 NMTP=0,
-                 TTLK=0,
-                 LSRG=561 + 0 + 80,
+                 RTKMP=1504,
+                 LSRG=561,
                  LSNGP=81,
                  PRTK=70,
                  MTSS=749,
                  AKRN=795,
-                 MRKC=0 + 0 + 36,
-                 GAZP=0,
-                 AFLT=0,
+                 MRKC=36,
                  MSRS=699,
                  UPRO=1267,
-                 PMSBP=1683 + 322 + 219,
-                 CHMF=0,
-                 GMKN=166 + 28,
+                 PMSBP=1683,
+                 GMKN=166,
                  VSMO=73,
                  RSTIP=87,
-                 PHOR=0,
-                 MRSB=0,
                  LKOH=123,
-                 ENRU=319 + 148,
-                 MVID=264 + 62)
-CASH = 22_412 + 37_052 + 308_463
+                 ENRU=319,
+                 MVID=264)
+CASH = 308_463
 DATE = '2018-04-20'
-VALUE = None
 
 
 def trading():
     """Распечатка всей аналитики, необходимой для управления портфелем"""
     port = Portfolio(date=DATE,
                      cash=CASH,
-                     positions=POSITIONS,
-                     value=VALUE)
+                     positions=POSITIONS)
     optimizer = Optimizer(port)
     print(optimizer.portfolio)
     print(optimizer.dividends_metrics)
@@ -71,4 +59,4 @@ def speed_test():
 
 
 if __name__ == '__main__':
-    trading()
+    speed_test()

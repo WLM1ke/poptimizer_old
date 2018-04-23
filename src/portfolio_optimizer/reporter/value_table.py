@@ -7,11 +7,13 @@ from reportlab.lib import colors
 from reportlab.platypus import Table, TableStyle
 
 from portfolio_optimizer import Portfolio
-from portfolio_optimizer.reporter.reporter import OTHER
 from portfolio_optimizer.settings import PORTFOLIO
 
 # Количество строк в таблице, которое влезает на страницу - иначе она не рисуется
 FIT_PAGE_ROWS = 10
+
+# Общее наименование мелких позиций в портфеле
+OTHER = 'OTHER'
 
 
 def drop_small_positions(portfolio: Portfolio):

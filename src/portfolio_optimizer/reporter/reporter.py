@@ -1,5 +1,6 @@
 """Хранение истории стоимости портфеля и составление отчетов"""
 
+import pandas as pd
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
 from reportlab.pdfgen.canvas import Canvas
@@ -12,11 +13,23 @@ from portfolio_optimizer.settings import REPORTS_PATH
 # Наименование файла отчета
 REPORT_NAME = str(REPORTS_PATH / 'report.pdf')
 
-# Наименование строки для мелких позиций
-OTHER = 'OTHER'
+# Каталог с данными
+REPORTS_DATA_PATH = REPORTS_PATH / 'data'
+
+# Лис с данными
+SHEET_NAME = 'Data'
 
 
-def make_report(portfolio: Portfolio):
+def read_data(report_name: str):
+    data = pd.read_excel(REPORTS_DATA_PATH / f'{report_name}.xlsx',
+                         sheet_name=SHEET_NAME,
+                         header=0,
+                         index_col=0,
+                         converters={'Date': pd.to_datetime})
+    return data
+
+
+def make_report(report_name: str, portfolio: Portfolio, month_to_report: int = 60):
     """Формирует отчет"""
     page_width, page_height = A4
     margin = 1.5 * cm
@@ -39,6 +52,7 @@ def make_report(portfolio: Portfolio):
     frame_br.addFromList([table], canvas)
 
     canvas.save()
+
 
 # TODO: сделать прокладывание пути
 
