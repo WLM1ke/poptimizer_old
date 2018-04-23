@@ -6,16 +6,6 @@ import pstats
 from portfolio_optimizer import Optimizer
 from portfolio_optimizer import Portfolio
 
-# Идеи для добавления в анализ
-# HYDR
-# MTLRP
-# RASP
-# OGKB
-# RASP
-# AFKS
-# TGKA
-# TGKB
-
 POSITIONS = dict(BANEP=200,
                  MFON=55,
                  SNGSP=235,
