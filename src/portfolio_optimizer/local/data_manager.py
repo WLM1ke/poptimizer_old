@@ -76,7 +76,8 @@ class DataManager:
             condition = np.allclose(df_old.loc[common_index], df_new.loc[common_index])
         else:
             condition_not_object = np.allclose(df_old.select_dtypes(exclude='object').loc[common_index],
-                                               df_new.select_dtypes(exclude='object').loc[common_index])
+                                               df_new.select_dtypes(exclude='object').loc[common_index],
+                                               equal_nan=True)
             df_new_object = df_new.select_dtypes(include='object').loc[common_index]
             condition_object = df_old.select_dtypes(include='object').loc[common_index].equals(df_new_object)
             condition = condition_not_object and condition_object
