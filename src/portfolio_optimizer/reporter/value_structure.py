@@ -50,7 +50,7 @@ def make_plot(portfolio: Portfolio, inch_width: float, inch_height: float):
     ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 
     file = BytesIO()
-    plt.savefig(file, dpi=300, format='jpg', bbox_inches='tight')
+    plt.savefig(file, dpi=300, format='png', transparent=True)
     return Image(file, inch_width * inch, inch_height * inch)
 
 

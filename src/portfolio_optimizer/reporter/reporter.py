@@ -3,12 +3,13 @@
 import pandas as pd
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import cm, inch
 from reportlab.pdfgen.canvas import Canvas
-from reportlab.platypus import Frame
+from reportlab.platypus import Frame, Paragraph
 
 from portfolio_optimizer import Portfolio
-from portfolio_optimizer.reporter import value_dynamics
+from portfolio_optimizer.reporter import value_dynamics, dividends_dynamics
 from portfolio_optimizer.reporter import value_structure
 from portfolio_optimizer.settings import REPORTS_PATH
 
@@ -39,7 +40,17 @@ def make_report(report_name: str, portfolio: Portfolio, years: int = 5):
     blank_height = (page_height - 2 * margin) / 3
 
     frame_l1 = Frame(margin, margin + blank_height * 2,
-                     blank_width, blank_height,
+                     blank_width * 1.7, blank_height,
+                     leftPadding=0, bottomPadding=0,
+                     rightPadding=0, topPadding=6,
+                     showBoundary=0)
+    frame_r1 = Frame(margin + blank_width * 1.7, margin + blank_height * 2,
+                     blank_width * 1.3, blank_height,
+                     leftPadding=0, bottomPadding=0,
+                     rightPadding=0, topPadding=6,
+                     showBoundary=0)
+    frame_r2 = Frame(margin + blank_width, margin + blank_height,
+                     blank_width * 2, blank_height,
                      leftPadding=0, bottomPadding=0,
                      rightPadding=0, topPadding=6,
                      showBoundary=0)
@@ -50,16 +61,6 @@ def make_report(report_name: str, portfolio: Portfolio, years: int = 5):
                      showBoundary=0)
     frame_l3 = Frame(margin, margin,
                      blank_width, blank_height,
-                     leftPadding=0, bottomPadding=0,
-                     rightPadding=0, topPadding=6,
-                     showBoundary=0)
-    frame_r1 = Frame(margin + blank_width, margin + blank_height * 2,
-                     blank_width * 2, blank_height,
-                     leftPadding=0, bottomPadding=0,
-                     rightPadding=0, topPadding=6,
-                     showBoundary=0)
-    frame_r2 = Frame(margin + blank_width, margin + blank_height,
-                     blank_width * 2, blank_height,
                      leftPadding=0, bottomPadding=0,
                      rightPadding=0, topPadding=6,
                      showBoundary=0)
@@ -82,24 +83,32 @@ def make_report(report_name: str, portfolio: Portfolio, years: int = 5):
     canvas.line(margin, margin + blank_height, margin + blank_width * 3, margin + blank_height)
 
     data = read_data('report')
-    image1 = value_dynamics.make_plot(data[-61:], blank_width / inch * 2, blank_height / inch * 0.95)
-    image1.drawOn(canvas, margin + blank_width, margin + blank_height * 2.025)
+    names_style = ParagraphStyle('title', fontName='Helvetica-Bold', spaceAfter=10)
 
-    table1 = value_dynamics.make_dynamics_table(data[-61:])
+    name1l = Paragraph('Last Month Change and Inflow', names_style)
+    table1l = value_dynamics.make_flow_table(data[-61:])
 
-    image2 = value_structure.make_plot(portfolio, blank_width / inch * 2 * 0.95, blank_height / inch * 0.95)
-    image2.drawOn(canvas, margin + blank_width, margin + blank_height * 1.025)
+    name1r = Paragraph('5Y Portfolio Dividends', names_style)
+    table1r = dividends_dynamics.make_dividends_table(data)
 
-    table2 = value_structure.make_table(portfolio)
+    name2 = Paragraph('5Y Portfolio Return', names_style)
+    table2 = value_dynamics.make_dynamics_table(data[-61:])
 
-    table3 = value_dynamics.make_flow_table(data[-61:])
+    image1 = value_dynamics.make_plot(data[-61:], blank_width / inch * 2, blank_height / inch)
+    image1.drawOn(canvas, margin + blank_width, margin + blank_height)
 
-    frame_l1.addFromList([table1], canvas)
-    frame_l2.addFromList([table2], canvas)
-    frame_l3.addFromList([], canvas)
-    frame_r1.addFromList([], canvas)
+    name3 = Paragraph('Portfolio Structure', names_style)
+    table3 = value_structure.make_table(portfolio)
+
+    image2 = value_structure.make_plot(portfolio, blank_width / inch * 2, blank_height / inch)
+    image2.drawOn(canvas, margin + blank_width, margin)
+
+    frame_l1.addFromList([name1l, table1l], canvas)
+    frame_l2.addFromList([name2, table2], canvas)
+    frame_l3.addFromList([name3, table3], canvas)
+    frame_r1.addFromList([name1r, table1r], canvas)
     frame_r2.addFromList([], canvas)
-    frame_r3.addFromList([table3], canvas)
+    frame_r3.addFromList([], canvas)
 
     canvas.save()
 
@@ -117,7 +126,7 @@ if __name__ == '__main__':
                      MSTT=4435,
                      KBTK=9,
                      MOEX=0,
-                     RTKMP=1475 + 312 + 91,
+                     RTKMP=1475 + 312 + 39,
                      NMTP=0,
                      TTLK=0,
                      LSRG=561 + 0 + 80,
@@ -125,7 +134,7 @@ if __name__ == '__main__':
                      PRTK=70,
                      MTSS=749,
                      AKRN=795,
-                     MRKC=0,
+                     MRKC=0 + 0 + 36,
                      GAZP=0,
                      AFLT=0,
                      MSRS=699,
@@ -140,7 +149,7 @@ if __name__ == '__main__':
                      LKOH=123,
                      ENRU=319 + 148,
                      MVID=264 + 62)
-    CASH = 596_156 + 470_259 + 54_615
+    CASH = 596_156 + 470_259 + 481_849
     DATE = '2018-04-19'
     port = Portfolio(date=DATE,
                      cash=CASH,

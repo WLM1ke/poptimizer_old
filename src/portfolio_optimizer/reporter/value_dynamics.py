@@ -1,4 +1,5 @@
 """График динамики стоимости портфеля"""
+
 import locale
 from io import BytesIO
 
@@ -53,7 +54,7 @@ def make_plot(df: pd.DataFrame, inch_width: float, inch_height: float):
     index = index_cum_return(df) * 100 - 100
     plt.plot(portfolio.values)
     plt.plot(index.values)
-    x = index.index.astype(str)
+    x = index.index.astype(str).str.slice(stop=7)
     x_ticks_loc = range(0, len(x), 12)
     x_ticks_labels = x[x_ticks_loc]
     plt.yticks(fontsize=8)
@@ -61,7 +62,7 @@ def make_plot(df: pd.DataFrame, inch_width: float, inch_height: float):
     plt.legend(('Portfolio', 'MOEX Russia Net Total Return (Resident)'), fontsize=8, frameon=False)
 
     file = BytesIO()
-    plt.savefig(file, dpi=300, format='jpg', bbox_inches='tight')
+    plt.savefig(file, dpi=300, format='png', transparent=True)
     return Image(file, inch_width * inch, inch_height * inch)
 
 
@@ -95,9 +96,8 @@ def make_dynamics_table(df: pd.DataFrame):
     data = convent_to_list_of_lists(df)
 
     style = TableStyle([('LINEBEFORE', (1, 0), (1, -1), 0.5, colors.black),
-                        ('LINEABOVE', (0, 1), (-1, 1), 0.5, colors.black),
-                        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
-                        ('ALIGN', (-1, 0), (-1, -1), 'RIGHT'),
+                        ('LINEABOVE', (0, 1), (-1, 2), 0.5, colors.black),
+                        ('ALIGN', (1, 1), (-1, -1), 'RIGHT'),
                         ('ALIGN', (0, 0), (-1, 0), 'CENTRE')])
     table = Table(data, style=style)
     table.hAlign = 'LEFT'
