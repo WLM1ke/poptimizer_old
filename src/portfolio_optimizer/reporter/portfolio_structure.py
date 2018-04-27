@@ -1,6 +1,5 @@
 """Формирование блока pdf-файла с информацией о структуре портфеля"""
 
-import locale
 from io import BytesIO
 
 import matplotlib.pyplot as plt
@@ -18,12 +17,12 @@ MAX_TABLE_ROWS = 9
 # Общее наименование мелких позиций в портфеле
 OTHER = 'OTHER'
 
-# Доля левой части блока - используется для таблицы
+# Доля левой части блока - используется для таблицы. В правой расположена диаграмма
 LEFT_PART_OF_BLOCK = 1 / 3
 
 
 def drop_small_positions(portfolio: Portfolio):
-    """Сокращает число строк до максимального
+    """Отбрасывает нулевые позиции и при необходимости сокращает число строк до максимального
 
     Объединяет самые мелкие позиции в категорию OTHER и сортирует позиции по убыванию
     """
@@ -59,14 +58,12 @@ def make_list_of_lists_table(portfolio: Portfolio):
     """Создает таблицу в виде списка списков"""
     position_value = drop_small_positions(portfolio)
     position_share = position_value / position_value.iloc[-1]
-
-    locale.setlocale(locale.LC_ALL, 'ru_RU')
     list_of_lists = [['Name', 'Value', 'Share']]
     for i in position_value.index:
         name = i
-        value = int(position_value[i])
-        share = position_share[i] * 100
-        list_of_lists.append([f'{name}', f'{value:n}', f'{share:.1f}%'])
+        value = f'{position_value[i]:,.0f}'.replace(',', ' ')
+        share = f'{position_share[i] * 100:.1f}%'
+        list_of_lists.append([name, value, share])
     return list_of_lists
 
 
@@ -88,7 +85,6 @@ def portfolio_structure_block(portfolio: Portfolio, canvas: Canvas, x: float, y:
     """Формирует блок pdf-файла с информацией о структуре портфеля
 
     В левой части располагается табличка структуры, а в правой части диаграмма
-    Центр координат расположен в нижнем левом углу
     """
     block_header = Paragraph('Portfolio Structure', BLOCK_HEADER_STYLE)
     table = make_table(portfolio)
