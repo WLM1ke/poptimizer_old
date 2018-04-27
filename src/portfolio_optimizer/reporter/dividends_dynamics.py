@@ -8,6 +8,7 @@ from reportlab.platypus import TableStyle, Table
 
 
 def make_12y_dividends_df(df: pd.DataFrame):
+    """Скользящие дивиденды за последние 12 месяцев"""
     return df['Dividends'].fillna(0).rolling(12).sum()
 
 

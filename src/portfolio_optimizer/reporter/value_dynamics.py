@@ -78,7 +78,7 @@ def convent_to_list_of_lists(df: pd.Series):
             name = f'{year}Y'
         portfolio = df.iloc[-i - 1, 0]
         index = df.iloc[-i - 1, 1]
-        list_of_lists.append([f'{name}', f'{portfolio: .1f}', f'{index: .1f}'])
+        list_of_lists.append([f'{name}', f'{portfolio: .1f}%', f'{index: .1f}%'])
         if i == 1:
             i = 12
         else:
