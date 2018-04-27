@@ -5,3 +5,5 @@ lxml
 arrow
 numpy
 scipy
+reportlab
+matplotlib

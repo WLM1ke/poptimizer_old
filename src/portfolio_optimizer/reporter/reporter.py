@@ -9,8 +9,8 @@ from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import Frame, Paragraph
 
 from portfolio_optimizer import Portfolio
+from portfolio_optimizer.reporter import portfolio_structure
 from portfolio_optimizer.reporter import value_dynamics, dividends_dynamics
-from portfolio_optimizer.reporter import value_structure
 from portfolio_optimizer.settings import REPORTS_PATH
 
 # Наименование файла отчета
@@ -22,8 +22,11 @@ REPORTS_DATA_PATH = REPORTS_PATH / 'data'
 # Лис с данными
 SHEET_NAME = 'Data'
 
-# Стиль наименований блоков
+# Стили pdf-файла
 BLOCK_HEADER_STYLE = ParagraphStyle('Block_Header', fontName='Helvetica-Bold', spaceAfter=10)
+TABLE_LINE_COLOR = colors.black
+TABLE_LINE_WIDTH = 0.5
+BOLD_FONT = 'Helvetica-Bold'
 
 
 def read_data(report_name: str):
@@ -94,7 +97,7 @@ def make_report(report_name: str, portfolio: Portfolio, years: int = 5):
     frame_l2.addFromList([name2, table2], canvas)
     frame_r1.addFromList([name1r, table1r], canvas)
 
-    value_structure.portfolio_structure_block(port, canvas, margin, margin, blank_width * 3, blank_height)
+    portfolio_structure.portfolio_structure_block(port, canvas, margin, margin, blank_width * 3, blank_height)
 
     canvas.save()
 

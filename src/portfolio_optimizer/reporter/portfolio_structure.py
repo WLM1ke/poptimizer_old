@@ -4,13 +4,12 @@ import locale
 from io import BytesIO
 
 import matplotlib.pyplot as plt
-from reportlab.lib import colors
 from reportlab.lib.units import inch
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import Table, TableStyle, Image, Paragraph, Frame
 
 from portfolio_optimizer import Portfolio
-from portfolio_optimizer.reporter.reporter import BLOCK_HEADER_STYLE
+from portfolio_optimizer.reporter.reporter import BLOCK_HEADER_STYLE, TABLE_LINE_COLOR, TABLE_LINE_WIDTH, BOLD_FONT
 from portfolio_optimizer.settings import PORTFOLIO
 
 # Количество строк в таблице, которое влезает в блок и нормально выглядит на диаграмме
@@ -74,12 +73,12 @@ def make_list_of_lists_table(portfolio: Portfolio):
 def make_table(portfolio: Portfolio):
     """Создает и форматирует pdf-таблицу"""
     data = make_list_of_lists_table(portfolio)
-    style = TableStyle([('LINEBEFORE', (1, 0), (1, -1), 0.5, colors.black),
-                        ('LINEABOVE', (0, 1), (-1, 1), 0.5, colors.black),
-                        ('LINEABOVE', (0, -1), (-1, -1), 0.5, colors.black),
+    style = TableStyle([('LINEBEFORE', (1, 0), (1, -1), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
+                        ('LINEABOVE', (0, 1), (-1, 1), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
+                        ('LINEABOVE', (0, -1), (-1, -1), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
                         ('ALIGN', (-2, 1), (-1, -1), 'RIGHT'),
                         ('ALIGN', (0, 0), (-1, 0), 'CENTRE'),
-                        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold')])
+                        ('FONTNAME', (0, -1), (-1, -1), BOLD_FONT)])
     table = Table(data=data, style=style)
     table.hAlign = 'LEFT'
     return table
