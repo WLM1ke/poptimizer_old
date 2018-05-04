@@ -47,24 +47,20 @@ class ReturnsMetrics:
 
         Эти ряды цен служат для расчета всех дальнейших показателей
         """
-        prices = local.prices(self._portfolio.positions[:-2]).fillna(method='ffill')
-        monthly_index = self._monthly_index(prices.index)
-        return prices.loc[monthly_index]
+        prices = local.prices(self._portfolio.positions[:-2])
+        prices = prices[:self._portfolio.date].fillna(method='ffill')
+        return prices.groupby(by=self._monthly_aggregation).last()
 
-    def _monthly_index(self, index):
-        """Формирует массив дат с шагом в месяц от начального исторических данных до даты портфеля"""
-        portfolio_date = self._portfolio.date.timetuple()[:3]
-        reversed_monthly_index = []
-        for date in reversed(index):
-            if portfolio_date < date.timetuple()[:3]:
-                continue
-            else:
-                reversed_monthly_index.append(date)
-                if portfolio_date[1] != 1:
-                    portfolio_date = portfolio_date[0], portfolio_date[1] - 1, portfolio_date[2]
-                else:
-                    portfolio_date = portfolio_date[0] - 1, 12, portfolio_date[2]
-        return reversed(reversed_monthly_index)
+    def _monthly_aggregation(self, x: pd.Timestamp):
+        """Приводит все даты к отчетному дню портфеля в месяце - используется для месячной агригации
+
+        Если день больше отчетного, то день относится к следующему месяцу
+        """
+        portfolio_date = self._portfolio.date.day
+        if x.day <= portfolio_date:
+            return x + pd.DateOffset(day=portfolio_date)
+        else:
+            return x + pd.DateOffset(months=1, day=portfolio_date)
 
     @property
     @lru_cache(maxsize=1)
@@ -194,13 +190,13 @@ class ReturnsMetrics:
 
 
 if __name__ == '__main__':
-    pos = dict(VSMO=133,
-               MVID=264,
-               LKOH=123,
-               AFLT=5,
-               KBTK=9)
-    port = Portfolio(date='2018-04-05',
-                     cash=2749.64,
+    pos = dict(MSTT=4650,
+               LSNGP=162,
+               MTSS=749,
+               AKRN=795,
+               GMKN=223)
+    port = Portfolio(date='2018-03-19',
+                     cash=1_415_988,
                      positions=pos)
     metrics = ReturnsMetrics(port)
     print(metrics)
