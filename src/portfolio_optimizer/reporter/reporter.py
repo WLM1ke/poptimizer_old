@@ -22,7 +22,7 @@ REPORT_NAME = str(REPORTS_PATH / 'report.pdf')
 REPORTS_DATA_PATH = REPORTS_PATH / 'data'
 
 # Лис с данными
-SHEET_NAME = 'Data'
+SHEET_NAME = 'data'
 
 
 def read_data(report_name: str):

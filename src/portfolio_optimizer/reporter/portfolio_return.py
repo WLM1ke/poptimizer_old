@@ -1,4 +1,4 @@
-"""График динамики стоимости портфеля"""
+"""Формирование блока pdf-файла с информацией о доходности портфеля"""
 
 from io import BytesIO
 
@@ -43,7 +43,7 @@ def index_cum_return(df):
 
 
 def make_plot(df: pd.DataFrame, width: float, height: float):
-    """Строит график стоимости портфеля"""
+    """Строит график стоимости портфеля и возвращает объект pdf-изображения"""
     fig, ax = plt.subplots(1, 1, figsize=(width / inch, height / inch))
     ax.spines['top'].set_visible(False)
     ax.spines['bottom'].set_visible(False)
@@ -69,8 +69,12 @@ def make_plot(df: pd.DataFrame, width: float, height: float):
     return Image(file, width, height)
 
 
-def make_list_of_list_table(df: pd.DataFrame):
-    """Конвертирует серию в список списков"""
+def make_list_of_lists_table(df: pd.DataFrame):
+    """Создает таблицу доходности портфеля и индекса в виде списка списков"""
+    portfolio = portfolio_cum_return(df)
+    portfolio_return = portfolio.iloc[-1] / portfolio * 100 - 100
+    index = index_cum_return(df)
+    index_return = index.iloc[-1] / index * 100 - 100
     list_of_lists = [['Period', 'Portfolio', 'MOEX']]
     i = 1
     while i < len(df):
@@ -79,8 +83,8 @@ def make_list_of_list_table(df: pd.DataFrame):
         else:
             year = i // 12
             name = f'{year}Y'
-        portfolio = df.iloc[-i - 1, 0]
-        index = df.iloc[-i - 1, 1]
+        portfolio = portfolio_return.iloc[-i - 1]
+        index = index_return.iloc[-i - 1]
         list_of_lists.append([f'{name}', f'{portfolio: .1f}%', f'{index: .1f}%'])
         if i == 1:
             i = 12
@@ -90,13 +94,8 @@ def make_list_of_list_table(df: pd.DataFrame):
 
 
 def make_pdf_table(df: pd.DataFrame):
-    """Формирует и форматирует pdf таблицу с изменением стоимости за анализируемый период"""
-    portfolio = portfolio_cum_return(df)
-    portfolio_return = portfolio.iloc[-1] / portfolio * 100 - 100
-    index = index_cum_return(df)
-    index_return = index.iloc[-1] / index * 100 - 100
-    df = pd.concat([portfolio_return, index_return], axis='columns')
-    data = make_list_of_list_table(df)
+    """Формирует и форматирует pdf-таблицу доходности портфеля и индекса"""
+    data = make_list_of_lists_table(df)
 
     style = TableStyle([('LINEBEFORE', (1, 0), (1, -1), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
                         ('LINEABOVE', (0, 1), (-1, 2), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
@@ -109,9 +108,9 @@ def make_pdf_table(df: pd.DataFrame):
 
 
 def portfolio_return_block(df: pd.DataFrame, canvas: Canvas, x: float, y: float, width: float, height: float):
-    """Формирует блок pdf-файла с информацией о структуре портфеля
+    """Формирует блок pdf-файла с информацией доходности портфеля и индекса
 
-    В левой части располагается табличка структуры, а в правой части диаграмма
+    В левой части располагается табличка, а в правой части диаграмма
     """
     block_header = Paragraph('Portfolio Return', BLOCK_HEADER_STYLE)
     table = make_pdf_table(df)
