@@ -4,13 +4,15 @@ import pandas as pd
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
-from reportlab.lib.units import cm, inch
+from reportlab.lib.units import cm
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import Frame, Paragraph
 
 from portfolio_optimizer import Portfolio
+from portfolio_optimizer.reporter import dividends_dynamics
+from portfolio_optimizer.reporter import flow_table
+from portfolio_optimizer.reporter import portfolio_return
 from portfolio_optimizer.reporter import portfolio_structure
-from portfolio_optimizer.reporter import value_dynamics, dividends_dynamics
 from portfolio_optimizer.settings import REPORTS_PATH
 
 # Наименование файла отчета
@@ -21,12 +23,6 @@ REPORTS_DATA_PATH = REPORTS_PATH / 'data'
 
 # Лис с данными
 SHEET_NAME = 'Data'
-
-# Стили pdf-файла
-BLOCK_HEADER_STYLE = ParagraphStyle('Block_Header', fontName='Helvetica-Bold', spaceAfter=10)
-TABLE_LINE_COLOR = colors.black
-TABLE_LINE_WIDTH = 0.5
-BOLD_FONT = 'Helvetica-Bold'
 
 
 def read_data(report_name: str):
@@ -55,16 +51,6 @@ def make_report(report_name: str, portfolio: Portfolio, years: int = 5):
                      leftPadding=0, bottomPadding=0,
                      rightPadding=0, topPadding=6,
                      showBoundary=0)
-    frame_l2 = Frame(margin, margin + blank_height,
-                     blank_width, blank_height,
-                     leftPadding=0, bottomPadding=0,
-                     rightPadding=0, topPadding=6,
-                     showBoundary=0)
-    frame_l3 = Frame(margin, margin,
-                     blank_width, blank_height,
-                     leftPadding=0, bottomPadding=0,
-                     rightPadding=0, topPadding=6,
-                     showBoundary=0)
 
     canvas = Canvas(REPORT_NAME, pagesize=(page_width, page_height))
 
@@ -82,28 +68,22 @@ def make_report(report_name: str, portfolio: Portfolio, years: int = 5):
     names_style = ParagraphStyle('title', fontName='Helvetica-Bold', spaceAfter=10)
 
     name1l = Paragraph('Last Month Change and Inflow', names_style)
-    table1l = value_dynamics.make_flow_table(data[-61:])
+    table1l = flow_table.make_flow_table(data[-61:])
 
     name1r = Paragraph('Portfolio Dividends', names_style)
     table1r = dividends_dynamics.make_dividends_table(data)
 
-    name2 = Paragraph('Portfolio Return', names_style)
-    table2 = value_dynamics.make_dynamics_table(data[-61:])
-
-    image1 = value_dynamics.make_plot(data[-61:], blank_width / inch * 2, blank_height / inch)
-    image1.drawOn(canvas, margin + blank_width, margin + blank_height)
-
     frame_l1.addFromList([name1l, table1l], canvas)
-    frame_l2.addFromList([name2, table2], canvas)
     frame_r1.addFromList([name1r, table1r], canvas)
 
+    portfolio_return.portfolio_return_block(data[-61:], canvas, margin, margin + blank_height, blank_width * 3,
+                                            blank_height)
     portfolio_structure.portfolio_structure_block(port, canvas, margin, margin, blank_width * 3, blank_height)
 
     canvas.save()
 
 
 # TODO: сделать прокладывание пути
-# TODO: поправить кривой круг
 
 
 if __name__ == '__main__':

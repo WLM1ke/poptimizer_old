@@ -1,15 +1,18 @@
 """График динамики стоимости портфеля"""
 
-import locale
 from io import BytesIO
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from reportlab.lib import colors
 from reportlab.lib.units import inch
-from reportlab.platypus import Image, TableStyle, Table
+from reportlab.pdfgen.canvas import Canvas
+from reportlab.platypus import Image, TableStyle, Table, Paragraph, Frame
 
 from portfolio_optimizer import local
+from portfolio_optimizer.reporter.pdf_style import BLOCK_HEADER_STYLE, TABLE_LINE_COLOR, TABLE_LINE_WIDTH
+
+# Доля левой части блока - используется для таблицы. В правой расположена диаграмма
+LEFT_PART_OF_BLOCK = 1 / 3
 
 
 def get_investors_names(df: pd.DataFrame):
@@ -39,9 +42,9 @@ def index_cum_return(df):
     return index / index.iloc[0]
 
 
-def make_plot(df: pd.DataFrame, inch_width: float, inch_height: float):
+def make_plot(df: pd.DataFrame, width: float, height: float):
     """Строит график стоимости портфеля"""
-    fig, ax = plt.subplots(1, 1, figsize=(inch_width, inch_height))
+    fig, ax = plt.subplots(1, 1, figsize=(width / inch, height / inch))
     ax.spines['top'].set_visible(False)
     ax.spines['bottom'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -63,10 +66,10 @@ def make_plot(df: pd.DataFrame, inch_width: float, inch_height: float):
 
     file = BytesIO()
     plt.savefig(file, dpi=300, format='png', transparent=True)
-    return Image(file, inch_width * inch, inch_height * inch)
+    return Image(file, width, height)
 
 
-def convent_to_list_of_lists(df: pd.Series):
+def make_list_of_list_table(df: pd.DataFrame):
     """Конвертирует серию в список списков"""
     list_of_lists = [['Period', 'Portfolio', 'MOEX']]
     i = 1
@@ -86,82 +89,35 @@ def convent_to_list_of_lists(df: pd.Series):
     return list_of_lists
 
 
-def make_dynamics_table(df: pd.DataFrame):
+def make_pdf_table(df: pd.DataFrame):
     """Формирует и форматирует pdf таблицу с изменением стоимости за анализируемый период"""
     portfolio = portfolio_cum_return(df)
     portfolio_return = portfolio.iloc[-1] / portfolio * 100 - 100
     index = index_cum_return(df)
     index_return = index.iloc[-1] / index * 100 - 100
     df = pd.concat([portfolio_return, index_return], axis='columns')
-    data = convent_to_list_of_lists(df)
+    data = make_list_of_list_table(df)
 
-    style = TableStyle([('LINEBEFORE', (1, 0), (1, -1), 0.5, colors.black),
-                        ('LINEABOVE', (0, 1), (-1, 2), 0.5, colors.black),
+    style = TableStyle([('LINEBEFORE', (1, 0), (1, -1), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
+                        ('LINEABOVE', (0, 1), (-1, 2), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
                         ('ALIGN', (1, 1), (-1, -1), 'RIGHT'),
                         ('ALIGN', (0, 0), (-1, 0), 'CENTRE')])
+
     table = Table(data, style=style)
     table.hAlign = 'LEFT'
     return table
 
 
-def make_flow_df(df: pd.DataFrame):
-    """Формирует фрейм для отчета"""
-    columns = df.columns
-    columns_names = columns[columns.str.contains('Value')]
-    df_table = df[columns_names].iloc[-2:]
+def portfolio_return_block(df: pd.DataFrame, canvas: Canvas, x: float, y: float, width: float, height: float):
+    """Формирует блок pdf-файла с информацией о структуре портфеля
 
-    df_table.index = [str(i.date()) for i in df_table.index]
-
-    investors_names = get_investors_names(df)
-    inflow = df[investors_names].iloc[0].fillna(0)
-    pre_inflow_value = df['Value'].iloc[-1] - inflow.sum()
-    df_table.loc['Pre Inflow'] = df_table.iloc[-2] * pre_inflow_value / df_table['Value'].iloc[-2]
-
-    df_share = df_table.div(df_table['Value'], axis='index')
-    df_share.index = ['%'] * len(df_share)
-    df_table = pd.concat([df_table, df_share])
-
-    inflow['Value'] = inflow.sum()
-    df_table.loc['Inflow'] = inflow.values
-
-    df_table = df_table.iloc[[0, 3, 2, 5, 6, 1, 4]]
-
-    df_table.columns = list(investors_names) + ['Portfolio']
-    return df_table
-
-
-def convent_flow_df_to_list_of_lists(df: pd.DataFrame):
-    """Конвертирует фрейм в список списков"""
-    locale.setlocale(locale.LC_ALL, 'ru_RU')
-    list_of_lists = [[''] + list(df.columns)]
-    for row, name in enumerate(df.index):
-        row_list = [name]
-        for column, _ in enumerate(df.columns):
-            value = df.iat[row, column]
-            if name == '%':
-                row_list.append(f'{value * 100:.2f}%')
-            else:
-                row_list.append(f'{int(value):n}')
-        list_of_lists.append(row_list)
-    return list_of_lists
-
-
-def make_flow_table(df: pd.DataFrame):
-    """Формирует и форматирует pdf таблицу изменение стоимости долей"""
-    flow_df = make_flow_df(df)
-    data = convent_flow_df_to_list_of_lists(flow_df)
-
-    style = TableStyle([('LINEBEFORE', (1, 0), (1, -1), 0.5, colors.black),
-                        ('LINEBEFORE', (-1, 0), (-1, -1), 0.5, colors.black),
-                        ('LINEABOVE', (0, 1), (-1, 1), 0.5, colors.black),
-                        ('LINEABOVE', (0, 3), (-1, 3), 0.5, colors.black),
-                        ('LINEABOVE', (0, 5), (-1, 5), 0.5, colors.black),
-                        ('LINEABOVE', (0, 6), (-1, 6), 0.5, colors.black),
-                        ('ALIGN', (1, 1), (-1, -1), 'RIGHT'),
-                        ('ALIGN', (0, 0), (-1, 0), 'CENTRE'),
-                        ('ALIGN', (0, 2), (0, 2), 'CENTRE'),
-                        ('ALIGN', (0, 4), (0, 4), 'CENTRE'),
-                        ('ALIGN', (0, -1), (0, -1), 'CENTRE')])
-    table = Table(data, style=style)
-    table.hAlign = 'LEFT'
-    return table
+    В левой части располагается табличка структуры, а в правой части диаграмма
+    """
+    block_header = Paragraph('Portfolio Return', BLOCK_HEADER_STYLE)
+    table = make_pdf_table(df)
+    frame = Frame(x, y, width * LEFT_PART_OF_BLOCK, height,
+                  leftPadding=0, bottomPadding=0, rightPadding=0, topPadding=6,
+                  showBoundary=0)
+    frame.addFromList([block_header, table], canvas)
+    image = make_plot(df, width * (1 - LEFT_PART_OF_BLOCK), height)
+    image.drawOn(canvas, x + width * LEFT_PART_OF_BLOCK, y)

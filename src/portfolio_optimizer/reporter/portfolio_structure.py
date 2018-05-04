@@ -8,7 +8,7 @@ from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import Table, TableStyle, Image, Paragraph, Frame
 
 from portfolio_optimizer import Portfolio
-from portfolio_optimizer.reporter.reporter import BLOCK_HEADER_STYLE, TABLE_LINE_COLOR, TABLE_LINE_WIDTH, BOLD_FONT
+from portfolio_optimizer.reporter.pdf_style import BLOCK_HEADER_STYLE, TABLE_LINE_COLOR, TABLE_LINE_WIDTH, BOLD_FONT
 from portfolio_optimizer.settings import PORTFOLIO
 
 # Количество строк в таблице, которое влезает в блок и нормально выглядит на диаграмме
@@ -67,15 +67,17 @@ def make_list_of_lists_table(portfolio: Portfolio):
     return list_of_lists
 
 
-def make_table(portfolio: Portfolio):
+def make_pdf_table(portfolio: Portfolio):
     """Создает и форматирует pdf-таблицу"""
     data = make_list_of_lists_table(portfolio)
+
     style = TableStyle([('LINEBEFORE', (1, 0), (1, -1), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
                         ('LINEABOVE', (0, 1), (-1, 1), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
                         ('LINEABOVE', (0, -1), (-1, -1), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
                         ('ALIGN', (-2, 1), (-1, -1), 'RIGHT'),
                         ('ALIGN', (0, 0), (-1, 0), 'CENTRE'),
                         ('FONTNAME', (0, -1), (-1, -1), BOLD_FONT)])
+
     table = Table(data=data, style=style)
     table.hAlign = 'LEFT'
     return table
@@ -87,7 +89,7 @@ def portfolio_structure_block(portfolio: Portfolio, canvas: Canvas, x: float, y:
     В левой части располагается табличка структуры, а в правой части диаграмма
     """
     block_header = Paragraph('Portfolio Structure', BLOCK_HEADER_STYLE)
-    table = make_table(portfolio)
+    table = make_pdf_table(portfolio)
     frame = Frame(x, y, width * LEFT_PART_OF_BLOCK, height,
                   leftPadding=0, bottomPadding=0, rightPadding=0, topPadding=6,
                   showBoundary=0)
