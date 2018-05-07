@@ -3,14 +3,12 @@
 import pandas as pd
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import cm
 from reportlab.pdfgen.canvas import Canvas
-from reportlab.platypus import Frame, Paragraph
+from reportlab.platypus import Frame
 
 from portfolio_optimizer import Portfolio
-from portfolio_optimizer.reporter import dividends_dynamics
-from portfolio_optimizer.reporter import flow_table
+from portfolio_optimizer.reporter import flow_and_dividends
 from portfolio_optimizer.reporter import portfolio_return
 from portfolio_optimizer.reporter import portfolio_structure
 from portfolio_optimizer.settings import REPORTS_PATH
@@ -22,7 +20,7 @@ REPORT_NAME = str(REPORTS_PATH / 'report.pdf')
 REPORTS_DATA_PATH = REPORTS_PATH / 'data'
 
 # Лис с данными
-SHEET_NAME = 'data'
+SHEET_NAME = 'Data'
 
 
 def read_data(report_name: str):
@@ -65,17 +63,9 @@ def make_report(report_name: str, portfolio: Portfolio, years: int = 5):
     canvas.line(margin, margin + blank_height, margin + blank_width * 3, margin + blank_height)
 
     data = read_data('report')
-    names_style = ParagraphStyle('title', fontName='Helvetica-Bold', spaceAfter=10)
 
-    name1l = Paragraph('Last Month Change and Inflow', names_style)
-    table1l = flow_table.make_flow_table(data[-61:])
-
-    name1r = Paragraph('Portfolio Dividends', names_style)
-    table1r = dividends_dynamics.make_dividends_table(data)
-
-    frame_l1.addFromList([name1l, table1l], canvas)
-    frame_r1.addFromList([name1r, table1r], canvas)
-
+    flow_and_dividends.flow_and_dividends_block(data[-61:], canvas, margin, margin + blank_height * 2, blank_width * 3,
+                                                blank_height)
     portfolio_return.portfolio_return_block(data[-61:], canvas, margin, margin + blank_height, blank_width * 3,
                                             blank_height)
     portfolio_structure.portfolio_structure_block(port, canvas, margin, margin, blank_width * 3, blank_height)
