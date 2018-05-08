@@ -36,11 +36,11 @@ def make_fake_data(tmpdir_factory):
 
 def test_make_report():
     reporter.make_report('test', PORTFOLIO)
-    assert False
     date = PORTFOLIO.date
     with open(reporter.make_files_path('test', date)[0], 'rb') as file:
         result = file.read()
     with open(Path(__file__).parent / 'data' / f'{date}.pdf', 'rb') as file:
         test_case = file.read()
+    assert False
     # В конце файла содержатся данные, зависящие от даты создания
     assert result[:197442] == test_case[:197442]
