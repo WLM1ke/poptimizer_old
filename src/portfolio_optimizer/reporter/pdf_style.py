@@ -22,6 +22,7 @@ LINE_WIDTH = 0.5
 
 
 def make_blank_report(pdf_path: Path):
+    """Формирует пустой pdf-отчет"""
     return Canvas(str(pdf_path), pagesize=PAGE_SIZE)
 
 

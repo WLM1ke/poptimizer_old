@@ -56,7 +56,7 @@ def make_report(report_name: str, portfolio: Portfolio):
     canvas = make_blank_report(pdf_path)
     make_header(canvas, date)
     # Верхний блок и разделитель за ним
-    data = read_data('report')
+    data = read_data(report_name)
     flow_and_dividends_block(data[-61:], canvas,
                              left_margin(), bottom_margin() + FIRST_BLOCK_POSITION,
                              blank_width(), blank_height() - FIRST_BLOCK_POSITION)
