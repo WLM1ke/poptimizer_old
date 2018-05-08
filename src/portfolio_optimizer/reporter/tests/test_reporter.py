@@ -37,10 +37,11 @@ def make_fake_data(tmpdir_factory):
 def test_make_report():
     reporter.make_report('test', PORTFOLIO)
     date = PORTFOLIO.date
+    # В конце файла содержатся мета данные, зависящие от даты создания
+    start_of_meta = 197442
     with open(reporter.make_files_path('test', date)[0], 'rb') as file:
-        result = file.read()
+        result = file.read(start_of_meta)
     with open(Path(__file__).parent / 'data' / f'{date}.pdf', 'rb') as file:
-        test_case = file.read()
+        test_case = file.read(start_of_meta)
     assert False
-    # В конце файла содержатся данные, зависящие от даты создания
-    assert result[:197442] == test_case[:197442]
+    assert result == test_case
