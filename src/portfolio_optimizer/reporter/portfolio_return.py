@@ -9,7 +9,7 @@ from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import Image, TableStyle, Table, Paragraph, Frame
 
 from portfolio_optimizer import local
-from portfolio_optimizer.reporter.pdf_style import BLOCK_HEADER_STYLE, TABLE_LINE_COLOR, TABLE_LINE_WIDTH
+from portfolio_optimizer.reporter.pdf_style import BLOCK_HEADER_STYLE, LINE_COLOR, LINE_WIDTH
 
 # Доля левой части блока - используется для таблицы. В правой расположена диаграмма
 LEFT_PART_OF_BLOCK = 1 / 3
@@ -97,8 +97,8 @@ def make_pdf_table(df: pd.DataFrame):
     """Формирует и форматирует pdf-таблицу доходности портфеля и индекса"""
     data = make_list_of_lists_table(df)
 
-    style = TableStyle([('LINEBEFORE', (1, 0), (1, -1), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
-                        ('LINEABOVE', (0, 1), (-1, 2), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
+    style = TableStyle([('LINEBEFORE', (1, 0), (1, -1), LINE_WIDTH, LINE_COLOR),
+                        ('LINEABOVE', (0, 1), (-1, 2), LINE_WIDTH, LINE_COLOR),
                         ('ALIGN', (1, 1), (-1, -1), 'RIGHT'),
                         ('ALIGN', (0, 0), (-1, 0), 'CENTRE')])
 

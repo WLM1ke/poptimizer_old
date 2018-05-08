@@ -8,7 +8,7 @@ from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import Table, TableStyle, Image, Paragraph, Frame
 
 from portfolio_optimizer import Portfolio
-from portfolio_optimizer.reporter.pdf_style import BLOCK_HEADER_STYLE, TABLE_LINE_COLOR, TABLE_LINE_WIDTH, BOLD_FONT
+from portfolio_optimizer.reporter.pdf_style import BLOCK_HEADER_STYLE, LINE_COLOR, LINE_WIDTH, BOLD_FONT
 from portfolio_optimizer.settings import PORTFOLIO
 
 # Количество строк в таблице, которое влезает в блок и нормально выглядит на диаграмме
@@ -71,9 +71,9 @@ def make_pdf_table(portfolio: Portfolio):
     """Создает и форматирует pdf-таблицу"""
     data = make_list_of_lists_table(portfolio)
 
-    style = TableStyle([('LINEBEFORE', (1, 0), (1, -1), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
-                        ('LINEABOVE', (0, 1), (-1, 1), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
-                        ('LINEABOVE', (0, -1), (-1, -1), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
+    style = TableStyle([('LINEBEFORE', (1, 0), (1, -1), LINE_WIDTH, LINE_COLOR),
+                        ('LINEABOVE', (0, 1), (-1, 1), LINE_WIDTH, LINE_COLOR),
+                        ('LINEABOVE', (0, -1), (-1, -1), LINE_WIDTH, LINE_COLOR),
                         ('ALIGN', (-2, 1), (-1, -1), 'RIGHT'),
                         ('ALIGN', (0, 0), (-1, 0), 'CENTRE'),
                         ('FONTNAME', (0, -1), (-1, -1), BOLD_FONT)])

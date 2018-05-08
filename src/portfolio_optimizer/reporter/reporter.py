@@ -1,29 +1,32 @@
 """Хранение истории стоимости портфеля и составление отчетов"""
 
 import pandas as pd
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import cm
-from reportlab.pdfgen.canvas import Canvas
-from reportlab.platypus import Frame
 
 from portfolio_optimizer import Portfolio
-from portfolio_optimizer.reporter import flow_and_dividends
-from portfolio_optimizer.reporter import portfolio_return
-from portfolio_optimizer.reporter import portfolio_structure
+from portfolio_optimizer.reporter.flow_and_dividends import flow_and_dividends_block
+from portfolio_optimizer.reporter.pdf_style import blank_width, make_section_delimiter, make_header
+from portfolio_optimizer.reporter.pdf_style import make_blank_report, left_margin, bottom_margin, blank_height
+from portfolio_optimizer.reporter.portfolio_return import portfolio_return_block
+from portfolio_optimizer.reporter.portfolio_structure import portfolio_structure_block
 from portfolio_optimizer.settings import REPORTS_PATH
-
-# Наименование файла отчета
-REPORT_NAME = str(REPORTS_PATH / 'report.pdf')
 
 # Каталог с данными
 REPORTS_DATA_PATH = REPORTS_PATH / 'data'
 
-# Лис с данными
+# Каталог с pdf-отчетами
+REPORTS_PDF_PATH = REPORTS_PATH / 'pdf'
+
+# Лист с данными
 SHEET_NAME = 'Data'
+
+# Положение блоков относительно нижнего поля
+FIRST_BLOCK_POSITION = blank_height() * 0.76
+SECOND_BLOCK_POSITION = blank_height() * 0.38
+THIRD_BLOCK_POSITION = blank_height() * 0
 
 
 def read_data(report_name: str):
+    """Читает исходные данные по стоимости портфеля из файла"""
     data = pd.read_excel(REPORTS_DATA_PATH / f'{report_name}.xlsx',
                          sheet_name=SHEET_NAME,
                          header=0,
@@ -32,48 +35,44 @@ def read_data(report_name: str):
     return data
 
 
-def make_report(report_name: str, portfolio: Portfolio, years: int = 5):
-    """Формирует отчет"""
-    page_width, page_height = A4
-    margin = cm
-    blank_width = (page_width - 2 * margin) / 3
-    blank_height = (page_height - 2 * margin) / 3
+def make_files_path(report_name: str, date):
+    """Прокладывает путь и возвращает путь к файлу pdf-отчета и xlsx-отчета"""
+    subfolder_name = f'{report_name} {date}'
+    report_folder = REPORTS_PDF_PATH / f'{subfolder_name}'
+    if not report_folder.exists():
+        report_folder.mkdir(parents=True)
+    return report_folder / f'{date}.pdf', report_folder / f'{date}.xlsx'
 
-    frame_l1 = Frame(margin, margin + blank_height * 2,
-                     blank_width * 1.7, blank_height,
-                     leftPadding=0, bottomPadding=0,
-                     rightPadding=0, topPadding=6,
-                     showBoundary=0)
-    frame_r1 = Frame(margin + blank_width * 1.7, margin + blank_height * 2,
-                     blank_width * 1.3, blank_height,
-                     leftPadding=0, bottomPadding=0,
-                     rightPadding=0, topPadding=6,
-                     showBoundary=0)
 
-    canvas = Canvas(REPORT_NAME, pagesize=(page_width, page_height))
+def make_report(report_name: str, portfolio: Portfolio):
+    """Формирует отчет из pdf-файла и исходных xlsx-данных
 
-    canvas.setFont('Helvetica-Bold', size=14)
-    canvas.setFillColor(colors.darkblue)
-    canvas.drawString(margin, margin * 1.1 + 3 * blank_height, f'PORTFOLIO REPORT: {portfolio.date}')
-    canvas.setStrokeColor(colors.darkblue)
-    canvas.line(margin, margin + 3 * blank_height, margin + blank_width * 3, margin + 3 * blank_height)
-    canvas.setStrokeColor(colors.black)
-    canvas.setLineWidth(0.5)
-    canvas.line(margin, margin + 2 * blank_height, margin + blank_width * 3, margin + 2 * blank_height)
-    canvas.line(margin, margin + blank_height, margin + blank_width * 3, margin + blank_height)
-
+    Отчет сохраняется в REPORTS_PDF_PATH. Для каждого отчета создается папка с наименованием и датой, куда
+    помещаются pdf и xlsx
+    """
+    # pdf-файл с заголовком в верхнем колонтитуле
+    date = portfolio.date
+    pdf_path, xlsx_path = make_files_path(report_name, date)
+    canvas = make_blank_report(pdf_path)
+    make_header(canvas, date)
+    # Верхний блок и разделитель за ним
     data = read_data('report')
-
-    flow_and_dividends.flow_and_dividends_block(data[-61:], canvas, margin, margin + blank_height * 2, blank_width * 3,
-                                                blank_height)
-    portfolio_return.portfolio_return_block(data[-61:], canvas, margin, margin + blank_height, blank_width * 3,
-                                            blank_height)
-    portfolio_structure.portfolio_structure_block(port, canvas, margin, margin, blank_width * 3, blank_height)
-
+    flow_and_dividends_block(data[-61:], canvas,
+                             left_margin(), bottom_margin() + FIRST_BLOCK_POSITION,
+                             blank_width(), blank_height() - FIRST_BLOCK_POSITION)
+    make_section_delimiter(canvas, bottom_margin() + FIRST_BLOCK_POSITION)
+    # Второй блок и разделитель за ним
+    portfolio_return_block(data[-61:], canvas,
+                           left_margin(), bottom_margin() + SECOND_BLOCK_POSITION,
+                           blank_width(), FIRST_BLOCK_POSITION - SECOND_BLOCK_POSITION)
+    make_section_delimiter(canvas, bottom_margin() + SECOND_BLOCK_POSITION)
+    # Нижний блок
+    portfolio_structure_block(portfolio, canvas,
+                              left_margin(), bottom_margin() + THIRD_BLOCK_POSITION,
+                              blank_width(), SECOND_BLOCK_POSITION - THIRD_BLOCK_POSITION)
+    # Сохранение pdf-отчета и xlsx-данных
     canvas.save()
-
-
-# TODO: сделать прокладывание пути
+    data.to_excel(xlsx_path, SHEET_NAME)
 
 
 if __name__ == '__main__':
@@ -113,4 +112,4 @@ if __name__ == '__main__':
     port = Portfolio(date=DATE,
                      cash=CASH,
                      positions=POSITIONS)
-    make_report('qqq', port)
+    make_report('report', port)

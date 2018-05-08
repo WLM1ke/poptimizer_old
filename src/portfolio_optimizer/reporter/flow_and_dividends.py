@@ -4,7 +4,7 @@ import pandas as pd
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import TableStyle, Table, Paragraph, Frame
 
-from portfolio_optimizer.reporter.pdf_style import TABLE_LINE_WIDTH, TABLE_LINE_COLOR, BLOCK_HEADER_STYLE
+from portfolio_optimizer.reporter.pdf_style import LINE_WIDTH, LINE_COLOR, BLOCK_HEADER_STYLE
 from portfolio_optimizer.reporter.portfolio_return import get_investors_names
 
 # Доля левой части блока - используется для таблицы движения средств. В правой расположена таблица дивидендов
@@ -58,11 +58,11 @@ def make_pdf_flow_table(df: pd.DataFrame):
     """Формирует и форматирует pdf таблицу движения средств"""
     data = make_list_of_lists_flow(df)
 
-    style = TableStyle([('LINEBEFORE', (1, 0), (1, -1), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
-                        ('LINEBEFORE', (-1, 0), (-1, -1), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
-                        ('LINEABOVE', (0, 1), (-1, 1), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
-                        ('LINEABOVE', (0, 3), (-1, 3), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
-                        ('LINEABOVE', (0, 5), (-1, 6), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
+    style = TableStyle([('LINEBEFORE', (1, 0), (1, -1), LINE_WIDTH, LINE_COLOR),
+                        ('LINEBEFORE', (-1, 0), (-1, -1), LINE_WIDTH, LINE_COLOR),
+                        ('LINEABOVE', (0, 1), (-1, 1), LINE_WIDTH, LINE_COLOR),
+                        ('LINEABOVE', (0, 3), (-1, 3), LINE_WIDTH, LINE_COLOR),
+                        ('LINEABOVE', (0, 5), (-1, 6), LINE_WIDTH, LINE_COLOR),
                         ('ALIGN', (1, 1), (-1, -1), 'RIGHT'),
                         ('ALIGN', (0, 0), (-1, 0), 'CENTRE'),
                         ('ALIGN', (0, 2), (0, 2), 'CENTRE'),
@@ -101,8 +101,8 @@ def make_pdf_dividends_table(df: pd.DataFrame):
     """Формирует и форматирует pdf таблицу с дивидендными выплатами"""
     data = make_list_of_lists_dividends(df)
 
-    style = TableStyle([('LINEBEFORE', (1, 0), (1, -1), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
-                        ('LINEABOVE', (0, 1), (-1, 2), TABLE_LINE_WIDTH, TABLE_LINE_COLOR),
+    style = TableStyle([('LINEBEFORE', (1, 0), (1, -1), LINE_WIDTH, LINE_COLOR),
+                        ('LINEABOVE', (0, 1), (-1, 2), LINE_WIDTH, LINE_COLOR),
                         ('ALIGN', (1, 1), (-1, -1), 'RIGHT'),
                         ('ALIGN', (0, 0), (0, -1), 'CENTRE')])
 
