@@ -38,10 +38,9 @@ def test_make_report():
     reporter.make_report('test', PORTFOLIO)
     date = PORTFOLIO.date
     # В конце файла содержатся мета данные, зависящие от даты создания - проверятся совпадение основной части файла
-    start_of_meta = 10  # 197442
+    start_of_meta = 100  # 197442
     with open(reporter.make_files_path('test', date)[0], 'rb') as file:
         result = file.read(start_of_meta)
     with open(Path(__file__).parent / 'data' / f'{date}.pdf', 'rb') as file:
         test_case = file.read(start_of_meta)
     assert result == test_case
-    assert False
