@@ -8,10 +8,6 @@ install:
   - pip install codacy-coverage
   - export CODACY_PROJECT_TOKEN=2e7d245aa66f47a78e90e4b81b450385
   - pip install -r requirements.txt
-before_script:  # for matplotlib testing
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - sleep 3  # give xvfb some time to start
 script:
   - pytest src -v  --cov=src --cov-report=term-missing --cov-report=xml --setup-show
 after_success:

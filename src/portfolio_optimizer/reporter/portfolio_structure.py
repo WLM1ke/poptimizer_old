@@ -2,6 +2,9 @@
 
 from io import BytesIO
 
+import matplotlib
+
+matplotlib.use('Agg')  # Для тестирования на Travis
 import matplotlib.pyplot as plt
 from reportlab.lib.units import inch
 from reportlab.pdfgen.canvas import Canvas
