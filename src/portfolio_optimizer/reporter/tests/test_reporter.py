@@ -1,6 +1,7 @@
 from pathlib import Path
 from shutil import copyfile
 
+import matplotlib.pyplot as plt
 import pytest
 
 from portfolio_optimizer import Portfolio
@@ -43,5 +44,5 @@ def test_make_report():
         result = file.read(start_of_meta)
     with open(Path(__file__).parent / 'data' / f'{date}.pdf', 'rb') as file:
         test_case = file.read(start_of_meta)
-    assert False
     assert result == test_case
+    plt.close('all')
