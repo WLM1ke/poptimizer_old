@@ -66,7 +66,6 @@ def make_plot(df: pd.DataFrame, width: float, height: float):
 
     file = BytesIO()
     plt.savefig(file, dpi=300, format='png', transparent=True)
-    plt.close()  # Для Travis
     return Image(file, width, height)
 
 

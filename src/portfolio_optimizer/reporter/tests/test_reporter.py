@@ -36,6 +36,7 @@ def make_fake_data(tmpdir_factory):
 
 def test_make_report():
     reporter.make_report('test', PORTFOLIO)
+    assert False
     date = PORTFOLIO.date
     with open(reporter.make_files_path('test', date)[0], 'rb') as file:
         result = file.read()
