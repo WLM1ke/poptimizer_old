@@ -160,7 +160,7 @@ class Optimizer:
         portfolio = self.portfolio
         # Отбрасывается портфель и кэш из рекомендаций
         best_sell = self.gradient_growth.iloc[:-2].idxmax()
-        sell_weight = min(portfolio.weight[best_sell], MAX_TRADE)
+        sell_weight = max(0, min(portfolio.weight[best_sell], MAX_TRADE - portfolio.weight[CASH]))
         sell_value = sell_weight * portfolio.value[PORTFOLIO]
         sell_5_lots = int(round(sell_value / portfolio.lot_size[best_sell] / portfolio.price[best_sell] / 5 + 0.5))
         best_buy = self.dominated[best_sell]
