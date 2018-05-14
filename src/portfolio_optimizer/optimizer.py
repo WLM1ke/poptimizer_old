@@ -164,7 +164,8 @@ class Optimizer:
         sell_value = sell_weight * portfolio.value[PORTFOLIO]
         sell_5_lots = int(round(sell_value / portfolio.lot_size[best_sell] / portfolio.price[best_sell] / 5 + 0.5))
         best_buy = self.dominated[best_sell]
-        buy_5_lots = int(portfolio.value[CASH] / portfolio.lot_size[best_buy] / portfolio.price[best_buy] / 5)
+        buy_value = min(portfolio.value[CASH], MAX_TRADE * portfolio.value[PORTFOLIO])
+        buy_5_lots = int(buy_value / portfolio.lot_size[best_buy] / portfolio.price[best_buy] / 5)
         return (f'РЕКОМЕНДУЕТСЯ'
                 f'\nПродать {best_sell} - 5 сделок по {sell_5_lots} лотов'
                 f'\nКупить {best_buy} - 5 сделок по {buy_5_lots} лотов')
