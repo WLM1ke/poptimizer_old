@@ -4,11 +4,10 @@ from io import BytesIO
 
 import matplotlib.pyplot as plt
 from reportlab.lib.units import inch
-from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import Table, TableStyle, Image, Paragraph, Frame
 
 from portfolio_optimizer import Portfolio
-from portfolio_optimizer.reporter.pdf_style import BLOCK_HEADER_STYLE, LINE_COLOR, LINE_WIDTH, BOLD_FONT
+from portfolio_optimizer.reporter.pdf_style import BLOCK_HEADER_STYLE, LINE_COLOR, LINE_WIDTH, BOLD_FONT, BlockPosition
 from portfolio_optimizer.settings import PORTFOLIO
 
 # Количество строк в таблице, которое влезает в блок и нормально выглядит на диаграмме
@@ -83,16 +82,20 @@ def make_pdf_table(portfolio: Portfolio):
     return table
 
 
-def portfolio_structure_block(portfolio: Portfolio, canvas: Canvas, x: float, y: float, width: float, height: float):
+def portfolio_structure_block(portfolio: Portfolio, block_position: BlockPosition):
     """Формирует блок pdf-файла с информацией о структуре портфеля
 
     В левой части располагается табличка структуры, а в правой части диаграмма
     """
     block_header = Paragraph('Portfolio Structure', BLOCK_HEADER_STYLE)
     table = make_pdf_table(portfolio)
-    frame = Frame(x, y, width * LEFT_PART_OF_BLOCK, height,
-                  leftPadding=0, bottomPadding=0, rightPadding=0, topPadding=6,
+    frame = Frame(block_position.x, block_position.y,
+                  block_position.width * LEFT_PART_OF_BLOCK, block_position.height,
+                  leftPadding=0, bottomPadding=0,
+                  rightPadding=0, topPadding=6,
                   showBoundary=0)
-    frame.addFromList([block_header, table], canvas)
-    image = make_plot(portfolio, width * (1 - LEFT_PART_OF_BLOCK), height)
-    image.drawOn(canvas, x + width * LEFT_PART_OF_BLOCK, y)
+    frame.addFromList([block_header, table], block_position.canvas)
+    image = make_plot(portfolio, block_position.width * (1 - LEFT_PART_OF_BLOCK), block_position.height)
+    image.drawOn(block_position.canvas,
+                 block_position.x + block_position.width * LEFT_PART_OF_BLOCK,
+                 block_position.y)

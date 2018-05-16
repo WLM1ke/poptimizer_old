@@ -1,5 +1,5 @@
 """Основные стили pdf-файла"""
-
+from collections import namedtuple
 from pathlib import Path
 
 from reportlab.lib import colors
@@ -63,3 +63,6 @@ def make_section_delimiter(canvas: Canvas, height):
     canvas.setStrokeColor(LINE_COLOR)
     canvas.setLineWidth(LINE_WIDTH)
     canvas.line(left_margin(), height, left_margin() + blank_width(), height)
+
+
+BlockPosition = namedtuple('BlockPosition', 'canvas x y width height')

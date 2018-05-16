@@ -5,7 +5,7 @@ import pandas as pd
 
 from portfolio_optimizer import Portfolio
 from portfolio_optimizer.reporter.flow_and_dividends import flow_and_dividends_block
-from portfolio_optimizer.reporter.pdf_style import blank_width, make_section_delimiter, make_header
+from portfolio_optimizer.reporter.pdf_style import blank_width, make_section_delimiter, make_header, BlockPosition
 from portfolio_optimizer.reporter.pdf_style import make_blank_report, left_margin, bottom_margin, blank_height
 from portfolio_optimizer.reporter.portfolio_return import portfolio_return_block, get_investors_names
 from portfolio_optimizer.reporter.portfolio_structure import portfolio_structure_block
@@ -21,9 +21,9 @@ REPORTS_PDF_PATH = REPORTS_PATH / 'pdf'
 SHEET_NAME = 'Data'
 
 # Положение блоков относительно нижнего поля
-FIRST_BLOCK_POSITION = blank_height() * 0.76
-SECOND_BLOCK_POSITION = blank_height() * 0.38
-THIRD_BLOCK_POSITION = blank_height() * 0
+FIRST_BLOCK_HEIGHT = blank_height() * 0.76
+SECOND_BLOCK_HEIGHT = blank_height() * 0.38
+THIRD_BLOCK_HEIGHT = blank_height() * 0
 
 
 def read_data(report_name: str):
@@ -86,21 +86,30 @@ def make_report(report_name: str, portfolio: Portfolio):
     pdf_path, xlsx_path = make_report_files_path(report_name, date)
     canvas = make_blank_report(pdf_path)
     make_header(canvas, date)
-    # Верхний блок и разделитель за ним
     data = read_data(report_name)
-    flow_and_dividends_block(data[-61:], canvas,
-                             left_margin(), bottom_margin() + FIRST_BLOCK_POSITION,
-                             blank_width(), blank_height() - FIRST_BLOCK_POSITION)
-    make_section_delimiter(canvas, bottom_margin() + FIRST_BLOCK_POSITION)
+    # Верхний блок и разделитель за ним
+    first_block_position = BlockPosition(canvas=canvas,
+                                         x=left_margin(),
+                                         y=bottom_margin() + FIRST_BLOCK_HEIGHT,
+                                         width=blank_width(),
+                                         height=blank_height() - FIRST_BLOCK_HEIGHT)
+    flow_and_dividends_block(data[-61:], first_block_position)
+    make_section_delimiter(canvas, bottom_margin() + FIRST_BLOCK_HEIGHT)
     # Второй блок и разделитель за ним
-    portfolio_return_block(data[-61:], canvas,
-                           left_margin(), bottom_margin() + SECOND_BLOCK_POSITION,
-                           blank_width(), FIRST_BLOCK_POSITION - SECOND_BLOCK_POSITION)
-    make_section_delimiter(canvas, bottom_margin() + SECOND_BLOCK_POSITION)
+    second_block_position = BlockPosition(canvas=canvas,
+                                          x=left_margin(),
+                                          y=bottom_margin() + SECOND_BLOCK_HEIGHT,
+                                          width=blank_width(),
+                                          height=FIRST_BLOCK_HEIGHT - SECOND_BLOCK_HEIGHT)
+    portfolio_return_block(data[-61:], second_block_position)
+    make_section_delimiter(canvas, bottom_margin() + SECOND_BLOCK_HEIGHT)
     # Нижний блок
-    portfolio_structure_block(portfolio, canvas,
-                              left_margin(), bottom_margin() + THIRD_BLOCK_POSITION,
-                              blank_width(), SECOND_BLOCK_POSITION - THIRD_BLOCK_POSITION)
+    third_block_position = BlockPosition(canvas=canvas,
+                                         x=left_margin(),
+                                         y=bottom_margin() + THIRD_BLOCK_HEIGHT,
+                                         width=blank_width(),
+                                         height=SECOND_BLOCK_HEIGHT - THIRD_BLOCK_HEIGHT)
+    portfolio_structure_block(portfolio, third_block_position)
     # Сохранение pdf-отчета и xlsx-данных
     canvas.save()
     data.to_excel(xlsx_path, SHEET_NAME)

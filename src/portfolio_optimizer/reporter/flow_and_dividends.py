@@ -1,10 +1,9 @@
 """Таблица динамики дивидендов"""
 
 import pandas as pd
-from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import TableStyle, Table, Paragraph, Frame
 
-from portfolio_optimizer.reporter.pdf_style import LINE_WIDTH, LINE_COLOR, BLOCK_HEADER_STYLE
+from portfolio_optimizer.reporter.pdf_style import LINE_WIDTH, LINE_COLOR, BLOCK_HEADER_STYLE, BlockPosition
 from portfolio_optimizer.reporter.portfolio_return import get_investors_names
 
 # Доля левой части блока - используется для таблицы движения средств. В правой расположена таблица дивидендов
@@ -111,21 +110,25 @@ def make_pdf_dividends_table(df: pd.DataFrame):
     return table
 
 
-def flow_and_dividends_block(df: pd.DataFrame, canvas: Canvas, x: float, y: float, width: float, height: float):
+def flow_and_dividends_block(df: pd.DataFrame, block_position: BlockPosition):
     """Формирует блок pdf-файла с информацией движении средств и дивидендах
 
     В левой части располагается табличка движения средств, а в правой - таблица дивидендов
     """
     left_block_header = Paragraph('Last Month Change and Inflow', BLOCK_HEADER_STYLE)
     left_table = make_pdf_flow_table(df)
-    left_frame = Frame(x, y, width * LEFT_PART_OF_BLOCK, height,
-                       leftPadding=0, bottomPadding=0, rightPadding=0, topPadding=6,
+    left_frame = Frame(block_position.x, block_position.y,
+                       block_position.width * LEFT_PART_OF_BLOCK, block_position.height,
+                       leftPadding=0, bottomPadding=0,
+                       rightPadding=0, topPadding=6,
                        showBoundary=0)
-    left_frame.addFromList([left_block_header, left_table], canvas)
+    left_frame.addFromList([left_block_header, left_table], block_position.canvas)
 
     right_block_header = Paragraph('Portfolio Dividends', BLOCK_HEADER_STYLE)
     right_table = make_pdf_dividends_table(df)
-    right_frame = Frame(x + width * LEFT_PART_OF_BLOCK, y, width * (1 - LEFT_PART_OF_BLOCK), height,
-                        leftPadding=0, bottomPadding=0, rightPadding=0, topPadding=6,
+    right_frame = Frame(block_position.x + block_position.width * LEFT_PART_OF_BLOCK, block_position.y,
+                        block_position.width * (1 - LEFT_PART_OF_BLOCK), block_position.height,
+                        leftPadding=0, bottomPadding=0,
+                        rightPadding=0, topPadding=6,
                         showBoundary=0)
-    right_frame.addFromList([right_block_header, right_table], canvas)
+    right_frame.addFromList([right_block_header, right_table], block_position.canvas)
