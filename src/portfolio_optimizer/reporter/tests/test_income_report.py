@@ -3,6 +3,7 @@ from shutil import copyfile
 
 import pytest
 
+from portfolio_optimizer import local
 from portfolio_optimizer.reporter import reporter
 from portfolio_optimizer.reporter.income_report import get_investor_data, constant_prices_data, rescale_and_format, \
     income_report
@@ -27,7 +28,18 @@ def test_get_investor_data():
     assert df.loc['2017-06-19', 'Dividends'] == pytest.approx(12.18696831)
 
 
-def test_constant_prices_data():
+def make_fake_cpi():
+    """Тестовые сценарии подготовлены для данных инфляции на конец марта 2018 года"""
+    cpi_data = local.cpi()
+
+    def fake_cpi():
+        return cpi_data.loc[:'2018-03-31']
+
+    return fake_cpi
+
+
+def test_constant_prices_data(monkeypatch):
+    monkeypatch.setattr(local, 'cpi', make_fake_cpi())
     df = constant_prices_data('test', 'Igor')
     assert df.shape == (13, 3)
     assert df.loc['2018-01-19', 'Inflow'] == pytest.approx(-6351.166136)
@@ -40,7 +52,8 @@ def test_rescale_and_format():
     assert rescale_and_format(1234567, 0.1) == '  123 000'
 
 
-def test_income_report(capsys):
+def test_income_report(monkeypatch, capsys):
+    monkeypatch.setattr(local, 'cpi', make_fake_cpi())
     income_report('test', 'WLMike')
     captured_string = capsys.readouterr().out
     assert 'WLMike' in captured_string
