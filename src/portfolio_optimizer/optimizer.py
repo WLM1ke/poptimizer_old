@@ -1,7 +1,5 @@
 """Класс проводит оптимизацию по Парето на основе метрик доходности и дивидендов"""
 
-from functools import lru_cache
-
 import pandas as pd
 
 from portfolio_optimizer import local
@@ -91,52 +89,41 @@ class Optimizer:
         volume_factor[volume_factor < 0] = 0
         return volume_factor.reindex(index=portfolio.positions, fill_value=1)
 
-    def _yield_dominated(self):
-        """Для каждой позиции выдает доминирующую ее по Парето
+    def _gradient_growth_matrix(self):
+        """Матрица увеличения градиента дивидендов при замене бумаги в строке на бумагу в столбце
 
-        Если доминирующих несколько, то выбирается позиция с максимальным градиентом
-        Позиции с нулевым весом не учитываются, так как их нельзя продать
+        Бумаги с нулевым весом не могут быть проданы, поэтому прирост градиента 0
+        Продажи не ведущие к увеличению градиента доходности так же не рассматриваются
         """
         dividends_gradient = self.dividends_metrics.gradient
-        returns_gradient = self.returns_metrics.gradient
-        index = pd.Index(self.portfolio.positions)
-        weight = self.portfolio.weight
-        non_zero_positions = index[weight > 0]
         volume_factor = self.volume_factor
-        non_zero_factor = volume_factor > 0
-        for position in non_zero_positions:
-            greater_dividend_gradient = dividends_gradient > dividends_gradient[position]
-            greater_return_gradient = returns_gradient > returns_gradient[position]
-            pareto_dominance = index[greater_dividend_gradient & greater_return_gradient & non_zero_factor]
-            if not pareto_dominance.empty:
-                factor_gradient = (dividends_gradient - dividends_gradient[position]) * volume_factor
-                yield position, factor_gradient[pareto_dominance].idxmax()
+        dividends_growth = dividends_gradient.apply(func=lambda x: (dividends_gradient - x) * volume_factor)
+        dividends_growth.loc[self.portfolio.weight == 0] = 0
+        returns_gradient = self.returns_metrics.gradient
+        dividends_growth = dividends_growth * returns_gradient.apply(func=lambda x: returns_gradient > x)
+        dividends_growth[dividends_growth < 0] = 0
+        return dividends_growth
 
     @property
-    @lru_cache(maxsize=1)
     def dominated(self):
         """Для каждой позиции выдает доминирующую ее по Парето
 
         Если доминирующих несколько, то выбирается позиция с максимальным ростом градиента
         Учитывается понижающий коэффициент для низколиквидных доминирующих акций
         """
-        df = pd.Series("", index=self.portfolio.positions)
-        for position, dominated in self._yield_dominated():
-            df[position] = dominated
-        return df
+        matrix = self._gradient_growth_matrix()
+        return matrix.apply(func=lambda x: x.idxmax() if x.max() > 0 else "",
+                            axis='columns')
 
     @property
-    @lru_cache(maxsize=1)
     def gradient_growth(self):
         """Для каждой позиции выдает прирост градиента при покупке доминирующей
 
         Для позиций не имеющих доминирующих - прирост 0
         Учитывается понижающий коэффициент для низколиквидных доминирующих акций
         """
-        dividends_gradient = self.dividends_metrics.gradient
-        factor = self.volume_factor
-        df = (dividends_gradient[self.dominated].values - dividends_gradient) * factor[self.dominated].values
-        return df.fillna(0)
+        matrix = self._gradient_growth_matrix()
+        return matrix.apply(func=lambda x: x.max(), axis='columns')
 
     @property
     def t_growth(self):
@@ -175,6 +162,7 @@ if __name__ == '__main__':
     pos = dict(MFON=55,
                LSNGP=81,
                MTSS=749,
+               GAZP=0,
                AKRN=795,
                MSRS=699,
                UPRO=1267,

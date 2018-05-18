@@ -7,7 +7,7 @@ import pandas as pd
 from portfolio_optimizer.settings import CPI, DATE
 
 URL_CPI = 'http://www.gks.ru/free_doc/new_site/prices/potr/I_ipc.xlsx'
-PARSING_PARAMETERS = dict(sheet_name='ИПЦ', header=3, skiprows=[4], skip_footer=3)
+PARSING_PARAMETERS = dict(sheet_name='ИПЦ', header=3, skiprows=[4], skipfooter=3)
 NUM_OF_MONTH = 12
 FIRST_YEAR = 1991
 FIRST_MONTH = 'январь'
@@ -40,7 +40,7 @@ def parse_xls(url: str):
 
 def cpi():
     """
-    Загружает данные по месячному CPI с сайта ФСГС и возвращает
+    Загружает и возвращает данные по месячному CPI с сайта ФСГС
 
     1,2% соответствует 1,012
 
