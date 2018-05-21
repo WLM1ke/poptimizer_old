@@ -22,7 +22,6 @@ def make_fake_data(tmpdir_factory):
 
 def test_get_investor_data():
     df = get_investor_data('test', 'Igor')
-    assert df.shape == (13, 3)
     assert df.loc['2018-01-19', 'Inflow'] == pytest.approx(-6300)
     assert df.loc['2018-04-19', 'Value'] == pytest.approx(10094.11382)
     assert df.loc['2017-06-19', 'Dividends'] == pytest.approx(12.18696831)
@@ -40,7 +39,7 @@ def make_fake_cpi():
 
 def test_constant_prices_data(monkeypatch):
     monkeypatch.setattr(local, 'cpi', make_fake_cpi())
-    df = constant_prices_data('test', 'Igor')
+    df = constant_prices_data('test', 'Igor', 1)
     assert df.shape == (13, 3)
     assert df.loc['2018-01-19', 'Inflow'] == pytest.approx(-6351.166136)
     assert df.loc['2017-07-19', 'Value'] == pytest.approx(12875.75482)
@@ -57,6 +56,6 @@ def test_income_report(monkeypatch, capsys):
     income_report('test', 'WLMike')
     captured_string = capsys.readouterr().out
     assert 'WLMike' in captured_string
-    assert '1Y: Real Dividends =    28 000, Real Income =    85 000' in captured_string
-    assert '1M: Real Dividends =     2 000, Real Income =     7 000' in captured_string
-    assert '1W: Real Dividends =     1 000, Real Income =     2 000' in captured_string
+    assert '1Y: Dividends =    28 000, Income =    85 000' in captured_string
+    assert '1M: Dividends =     2 000, Income =     7 000' in captured_string
+    assert '1W: Dividends =     1 000, Income =     2 000' in captured_string
