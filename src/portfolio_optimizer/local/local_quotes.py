@@ -21,6 +21,7 @@ class QuotesManager(DataManager):
 
     def create(self):
         """Создает локальную версию истории котировок, склеенную из всех тикеров аналогов"""
+        print(f'Создание локальных данных {self.frame_category} -> {self.frame_name}')
         df = pd.concat(self._yield_aliases_quotes_history())
         # Для каждой даты выбирается тикер с максимальным оборотом
         df = df.loc[df.groupby(DATE)[VOLUME].idxmax()]
