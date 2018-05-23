@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from portfolio_optimizer.settings import DATE, CLOSE_PRICE
+from portfolio_optimizer.web.labels import CLOSE_PRICE, DATE
 from portfolio_optimizer.web.web_quotes import Quotes
 
 

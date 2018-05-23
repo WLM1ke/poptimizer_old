@@ -4,9 +4,9 @@ import pandas as pd
 
 from portfolio_optimizer import local
 from portfolio_optimizer.dividends_metrics import DividendsMetrics
-from portfolio_optimizer.portfolio import Portfolio
+from portfolio_optimizer.portfolio import Portfolio, CASH, PORTFOLIO
 from portfolio_optimizer.returns_metrics import ReturnsMetrics
-from portfolio_optimizer.settings import PORTFOLIO, T_SCORE, CASH, MAX_TRADE, VOLUME_CUT_OFF
+from portfolio_optimizer.settings import T_SCORE, MAX_TRADE, VOLUME_CUT_OFF
 
 
 class Optimizer:

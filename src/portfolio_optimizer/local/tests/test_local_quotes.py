@@ -5,7 +5,7 @@ import pandas as pd
 from portfolio_optimizer import settings
 from portfolio_optimizer.local.local_quotes import prices, volumes
 from portfolio_optimizer.local.local_quotes import quotes
-from portfolio_optimizer.settings import VOLUME, CLOSE_PRICE
+from portfolio_optimizer.web.labels import CLOSE_PRICE, VOLUME
 
 
 def test_get_quotes_history(tmpdir, monkeypatch):

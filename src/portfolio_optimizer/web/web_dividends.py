@@ -6,7 +6,7 @@ import urllib.request
 import pandas as pd
 from bs4 import BeautifulSoup
 
-from portfolio_optimizer.settings import DATE
+from portfolio_optimizer.web.labels import DATE
 
 # Номер таблицы с дивидендами в документе
 TABLE_INDEX = 2

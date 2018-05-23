@@ -1,6 +1,6 @@
 import pandas as pd
 
-from portfolio_optimizer.settings import DATE, CLOSE_PRICE, VOLUME
+from portfolio_optimizer.web.labels import CLOSE_PRICE, DATE, VOLUME
 from portfolio_optimizer.web.web_quotes import quotes, Quotes
 
 

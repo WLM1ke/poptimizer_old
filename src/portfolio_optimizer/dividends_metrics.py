@@ -5,8 +5,8 @@ from functools import lru_cache
 import pandas as pd
 
 from portfolio_optimizer import local
-from portfolio_optimizer.portfolio import Portfolio
-from portfolio_optimizer.settings import PORTFOLIO, AFTER_TAX, T_SCORE, CASH
+from portfolio_optimizer.portfolio import Portfolio, CASH, PORTFOLIO
+from portfolio_optimizer.settings import AFTER_TAX, T_SCORE
 
 
 class DividendsMetrics:

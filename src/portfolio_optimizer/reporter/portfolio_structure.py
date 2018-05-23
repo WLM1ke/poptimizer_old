@@ -7,8 +7,8 @@ from reportlab.lib.units import inch
 from reportlab.platypus import Table, TableStyle, Image, Paragraph, Frame
 
 from portfolio_optimizer import Portfolio
+from portfolio_optimizer.portfolio import PORTFOLIO
 from portfolio_optimizer.reporter.pdf_style import BLOCK_HEADER_STYLE, LINE_COLOR, LINE_WIDTH, BOLD_FONT, BlockPosition
-from portfolio_optimizer.settings import PORTFOLIO
 
 # Количество строк в таблице, которое влезает в блок и нормально выглядит на диаграмме
 MAX_TABLE_ROWS = 9

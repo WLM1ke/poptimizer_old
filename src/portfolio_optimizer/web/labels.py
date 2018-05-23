@@ -1,0 +1,11 @@
+"""Основные метки столбцов в загружаемых данных"""
+
+COMPANY_NAME = 'COMPANY_NAME'
+CPI = 'CPI'
+CLOSE_PRICE = 'CLOSE_PRICE'
+DATE = 'DATE'
+LAST_PRICE = 'LAST_PRICE'
+LOT_SIZE = 'LOT_SIZE'
+REG_NUMBER = 'REG_NUMBER'
+TICKER = 'TICKER'
+VOLUME = 'VOLUME'

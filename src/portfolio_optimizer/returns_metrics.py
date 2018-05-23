@@ -7,8 +7,8 @@ import pandas as pd
 from scipy import optimize, stats
 
 from portfolio_optimizer import local
-from portfolio_optimizer.portfolio import Portfolio
-from portfolio_optimizer.settings import PORTFOLIO, T_SCORE, CASH
+from portfolio_optimizer.portfolio import Portfolio, CASH, PORTFOLIO
+from portfolio_optimizer.settings import T_SCORE
 
 # Интервал поиска константы сглаживания
 BOUNDS = (0.0, 1.0)

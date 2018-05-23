@@ -1,8 +1,7 @@
 import pandas as pd
 import pytest
 
-from portfolio_optimizer.portfolio import Portfolio
-from portfolio_optimizer.settings import PORTFOLIO
+from portfolio_optimizer.portfolio import Portfolio, PORTFOLIO
 
 
 def test_portfolio():

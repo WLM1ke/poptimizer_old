@@ -7,7 +7,7 @@ import pandas as pd
 from portfolio_optimizer import web
 from portfolio_optimizer.local.data_manager import DataManager
 from portfolio_optimizer.local.local_securities_info import aliases
-from portfolio_optimizer.settings import DATE, CLOSE_PRICE, VOLUME
+from portfolio_optimizer.web.labels import CLOSE_PRICE, DATE, VOLUME
 
 QUOTES_CATEGORY = 'quotes'
 

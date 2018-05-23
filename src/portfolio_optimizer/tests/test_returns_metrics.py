@@ -1,7 +1,7 @@
 import pytest
 
 from portfolio_optimizer import returns_metrics, portfolio
-from portfolio_optimizer.settings import CASH, PORTFOLIO
+from portfolio_optimizer.portfolio import CASH, PORTFOLIO
 
 
 @pytest.fixture(scope='module', name='returns')

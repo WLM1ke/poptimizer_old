@@ -1,7 +1,8 @@
 import pytest
 
 from portfolio_optimizer import dividends_metrics, portfolio
-from portfolio_optimizer.settings import AFTER_TAX, CASH, PORTFOLIO
+from portfolio_optimizer.portfolio import CASH, PORTFOLIO
+from portfolio_optimizer.settings import AFTER_TAX
 
 
 @pytest.fixture(scope='module', name='div')

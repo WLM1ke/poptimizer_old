@@ -3,8 +3,8 @@ import pytest
 import portfolio_optimizer.settings
 from portfolio_optimizer import optimizer
 from portfolio_optimizer.optimizer import Optimizer
-from portfolio_optimizer.portfolio import Portfolio
-from portfolio_optimizer.settings import AFTER_TAX, CASH, PORTFOLIO
+from portfolio_optimizer.portfolio import Portfolio, CASH, PORTFOLIO
+from portfolio_optimizer.settings import AFTER_TAX
 
 
 @pytest.fixture(scope='module', name='opt')

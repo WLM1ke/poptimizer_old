@@ -4,12 +4,13 @@ import numpy as np
 import pandas as pd
 
 from portfolio_optimizer import Portfolio
+from portfolio_optimizer.portfolio import PORTFOLIO
 from portfolio_optimizer.reporter.flow_and_dividends import flow_and_dividends_block
 from portfolio_optimizer.reporter.pdf_style import blank_width, make_section_delimiter, make_header, BlockPosition
 from portfolio_optimizer.reporter.pdf_style import make_blank_report, left_margin, bottom_margin, blank_height
 from portfolio_optimizer.reporter.portfolio_return import portfolio_return_block, get_investors_names
 from portfolio_optimizer.reporter.portfolio_structure import portfolio_structure_block
-from portfolio_optimizer.settings import REPORTS_PATH, PORTFOLIO
+from portfolio_optimizer.settings import REPORTS_PATH
 
 # Каталог с данными
 REPORTS_DATA_PATH = REPORTS_PATH / 'data'

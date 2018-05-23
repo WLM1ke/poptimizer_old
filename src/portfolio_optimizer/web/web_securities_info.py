@@ -5,7 +5,7 @@ from urllib import request
 
 import pandas as pd
 
-from portfolio_optimizer.settings import LAST_PRICE, LOT_SIZE, COMPANY_NAME, REG_NUMBER, TICKER
+from portfolio_optimizer.web.labels import LAST_PRICE, LOT_SIZE, COMPANY_NAME, REG_NUMBER, TICKER
 
 
 def make_url(tickers: tuple):

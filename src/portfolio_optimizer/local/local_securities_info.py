@@ -4,7 +4,7 @@ from functools import lru_cache
 
 from portfolio_optimizer import web
 from portfolio_optimizer.local.data_manager import DataManager
-from portfolio_optimizer.settings import LOT_SIZE, COMPANY_NAME, REG_NUMBER
+from portfolio_optimizer.web.labels import LOT_SIZE, COMPANY_NAME, REG_NUMBER
 
 SECURITIES_INFO_CATEGORY = 'securities_info'
 SECURITIES_INFO_MANE = 'securities_info'

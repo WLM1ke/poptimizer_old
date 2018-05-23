@@ -6,7 +6,14 @@ import numpy as np
 import pandas as pd
 
 from portfolio_optimizer import local
-from portfolio_optimizer.settings import PORTFOLIO, CASH, PRICE, LOTS, VALUE, WEIGHT, LOT_SIZE
+from portfolio_optimizer.web.labels import LOT_SIZE
+
+CASH = 'CASH'
+PORTFOLIO = 'PORTFOLIO'
+LOTS = 'LOTS'
+PRICE = 'PRICE'
+VALUE = 'VALUE'
+WEIGHT = 'WEIGHT'
 
 
 class Portfolio:
