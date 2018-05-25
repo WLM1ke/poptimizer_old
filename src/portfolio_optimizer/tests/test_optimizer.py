@@ -44,11 +44,11 @@ def case_optimizer():
                      cash=0 + 2749.64 + 4330.3,
                      positions=pos)
     save_cut_off = portfolio_optimizer.optimizer.VOLUME_CUT_OFF
+    # Все кейсы составлены для константы ограничения на объем 0.0024
     portfolio_optimizer.optimizer.VOLUME_CUT_OFF = 0.0024
     opt = Optimizer(port)
     # Все кейсы составлены для константы сглаживания 0.9
     opt.returns_metrics._decay = 0.9
-    # Все кейсы составлены для константы ограничения на объем 0.0024
 
     yield opt
     portfolio_optimizer.optimizer.VOLUME_CUT_OFF = save_cut_off
@@ -68,10 +68,10 @@ def test_gradient_growth(opt):
 
 def test_dominated(opt):
     dominated = opt.dominated
-    assert dominated['UPRO'] == 'RTKMP'
+    assert dominated['UPRO'] == 'LSRG'
     assert dominated['LSRG'] == ''
     assert dominated['GAZP'] == ''
-    assert dominated['MRKC'] == 'LSRG'
+    assert dominated['MRKC'] == 'TTLK'
 
 
 def adjustment(optimum):
@@ -87,21 +87,21 @@ def test_t_growth(opt):
 def test_best_trade(opt):
     best_string = opt.best_trade
     assert 'Продать PRTK - 5 сделок по 8 лотов' in best_string
-    assert 'Купить LSRG - 5 сделок по 1 лотов' in best_string
+    assert 'Купить MVID - 5 сделок по 0 лотов' in best_string
 
 
-def test_str(opt):
+def test_str(opt, monkeypatch):
     # Для сопоставимости нужно добавить кэш и портфель
+    monkeypatch.setattr(optimizer, 'T_SCORE', 10.0)
     report = str(opt)
     assert 'ОПТИМИЗАЦИЯ НЕ ТРЕБУЕТСЯ' in report
-    t_score = 1.36317493495405 + adjustment(opt)
-    assert f'Прирост дивидендов составляет {t_score:.2f} СКО < 2.00' in report
+    t_score = 2.3070272135803465
+    assert f'Прирост просадки составляет {t_score:.2f} СКО < 10.00' in report
 
 
-def test_str_t_score_1(opt, monkeypatch):
+def test_str_t_score_1(opt):
     # Для сопоставимости нужно добавить кэш и портфель
-    monkeypatch.setattr(optimizer, 'T_SCORE', 1.0)
     report = str(opt)
     assert 'ОПТИМИЗАЦИЯ ТРЕБУЕТСЯ' in report
-    t_score = 1.36317493495405 + adjustment(opt)
-    assert f'Прирост дивидендов составляет {t_score:.2f} СКО > 1.00' in report
+    t_score = 2.3070272135803465
+    assert f'Прирост просадки составляет {t_score:.2f} СКО > 2.00' in report
