@@ -91,7 +91,6 @@ def test_best_trade(opt):
 
 
 def test_str(opt, monkeypatch):
-    # Для сопоставимости нужно добавить кэш и портфель
     monkeypatch.setattr(optimizer, 'T_SCORE', 10.0)
     report = str(opt)
     assert 'ОПТИМИЗАЦИЯ НЕ ТРЕБУЕТСЯ' in report
@@ -100,8 +99,16 @@ def test_str(opt, monkeypatch):
 
 
 def test_str_t_score_1(opt):
-    # Для сопоставимости нужно добавить кэш и портфель
     report = str(opt)
     assert 'ОПТИМИЗАЦИЯ ТРЕБУЕТСЯ' in report
     t_score = 2.3070272135803465
     assert f'Прирост просадки составляет {t_score:.2f} СКО > 2.00' in report
+
+
+def test_str_dividends(opt, monkeypatch):
+    # Для сопоставимости нужно добавить кэш и портфель
+    monkeypatch.setattr(Optimizer, 't_drawdown_growth', 0)
+    report = str(opt)
+    assert 'ОПТИМИЗАЦИЯ НЕ ТРЕБУЕТСЯ' in report
+    t_score = 1.36317493495405 + adjustment(opt)
+    assert f'Прирост дивидендов составляет {t_score:.2f} СКО < 2.00' in report
