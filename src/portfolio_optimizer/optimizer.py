@@ -16,8 +16,9 @@ class Optimizer:
     нижней границе дивидендов и величине просадки. На преимущества акций с маленьким оборотом накладывается понижающий
     коэффициент
 
-    Дополнительно производится оценка возможности значимо увеличить (на T_SCORE СКО) минимальную величину дивидендов -
-    используется не точный расчет, а линейное приближение
+    Дополнительно производится оценка возможности значимо увеличить (на T_SCORE СКО) -  используется не точный расчет, а
+    линейное приближение. Производится выбор, где можно достичь большего увеличения - по величине просадки или
+    минимальным дивидендам
     """
 
     def __init__(self, portfolio: Portfolio):
@@ -34,19 +35,26 @@ class Optimizer:
                         f'\nОжидаемые дивиденды - {expected_dividends:.0f}'
                         f'\nМинимальные дивиденды - {minimal_dividends:.0f}')
 
-        t_growth = self.t_growth
+        if self.t_dividends_growth > self.t_drawdown_growth:
+            t_growth = self.t_dividends_growth
+            best_gradient = 'дивидендов'
+            best_growth = self.dividends_gradient_growth
+        else:
+            t_growth = self.t_drawdown_growth
+            best_gradient = 'просадки'
+            best_growth = self.drawdown_gradient_growth
         if t_growth > T_SCORE:
             need_optimization = (f'ОПТИМИЗАЦИЯ ТРЕБУЕТСЯ'
-                                 f'\nПрирост дивидендов составляет {t_growth:.2f} СКО > {T_SCORE:.2f}')
+                                 f'\nПрирост {best_gradient} составляет {t_growth:.2f} СКО > {T_SCORE:.2f}')
         else:
             need_optimization = (f'ОПТИМИЗАЦИЯ НЕ ТРЕБУЕТСЯ'
-                                 f'\nПрирост дивидендов составляет {t_growth:.2f} СКО < {T_SCORE:.2f}')
+                                 f'\nПрирост {best_gradient} составляет {t_growth:.2f} СКО < {T_SCORE:.2f}')
 
         frames = [self.dividends_metrics.gradient,
                   self.returns_metrics.gradient,
                   self.dominated,
                   self.volume_factor,
-                  self.gradient_growth]
+                  best_growth]
         pareto_metrics = pd.concat(frames, axis=1)
         pareto_metrics.columns = ['D_GRADIENT', 'R_GRADIENT', 'DOMINATED', 'VOLUME_FACTOR', 'GRADIENT_GROWTH']
         pareto_metrics.sort_values('D_GRADIENT', ascending=False, inplace=True)
@@ -89,7 +97,7 @@ class Optimizer:
         volume_factor[volume_factor < 0] = 0
         return volume_factor.reindex(index=portfolio.positions, fill_value=1)
 
-    def _gradient_growth_matrix(self):
+    def _dividends_growth_matrix(self):
         """Матрица увеличения градиента дивидендов при замене бумаги в строке на бумагу в столбце
 
         Бумаги с нулевым весом не могут быть проданы, поэтому прирост градиента 0
@@ -101,52 +109,98 @@ class Optimizer:
         dividends_growth.loc[self.portfolio.weight == 0] = 0
         returns_gradient = self.returns_metrics.gradient
         dividends_growth = dividends_growth * returns_gradient.apply(func=lambda x: returns_gradient > x)
-        dividends_growth[dividends_growth < 0] = 0
+        dividends_growth[dividends_growth <= 0] = 0
         return dividends_growth
+
+    def _drawdown_growth_matrix(self):
+        """Матрица увеличения градиента просадки при замене бумаги в строке на бумагу в столбце
+
+        Бумаги с нулевым весом не могут быть проданы, поэтому прирост градиента 0
+        Продажи не ведущие к увеличению градиента доходности так же не рассматриваются
+        """
+        drawdown_gradient = self.returns_metrics.gradient
+        volume_factor = self.volume_factor
+        drawdown_growth = drawdown_gradient.apply(func=lambda x: (drawdown_gradient - x) * volume_factor)
+        drawdown_growth.loc[self.portfolio.weight == 0] = 0
+        dividends_gradient = self.dividends_metrics.gradient
+        drawdown_growth = drawdown_growth * dividends_gradient.apply(func=lambda x: dividends_gradient > x)
+        drawdown_growth[drawdown_growth <= 0] = 0
+        return drawdown_growth
+
+    @property
+    def dividends_gradient_growth(self):
+        """Для каждой позиции выдает прирост градиента дивидендов при покупке доминирующей
+
+        Для позиций не имеющих доминирующих - прирост 0
+        Учитывается понижающий коэффициент для низколиквидных доминирующих акций
+        """
+        matrix = self._dividends_growth_matrix()
+        return matrix.apply(func=lambda x: x.max(), axis='columns')
+
+    @property
+    def drawdown_gradient_growth(self):
+        """Для каждой позиции выдает прирост градиента просадки при покупке доминирующей
+
+        Для позиций не имеющих доминирующих - прирост 0
+        Учитывается понижающий коэффициент для низколиквидных доминирующих акций
+        """
+        matrix = self._drawdown_growth_matrix()
+        return matrix.apply(func=lambda x: x.max(), axis='columns')
+
+    @property
+    def t_dividends_growth(self):
+        """Приблизительная оценка потенциального улучшения минимальных дивидендов
+
+        Линейное приближение - доля позиций умножается на градиент роста. Результат нормируется на СКО
+        дивидендов портфеля для удобства сравнения с критическим уровнем t-статистик
+        """
+        weighted_growth = (self.portfolio.weight * self.dividends_gradient_growth).sum()
+        return weighted_growth / self.dividends_metrics.std[PORTFOLIO]
+
+    @property
+    def t_drawdown_growth(self):
+        """Приблизительная оценка потенциального улучшения просадки
+
+        Линейное приближение - доля позиций умножается на градиент роста. Результат нормируется на СКО
+        дивидендов портфеля для удобства сравнения с критическим уровнем t-статистик
+        """
+        weighted_growth = (self.portfolio.weight * self.drawdown_gradient_growth).sum()
+        return weighted_growth / self.returns_metrics.std[PORTFOLIO]
 
     @property
     def dominated(self):
         """Для каждой позиции выдает доминирующую ее по Парето
 
         Если доминирующих несколько, то выбирается позиция с максимальным ростом градиента
+        Предпочтение отдается приросту градиента с большим потенциалом увеличения t-статистики
         Учитывается понижающий коэффициент для низколиквидных доминирующих акций
         """
-        matrix = self._gradient_growth_matrix()
+        if self.t_dividends_growth > self.t_drawdown_growth:
+            matrix = self._dividends_growth_matrix()
+        else:
+            matrix = self._drawdown_growth_matrix()
         return matrix.apply(func=lambda x: x.idxmax() if x.max() > 0 else "",
                             axis='columns')
-
-    @property
-    def gradient_growth(self):
-        """Для каждой позиции выдает прирост градиента при покупке доминирующей
-
-        Для позиций не имеющих доминирующих - прирост 0
-        Учитывается понижающий коэффициент для низколиквидных доминирующих акций
-        """
-        matrix = self._gradient_growth_matrix()
-        return matrix.apply(func=lambda x: x.max(), axis='columns')
-
-    @property
-    def t_growth(self):
-        """Приблизительная оценка потенциального улучшения дивидендов
-
-        Линейное приближение - доля позиций умножается на градиент роста дивидендов. Результат нормируется на СКО
-        дивидендов портфеля для удобства сравнения с критическим уровнем t-статистик
-        """
-        weighted_growth = (self.portfolio.weight * self.gradient_growth).sum()
-        return weighted_growth / self.dividends_metrics.std[PORTFOLIO]
 
     @property
     def best_trade(self):
         """Возвращает строчку с рекомендацией по сделкам
 
+        Предпочтение отдается приросту градиента с большим потенциалом увеличения t-статистики и позиции с максимальным
+        приростом градиента
+
         Лучшая позиция на продажу сокращается до нуля, но не более чем на MAX_TRADE от объема портфеля
         Продажа бьется на 5 сделок с округлением в большую сторону
 
-        Лучшая покупка осуществляется на объем доступного кэша и разбивается на 5 лотов
+        Лучшая покупка осуществляется на объем доступного кэша, но не более чем на MAX_TRADE от объема портфеля
+        Покупка бьется на 5 сделок
         """
         portfolio = self.portfolio
         # Отбрасывается портфель и кэш из рекомендаций
-        best_sell = self.gradient_growth.iloc[:-2].idxmax()
+        if self.t_dividends_growth > self.t_drawdown_growth:
+            best_sell = self.dividends_gradient_growth.iloc[:-2].idxmax()
+        else:
+            best_sell = self.drawdown_gradient_growth.iloc[:-2].idxmax()
         sell_weight = max(0, min(portfolio.weight[best_sell], MAX_TRADE - portfolio.weight[CASH]))
         sell_value = sell_weight * portfolio.value[PORTFOLIO]
         sell_5_lots = int(round(sell_value / portfolio.lot_size[best_sell] / portfolio.price[best_sell] / 5 + 0.5))

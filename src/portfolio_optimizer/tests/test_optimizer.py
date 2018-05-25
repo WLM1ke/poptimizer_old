@@ -55,7 +55,7 @@ def case_optimizer():
 
 
 def test_gradient_growth(opt):
-    gradient_growth = opt.gradient_growth
+    gradient_growth = opt.dividends_gradient_growth
     assert gradient_growth['VSMO'] == pytest.approx(0.00912015113393044 * AFTER_TAX)
     assert gradient_growth['MSRS'] == pytest.approx(0.00201127964982818 * AFTER_TAX)
     assert gradient_growth['ENRU'] == pytest.approx(0.00155403975015344 * AFTER_TAX)
@@ -75,13 +75,13 @@ def test_dominated(opt):
 
 
 def adjustment(optimum):
-    adj = (optimum.portfolio.weight[[CASH, PORTFOLIO]] * optimum.gradient_growth[[CASH, PORTFOLIO]]).sum()
+    adj = (optimum.portfolio.weight[[CASH, PORTFOLIO]] * optimum.dividends_gradient_growth[[CASH, PORTFOLIO]]).sum()
     return adj / optimum.dividends_metrics.std[PORTFOLIO]
 
 
 def test_t_growth(opt):
     # Для сопоставимости нужно добавить кэш и портфель
-    assert opt.t_growth == pytest.approx(1.36317493495405 + adjustment(opt))
+    assert opt.t_dividends_growth == pytest.approx(1.36317493495405 + adjustment(opt))
 
 
 def test_best_trade(opt):
