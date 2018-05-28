@@ -28,14 +28,23 @@ def validate_response(data, tickers: tuple):
     """Проверяет что количество размер массивов с информации соответствует количеству тикеров
 
     Данные в ответе находятся в двух блоках: общая информация и котировки текущих торгов
+    Если тикеры в запросе отсутствовали, то должна быть загружена информация по всем торгуемым бумагам
     """
     n = len(tickers)
-    msg = (f'Количество тикеров в ответе не соответствует запросу {tickers}'
-           f' - возможно ошибка в написании')
-    if len(data['securities']['data']) != n:
-        raise ValueError(msg)
-    if len(data['marketdata']['data']) != n:
-        raise ValueError(msg)
+    if n > 0:
+        msg = (f'Количество тикеров в ответе не соответствует запросу {tickers}'
+               f' - возможно ошибка в написании')
+        if len(data['securities']['data']) != n:
+            raise ValueError(msg)
+        if len(data['marketdata']['data']) != n:
+            raise ValueError(msg)
+    else:
+        min_tickers_amount = 100
+        msg = f'Ошибка загрузки - количество торгуемых тикеров должно быть больше {min_tickers_amount}'
+        if len(data['securities']['data']) < min_tickers_amount:
+            raise ValueError(msg)
+        if len(data['marketdata']['data']) < min_tickers_amount:
+            raise ValueError(msg)
 
 
 def make_df(raw_json):
@@ -62,7 +71,7 @@ def securities_info(tickers: tuple):
     Parameters
     ----------
     tickers
-        Кортеж тикеров
+        Кортеж тикеров. Если пустой, то будет запрошен список всех торгуемых бумаг
 
     Returns
     -------
@@ -75,4 +84,4 @@ def securities_info(tickers: tuple):
 
 
 if __name__ == "__main__":
-    print(securities_info(('UPRO', 'MRSB')))
+    print(securities_info(tuple()))
