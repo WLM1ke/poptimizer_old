@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from portfolio_optimizer import local
+from portfolio_optimizer.settings import VOLUME_CUT_OFF
 from portfolio_optimizer.web.labels import LOT_SIZE
 
 CASH = 'CASH'
@@ -14,6 +15,7 @@ LOTS = 'LOTS'
 PRICE = 'PRICE'
 VALUE = 'VALUE'
 WEIGHT = 'WEIGHT'
+VOLUME = 'VOLUME'
 
 
 class Portfolio:
@@ -39,8 +41,9 @@ class Portfolio:
                         self.lots,
                         self.price,
                         self.value,
-                        self.weight], axis='columns')
-        df.columns = [LOT_SIZE, LOTS, PRICE, VALUE, WEIGHT]
+                        self.weight,
+                        self.volume_factor], axis='columns')
+        df.columns = [LOT_SIZE, LOTS, PRICE, VALUE, WEIGHT, VOLUME]
         return (f'\nПОРТФЕЛЬ'
                 f'\n'
                 f'\nДата - {self._date}'
@@ -110,6 +113,18 @@ class Portfolio:
         """Вес отдельных позиций в стоимости портфеля"""
         df = self.value / self.value[PORTFOLIO]
         return df
+
+    @property
+    def volume_factor(self):
+        """Понижающий коэффициент для акций с малым объемом оборотов
+
+        Ликвидность в первом приближении убывает пропорционально квадрату оборота, что отражено в формулах расчета
+        """
+        last_volume = local.volumes(self.positions[:-2]).loc[self.date]
+        volume_share_of_portfolio = last_volume * self.price[:-2] / self.value[PORTFOLIO]
+        volume_factor = 1 - (VOLUME_CUT_OFF / volume_share_of_portfolio) ** 2
+        volume_factor[volume_factor < 0] = 0
+        return volume_factor.reindex(index=self.positions, fill_value=1)
 
 
 if __name__ == '__main__':

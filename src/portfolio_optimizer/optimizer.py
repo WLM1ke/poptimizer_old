@@ -2,11 +2,10 @@
 
 import pandas as pd
 
-from portfolio_optimizer import local
 from portfolio_optimizer.dividends_metrics import DividendsMetrics
 from portfolio_optimizer.portfolio import Portfolio, CASH, PORTFOLIO
 from portfolio_optimizer.returns_metrics import ReturnsMetrics
-from portfolio_optimizer.settings import T_SCORE, MAX_TRADE, VOLUME_CUT_OFF
+from portfolio_optimizer.settings import T_SCORE, MAX_TRADE
 
 
 class Optimizer:
@@ -53,7 +52,7 @@ class Optimizer:
         frames = [self.dividends_metrics.gradient,
                   self.returns_metrics.gradient,
                   self.dominated,
-                  self.volume_factor,
+                  self.portfolio.volume_factor,
                   best_growth]
         pareto_metrics = pd.concat(frames, axis=1)
         pareto_metrics.columns = ['D_GRADIENT', 'R_GRADIENT', 'DOMINATED', 'VOLUME_FACTOR', 'GRADIENT_GROWTH']
@@ -84,19 +83,6 @@ class Optimizer:
         """Метрики доходности, оптимизируемого портфеля"""
         return self._returns_metrics
 
-    @property
-    def volume_factor(self):
-        """Понижающий коэффициент для акций с малым объемом оборотов
-
-        Ликвидность в первом приближении убывает пропорционально квадрату оборота, что отражено в формулах расчета
-        """
-        portfolio = self.portfolio
-        last_volume = local.volumes(portfolio.positions[:-2]).loc[portfolio.date]
-        volume_share_of_portfolio = last_volume * portfolio.price[:-2] / portfolio.value[PORTFOLIO]
-        volume_factor = 1 - (VOLUME_CUT_OFF / volume_share_of_portfolio) ** 2
-        volume_factor[volume_factor < 0] = 0
-        return volume_factor.reindex(index=portfolio.positions, fill_value=1)
-
     def _dividends_growth_matrix(self):
         """Матрица увеличения градиента дивидендов при замене бумаги в строке на бумагу в столбце
 
@@ -104,7 +90,7 @@ class Optimizer:
         Продажи не ведущие к увеличению градиента доходности так же не рассматриваются
         """
         dividends_gradient = self.dividends_metrics.gradient
-        volume_factor = self.volume_factor
+        volume_factor = self.portfolio.volume_factor
         dividends_growth = dividends_gradient.apply(func=lambda x: (dividends_gradient - x) * volume_factor)
         dividends_growth.loc[self.portfolio.weight == 0] = 0
         returns_gradient = self.returns_metrics.gradient
@@ -119,7 +105,7 @@ class Optimizer:
         Продажи не ведущие к увеличению градиента доходности так же не рассматриваются
         """
         drawdown_gradient = self.returns_metrics.gradient
-        volume_factor = self.volume_factor
+        volume_factor = self.portfolio.volume_factor
         drawdown_growth = drawdown_gradient.apply(func=lambda x: (drawdown_gradient - x) * volume_factor)
         drawdown_growth.loc[self.portfolio.weight == 0] = 0
         dividends_gradient = self.dividends_metrics.gradient
