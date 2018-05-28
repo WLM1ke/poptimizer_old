@@ -39,7 +39,7 @@ def validate_response(data, tickers: tuple):
         if len(data['marketdata']['data']) != n:
             raise ValueError(msg)
     else:
-        min_tickers_amount = 100
+        min_tickers_amount = 200
         msg = f'Ошибка загрузки - количество торгуемых тикеров должно быть больше {min_tickers_amount}'
         if len(data['securities']['data']) < min_tickers_amount:
             raise ValueError(msg)
