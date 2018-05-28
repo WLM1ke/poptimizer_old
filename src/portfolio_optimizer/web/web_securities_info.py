@@ -64,7 +64,7 @@ def make_df(raw_json):
     return df
 
 
-def securities_info(tickers: tuple):
+def securities_info(tickers: tuple = tuple()):
     """
     Возвращает краткое наименование, размер лота и последнюю цену
 
@@ -84,4 +84,4 @@ def securities_info(tickers: tuple):
 
 
 if __name__ == "__main__":
-    print(securities_info(tuple()))
+    print(securities_info())
