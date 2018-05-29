@@ -66,10 +66,10 @@ def valid_return_gradient(portfolio: Portfolio, ticker: str, t_score: float):
     ticker_t_score = gradient / std
     print('Градиент просадки'.ljust(RESULT_ALIMENT), f'{gradient: .4f} - ', end='')
     if ticker_t_score > t_score:
-        print(f'OK {ticker_t_score: .2f} > {t_score: .2f} СКО')
+        print(f'OK {ticker_t_score:.2f} > {t_score:.2f} СКО')
         return True
     else:
-        print(f'Не подходит {ticker_t_score: .2f} < {t_score: .2f} СКО')
+        print(f'Не подходит {ticker_t_score:.2f} < {t_score:.2f} СКО')
         return False
 
 
@@ -105,4 +105,4 @@ if __name__ == '__main__':
                      cash=1000.21,
                      positions=dict(GAZP=682, VSMO=145, TTLK=123),
                      value=3_699_111.41)
-    print(find_momentum_tickers(port, 0))
+    find_momentum_tickers(port, 1.73)
