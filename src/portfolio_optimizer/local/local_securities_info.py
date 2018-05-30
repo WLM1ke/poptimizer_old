@@ -86,5 +86,5 @@ def aliases(ticker: str):
 
 
 if __name__ == '__main__':
-    print(securities_info(('SNGSP', 'GAZP')))
-    print(aliases('UPRO'))
+    print(securities_info(('GTSS',)))
+    print(aliases('GTSS'))

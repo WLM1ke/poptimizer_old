@@ -5,6 +5,9 @@ import time
 from urllib import request
 from urllib.error import URLError
 
+# Время ожидания для повторной загрузки при невозможности получить данные
+TIMEOUT = 6
+
 
 def get_json(reg_number: str):
     """Получает json с http://iss.moex.com"""
@@ -13,10 +16,10 @@ def get_json(reg_number: str):
         with request.urlopen(url) as response:
             data = json.load(response)
     except URLError as error:
-        if error.errno == 60:
-            print(error)
-            print('Новая попытка через 5 секунд')
-            time.sleep(5)
+        if isinstance(error.args[0], TimeoutError):
+            print(f'Время ожидания загрузки данных по тикеру {reg_number} превышено')
+            print(f'Новая попытка через {TIMEOUT} секунд')
+            time.sleep(TIMEOUT)
             data = get_json(reg_number)
         else:
             raise error
@@ -64,4 +67,5 @@ if __name__ == '__main__':
     print(reg_number_tickers('1-02-65104-D'))
     print(reg_number_tickers('10301481B'))
     print(reg_number_tickers('20301481B'))
-    print(reg_number_tickers('1-02-06556-A'))
+    print(reg_number_tickers('1-01-55378-E'))
+    print(get_json('1-01-55378-E'))
