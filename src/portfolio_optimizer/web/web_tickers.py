@@ -1,14 +1,25 @@
 """Загружает информацию о тикерах для данного регистрационного номера с http://iss.moex.com"""
 
 import json
+import time
 from urllib import request
+from urllib.error import URLError
 
 
 def get_json(reg_number: str):
     """Получает json с http://iss.moex.com"""
-    url = f'http://iss.moex.com/iss/securities.json?q={reg_number}'
-    with request.urlopen(url) as response:
-        data = json.load(response)
+    try:
+        url = f'http://iss.moex.com/iss/securities.json?q={reg_number}'
+        with request.urlopen(url) as response:
+            data = json.load(response)
+    except URLError as error:
+        if error.errno == 60:
+            print(error)
+            print('Новая попытка через 5 секунд')
+            time.sleep(5)
+            data = get_json(reg_number)
+        else:
+            raise error
     return data
 
 
