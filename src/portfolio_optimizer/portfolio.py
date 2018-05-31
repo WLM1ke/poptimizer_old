@@ -97,7 +97,11 @@ class Portfolio:
         for ticker in tickers:
             prices_column = prices[ticker]
             index = prices_column.last_valid_index()
-            price[ticker] = prices_column[index]
+            # Если фрейм не содержит цен, то рыночная цена 0
+            if index:
+                price[ticker] = prices_column[index]
+            else:
+                price[ticker] = 0
         price[CASH] = 1
         price[PORTFOLIO] = (self.shares[:-1] * price[:-1]).sum(axis='index')
         return price
@@ -130,7 +134,5 @@ class Portfolio:
 if __name__ == '__main__':
     port = Portfolio(date='2018-03-19',
                      cash=1000.21,
-                     positions=dict(GAZP=682, VSMO=145, TTLK=123),
-                     value=3_699_111.41)
-    print(port)
-
+                     positions=dict(GAZP=682, VSMO=145, TTLK=123, KUNF=0))
+    print(port.volume_factor)
