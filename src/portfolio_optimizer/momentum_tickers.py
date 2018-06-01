@@ -59,11 +59,12 @@ def valid_volume(portfolio: Portfolio, ticker: str):
 
 
 def valid_return_gradient(portfolio: Portfolio, ticker: str, t_score: float):
-    """Распечатывает градиент доходности и проверяет, что он больше t_score СКО"""
+    """Распечатывает градиент доходности и проверяет, что он больше t_score СКО с поправкой на оборот"""
     returns_metrics = ReturnsMetrics(portfolio)
     std = returns_metrics.std[PORTFOLIO]
     gradient = returns_metrics.gradient[ticker]
-    ticker_t_score = gradient / std
+    volume = portfolio.volume_factor[ticker]
+    ticker_t_score = gradient / std * volume
     print('Градиент просадки'.ljust(RESULT_ALIMENT), f'{gradient: .4f} - ', end='')
     if ticker_t_score > t_score:
         print(f'OK {ticker_t_score:.2f} > {t_score:.2f} СКО')
