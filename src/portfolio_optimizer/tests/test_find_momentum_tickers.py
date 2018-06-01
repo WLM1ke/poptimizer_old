@@ -79,7 +79,7 @@ def test_valid_volume(port):
 
 
 def test_valid_return_gradient(port):
-    assert valid_return_gradient(port, 'TTLK', 2)
+    assert not valid_return_gradient(port, 'TTLK', 2)
     assert not valid_return_gradient(port, 'GAZP', 2)
     assert not valid_return_gradient(port, 'VSMO', 0)
 

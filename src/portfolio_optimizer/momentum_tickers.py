@@ -106,4 +106,6 @@ if __name__ == '__main__':
                      cash=1000.21,
                      positions=dict(GAZP=682, VSMO=145, TTLK=123),
                      value=3_699_111.41)
-    find_momentum_tickers(port, 1.73)
+    print(port.volume_factor)
+    metrics = ReturnsMetrics(port)
+    print(metrics.gradient / metrics.std[PORTFOLIO])

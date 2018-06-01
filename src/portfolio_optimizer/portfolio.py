@@ -86,24 +86,25 @@ class Portfolio:
         """Количество акций для отдельных позиций"""
         return self.lot_size * self._lots
 
+    @staticmethod
+    def _last_price(column):
+        """Последняя заполненная цена в колонке или 0, если вся колонка NaN"""
+        last_index = column.last_valid_index()
+        if last_index:
+            return column[last_index]
+        else:
+            return 0
+
     @property
     @lru_cache(maxsize=1)
     def price(self):
         """Цены акций на дату портфеля для отдельных позиций"""
-        price = pd.Series(index=self._positions)
         tickers = self._positions[:-2]
         prices = local.prices(tickers)
         prices = prices.loc[:self._date]
-        for ticker in tickers:
-            prices_column = prices[ticker]
-            index = prices_column.last_valid_index()
-            # Если фрейм не содержит цен, то рыночная цена 0
-            if index:
-                price[ticker] = prices_column[index]
-            else:
-                price[ticker] = 0
+        price = prices.apply(self._last_price)
         price[CASH] = 1
-        price[PORTFOLIO] = (self.shares[:-1] * price[:-1]).sum(axis='index')
+        price[PORTFOLIO] = (self.shares[:-1] * price).sum(axis='index')
         return price
 
     @property
@@ -132,7 +133,39 @@ class Portfolio:
 
 
 if __name__ == '__main__':
-    port = Portfolio(date='2018-03-19',
-                     cash=1000.21,
-                     positions=dict(GAZP=682, VSMO=145, TTLK=123, KUNF=0))
-    print(port.volume_factor)
+    port = Portfolio(date='2018-04-19',
+                     cash=596_156 + 470_259 + 481_849,
+                     positions=dict(BANEP=200,
+                                    MFON=55,
+                                    SNGSP=235,
+                                    RTKM=0,
+                                    MAGN=0,
+                                    MSTT=4435,
+                                    KBTK=9,
+                                    MOEX=0,
+                                    RTKMP=1475 + 312 + 39,
+                                    NMTP=0,
+                                    TTLK=0,
+                                    LSRG=561 + 0 + 80,
+                                    LSNGP=81,
+                                    PRTK=70,
+                                    MTSS=749,
+                                    AKRN=795,
+                                    MRKC=0 + 0 + 36,
+                                    GAZP=0,
+                                    AFLT=0,
+                                    MSRS=699,
+                                    UPRO=1267,
+                                    PMSBP=1188 + 322 + 219,
+                                    CHMF=0,
+                                    GMKN=166 + 28,
+                                    VSMO=73,
+                                    RSTIP=87,
+                                    PHOR=0,
+                                    MRSB=0,
+                                    LKOH=123,
+                                    ENRU=319 + 148,
+                                    MVID=264 + 62))
+    print(port.price)
+    print(port.price_old)
+    print(port.price - port.price_old)
