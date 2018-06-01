@@ -86,22 +86,23 @@ class Portfolio:
         """Количество акций для отдельных позиций"""
         return self.lot_size * self._lots
 
+    @staticmethod
+    def _last_price(column):
+        """Последняя заполненная цена в колонке или 0, если вся колонка NaN"""
+        last_index = column.last_valid_index()
+        if last_index:
+            return column[last_index]
+        else:
+            return 0
+
     @property
     @lru_cache(maxsize=1)
     def price(self):
         """Цены акций на дату портфеля для отдельных позиций"""
-        price = pd.Series(index=self._positions)
         tickers = self._positions[:-2]
         prices = local.prices(tickers)
         prices = prices.loc[:self._date]
-        for ticker in tickers:
-            prices_column = prices[ticker]
-            index = prices_column.last_valid_index()
-            # Если фрейм не содержит цен, то рыночная цена 0
-            if index:
-                price[ticker] = prices_column[index]
-            else:
-                price[ticker] = 0
+        price = prices.apply(self._last_price)
         price[CASH] = 1
         price[PORTFOLIO] = (self.shares[:-1] * price[:-1]).sum(axis='index')
         return price
@@ -135,4 +136,4 @@ if __name__ == '__main__':
     port = Portfolio(date='2018-03-19',
                      cash=1000.21,
                      positions=dict(GAZP=682, VSMO=145, TTLK=123, KUNF=0))
-    print(port.volume_factor)
+    print(port.price)
