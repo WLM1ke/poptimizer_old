@@ -6,7 +6,7 @@ from urllib import request
 from urllib.error import URLError
 
 # Время ожидания для повторной загрузки при невозможности получить данные
-TIMEOUT = 6
+TIMEOUT = 7
 
 
 def get_json(reg_number: str):
