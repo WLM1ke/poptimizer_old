@@ -1,10 +1,22 @@
+from pathlib import Path
+
 import pytest
 
+import portfolio_optimizer.local.local_legacy_dividends
 import portfolio_optimizer.settings
 from portfolio_optimizer import optimizer
 from portfolio_optimizer.optimizer import Optimizer
 from portfolio_optimizer.portfolio import Portfolio, CASH, PORTFOLIO
 from portfolio_optimizer.settings import AFTER_TAX
+
+
+@pytest.fixture(scope='module', autouse=True)
+def fake_legacy_dividends():
+    saved_path = portfolio_optimizer.local.local_legacy_dividends.FILE_PATH
+    fake_path = Path(__file__).parent.parent / 'local' / 'tests' / 'data' / 'dividends.xlsx'
+    portfolio_optimizer.local.local_legacy_dividends.FILE_PATH = fake_path
+    yield
+    portfolio_optimizer.local.local_legacy_dividends.FILE_PATH = saved_path
 
 
 @pytest.fixture(scope='module', name='opt')
