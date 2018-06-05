@@ -76,7 +76,7 @@ def parse_table_rows(table: BeautifulSoup):
     validate_table_header(rows[0])
     for row in rows[1:]:
         cells = RowParser(row)
-        yield pd.to_datetime(cells.date), pd.to_numeric(cells.value)
+        yield pd.to_datetime(cells.date, dayfirst=True), pd.to_numeric(cells.value)
 
 
 def make_df(ticker, parsed_rows):
@@ -109,4 +109,4 @@ def dividends(ticker: str) -> pd.Series:
 
 
 if __name__ == '__main__':
-    print(dividends('CHMF'))
+    print(dividends('AKRN'))

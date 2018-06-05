@@ -68,4 +68,5 @@ class DataFile:
 
     def load(self):
         """Загружает данные из файла"""
-        return pd.read_msgpack(self.data_path)
+        if self.data_path.exists():
+            return pd.read_msgpack(self.data_path)
