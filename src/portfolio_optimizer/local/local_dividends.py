@@ -81,7 +81,7 @@ def dividends(ticker: str):
 
 
 if __name__ == '__main__':
-    name = 'BANEP'
+    name = 'VSMO'  # TODO: нужна полная проверка совпадения с источником
     print(dividends(name).need_update())
     print(dividends(name).get())
     manager = DividendsDataManager(name)
