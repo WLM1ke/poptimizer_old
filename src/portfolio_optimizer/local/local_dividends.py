@@ -84,7 +84,7 @@ def dividends(ticker: str):
 
 
 if __name__ == '__main__':
-    name = 'VSMO'
+    name = 'RSTIP'
     print(dividends(name).need_update())
     print(dividends(name).get())
     manager = DividendsDataManager(name)
