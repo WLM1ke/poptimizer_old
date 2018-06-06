@@ -45,6 +45,9 @@ class DividendsDataManager:
                 web_df = web_df[web_df.index >= pd.Timestamp(STATISTICS_START)]
                 if not web_df.index.difference(local_df.index).empty:
                     return True
+                local_df = local_df[web_df.index]
+                if not local_df.equals(web_df):
+                    return True
         return False
 
     def update(self):
@@ -81,7 +84,7 @@ def dividends(ticker: str):
 
 
 if __name__ == '__main__':
-    name = 'VSMO'  # TODO: нужна полная проверка совпадения с источником
+    name = 'VSMO'
     print(dividends(name).need_update())
     print(dividends(name).get())
     manager = DividendsDataManager(name)
