@@ -2,6 +2,11 @@
 
 from pathlib import Path
 
+import pandas as pd
+
+# Количество колонок в распечатках
+pd.options.display.max_columns = 20
+
 # Путь к данным - данные состоящие из нескольких серий хранятся в отдельных директориях внутри базовой директории
 DATA_PATH = Path(__file__).parents[2] / 'data'
 
