@@ -1,7 +1,6 @@
 """Загружает локальную версию данных по дивидендам и обновляет после ручной проверки"""
 
 import sqlite3
-from collections import namedtuple
 
 import arrow
 import pandas as pd
@@ -18,8 +17,6 @@ DAYS_TO_MANUAL_UPDATE = 90
 STATISTICS_START = '2010-01-01'
 DATABASE = str(DATA_PATH / DIVIDENDS_CATEGORY / 'dividends.db')
 
-Dividends = namedtuple('Dividends', 'data, need_update')
-
 
 class DividendsDataManager:
     """Загружает локальную версию дивидендов и проверяет наличие данных во внешних источниках"""
@@ -28,7 +25,7 @@ class DividendsDataManager:
         self.ticker = ticker
         self.file = DataFile(DIVIDENDS_CATEGORY, ticker)
 
-    def _need_update(self):
+    def need_update(self):
         """Проверяет необходимость обновления данных
 
         Обновление нужно:
@@ -63,7 +60,7 @@ class DividendsDataManager:
 
     def get(self):
         """Получение данных и статуса необходимости обновления"""
-        return Dividends(self.file.load(), self._need_update())
+        return self.file.load()
 
 
 def dividends(ticker: str):
@@ -77,17 +74,17 @@ def dividends(ticker: str):
 
     Returns
     -------
-    pd.Series
-        В строках - даты выплаты дивидендов
-        Значения - выплаченные дивиденды
+    DividendsDataManager
+        Объект может предоставить данные по дивидендам и проверить их статус актуальности
     """
-    data = DividendsDataManager(ticker)
-    return data.get()
+    return DividendsDataManager(ticker)
 
 
 if __name__ == '__main__':
-    name = 'AKRN'
-    print(dividends(name))
+    name = 'BANEP'
+    print(dividends(name).need_update())
+    print(dividends(name).get())
     manager = DividendsDataManager(name)
     manager.update()
-    print(dividends(name))
+    print(dividends(name).need_update())
+    print(dividends(name).get())
