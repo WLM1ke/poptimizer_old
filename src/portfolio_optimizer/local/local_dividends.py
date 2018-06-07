@@ -35,20 +35,20 @@ class DividendsDataManager:
         """
         last_update = self.file.last_update()
         if last_update is None:
-            return True
+            return 'Нет локальных данных'
         if last_update.shift(days=DAYS_TO_MANUAL_UPDATE) < arrow.now():
-            return True
+            return f'Последнее обновление более {DAYS_TO_MANUAL_UPDATE} дней назад'
         if last_update.shift(days=DAYS_TO_WEB_UPDATE) < arrow.now():
             for source in DIVIDENDS_SOURCES:
-                local_df = self.file.load()
-                web_df = source(self.ticker)
+                local_df = self.get()
+                web_df = source(self.ticker).groupby(DATE).sum()
                 web_df = web_df[web_df.index >= pd.Timestamp(STATISTICS_START)]
                 if not web_df.index.difference(local_df.index).empty:
-                    return True
+                    return f'В источнике {source.__name__} присутствуют дополнительные данные'
                 local_df = local_df[web_df.index]
                 if not local_df.equals(web_df):
-                    return True
-        return False
+                    return f'В источнике {source.__name__} не совпадают данные'
+        return 'OK'
 
     def update(self):
         """Обновляет локальную версию данных на основании данных из базы"""
@@ -61,33 +61,69 @@ class DividendsDataManager:
         df = df[self.ticker]
         self.file.dump(df)
 
-    def get(self):
-        """Получение данных и статуса необходимости обновления"""
+    def get_raw(self):
+        """Получение данных - несколько платежей в одну дату не объединяются"""
         return self.file.load()
 
+    def get(self):
+        """Получение данных - несколько платежей в одну дату объединяются"""
+        return self.file.load().groupby(DATE).sum()
 
-def dividends(ticker: str):
-    """
-    Сохраняет, при необходимости обновляет и возвращает дивиденды для тикеров
+
+def monthly_dividends(tickers: tuple, last_date: pd.Timestamp):
+    """Возвращает ряды данных по месячным дивидендам для кортежа тикеров
 
     Parameters
     ----------
-    ticker
-        Список тикеров
+    tickers
+        Кортеж тикеров, для которого нужно предоставить данные
+    last_date
+        Конечная дата в ряде данных. Ее день месяца используется для разбиения данных по месяцам
 
     Returns
     -------
-    DividendsDataManager
-        Объект может предоставить данные по дивидендам и проверить их статус актуальности
+    pd.DataFrame
+        Столбцы - отдельные тикеры
+        Строки - последние даты месяца
     """
-    return DividendsDataManager(ticker)
+    frames = (DividendsDataManager(ticker).get() for ticker in tickers)
+    df = pd.concat(frames, axis='columns')
+    month_end_day = last_date.day
+    start_date = pd.Timestamp(STATISTICS_START) + pd.DateOffset(day=month_end_day) + pd.DateOffset(days=1)
+    index = pd.DatetimeIndex(start=start_date, end=last_date, freq='D')
+    df = df.reindex(index=index)
+
+    def monthly_aggregation(x: pd.Timestamp):
+        if x.day <= month_end_day:
+            return x + pd.DateOffset(day=month_end_day)
+        else:
+            return x + pd.DateOffset(months=1, day=month_end_day)
+
+    return df.groupby(by=monthly_aggregation).sum()
+
+
+def dividends_update_status(tickers: tuple):
+    """Возвращает статус обновления данных по дивидендам
+
+
+    Parameters
+    ----------
+    tickers
+        Кортеж тикеров, для которых нужно предоставить данные
+
+    Returns
+    -------
+    list of str or None
+        Возвращает список, который содержит строки с текстовыми сообщениями о причинах неактуальности данных для тикера
+    """
+    return [DividendsDataManager(ticker).need_update() for ticker in tickers]
 
 
 if __name__ == '__main__':
-    name = 'RSTIP'
-    print(dividends(name).need_update())
-    print(dividends(name).get())
+    name = 'CHMF'
     manager = DividendsDataManager(name)
+    print('Статус данных -', manager.need_update())
+    print(manager.get_raw())
     manager.update()
-    print(dividends(name).need_update())
-    print(dividends(name).get())
+    print('Статус данных -', manager.need_update())
+    print(manager.get_raw())

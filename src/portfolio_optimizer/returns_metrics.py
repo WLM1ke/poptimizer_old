@@ -56,11 +56,11 @@ class ReturnsMetrics:
 
         Если день больше отчетного, то день относится к следующему месяцу
         """
-        portfolio_date = self._portfolio.date.day
-        if x.day <= portfolio_date:
-            return x + pd.DateOffset(day=portfolio_date)
+        portfolio_day = self._portfolio.date.day
+        if x.day <= portfolio_day:
+            return x + pd.DateOffset(day=portfolio_day)
         else:
-            return x + pd.DateOffset(months=1, day=portfolio_date)
+            return x + pd.DateOffset(months=1, day=portfolio_day)
 
     @property
     @lru_cache(maxsize=1)
