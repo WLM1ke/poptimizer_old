@@ -86,7 +86,7 @@ def make_df(ticker, parsed_rows):
     return df.set_index(DATE)[ticker].sort_index()
 
 
-def dividends(ticker: str) -> pd.Series:
+def dividends_dohod(ticker: str) -> pd.Series:
     """
     Возвращает Series с дивидендами упорядоченными по возрастанию даты закрытия реестра
 
@@ -109,4 +109,4 @@ def dividends(ticker: str) -> pd.Series:
 
 
 if __name__ == '__main__':
-    print(dividends('AKRN'))
+    print(dividends_dohod('AKRN'))

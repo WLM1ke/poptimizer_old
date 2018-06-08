@@ -10,12 +10,12 @@ from portfolio_optimizer.local.data_file import DataFile
 from portfolio_optimizer.settings import DATA_PATH
 from portfolio_optimizer.web.labels import DATE
 
-DIVIDENDS_CATEGORY = 'dividends'
-DIVIDENDS_SOURCES = [web.dividends]
+DIVIDENDS_CATEGORY = 'dividends_dohod'
+DIVIDENDS_SOURCES = [web.dividends_dohod]
 DAYS_TO_WEB_UPDATE = 7
 DAYS_TO_MANUAL_UPDATE = 90
 STATISTICS_START = '2010-01-01'
-DATABASE = str(DATA_PATH / DIVIDENDS_CATEGORY / 'dividends.db')
+DATABASE = str(DATA_PATH / DIVIDENDS_CATEGORY / 'dividends_dohod.db')
 
 
 class DividendsDataManager:
