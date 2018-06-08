@@ -119,11 +119,11 @@ def dividends_update_status(tickers: tuple):
 
 
 if __name__ == '__main__':
-    name = 'MSRS'
+    name = 'MFON'
     manager = DividendsDataManager(name)
     print('Статус данных -', manager.need_update())
     print(manager.get_raw())
     manager.update()
     print('Статус данных -', manager.need_update())
     print(manager.get_raw())
-    # print(local_dividends_dohod.dividends(name).groupby(DATE).sum() - manager.get())
+    print(local_dividends_dohod.dividends(name).groupby(DATE).sum() / manager.get() - 1)
