@@ -3,6 +3,7 @@
 import sqlite3
 
 import arrow
+import numpy as np
 import pandas as pd
 
 from portfolio_optimizer.local import local_dividends_dohod
@@ -44,7 +45,7 @@ class DividendsDataManager:
             if not local_web_df.index.difference(df.index).empty:
                 return f'В источнике {source.__module__} присутствуют дополнительные данные'
             df = df[local_web_df.index]
-            if not df.equals(local_web_df):
+            if not np.allclose(df, local_web_df):
                 return f'В источнике {source.__module__} не совпадают данные'
         return 'OK'
 
@@ -118,10 +119,11 @@ def dividends_update_status(tickers: tuple):
 
 
 if __name__ == '__main__':
-    name = 'LSNGP'
+    name = 'LSRG'
     manager = DividendsDataManager(name)
     print('Статус данных -', manager.need_update())
     print(manager.get_raw())
     manager.update()
     print('Статус данных -', manager.need_update())
     print(manager.get_raw())
+    # print(local_dividends_dohod.dividends(name).groupby(DATE).sum() - manager.get())
