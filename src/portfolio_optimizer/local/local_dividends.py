@@ -119,7 +119,7 @@ def dividends_update_status(tickers: tuple):
 
 
 if __name__ == '__main__':
-    name = 'MFON'
+    name = 'MSTT'
     manager = DividendsDataManager(name)
     print('Статус данных -', manager.need_update())
     print(manager.get_raw())
