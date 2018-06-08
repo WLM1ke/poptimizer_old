@@ -5,17 +5,16 @@ import sqlite3
 import arrow
 import pandas as pd
 
-from portfolio_optimizer import web
+from portfolio_optimizer.local import local_dividends_dohod
 from portfolio_optimizer.local.data_file import DataFile
 from portfolio_optimizer.settings import DATA_PATH
 from portfolio_optimizer.web.labels import DATE
 
-DIVIDENDS_CATEGORY = 'dividends_dohod'
-DIVIDENDS_SOURCES = [web.dividends_dohod]
-DAYS_TO_WEB_UPDATE = 7
+DIVIDENDS_CATEGORY = 'dividends'
+DIVIDENDS_SOURCES = [local_dividends_dohod.dividends]
 DAYS_TO_MANUAL_UPDATE = 90
 STATISTICS_START = '2010-01-01'
-DATABASE = str(DATA_PATH / DIVIDENDS_CATEGORY / 'dividends_dohod.db')
+DATABASE = str(DATA_PATH / DIVIDENDS_CATEGORY / 'dividends.db')
 
 
 class DividendsDataManager:
@@ -30,24 +29,23 @@ class DividendsDataManager:
 
         Обновление нужно:
         при отсутствии локальных данных
-        при наличии новых  данных в web источнике (проверка раз в неделю)
-        по прошествии времени (дивиденды не выплачиваются чаще чем раз в квартал
+        при наличии новых данных в локальной версии web источника
+        по прошествии времени (дивиденды не выплачиваются чаще чем раз в квартал)
         """
         last_update = self.file.last_update()
         if last_update is None:
             return 'Нет локальных данных'
         if last_update.shift(days=DAYS_TO_MANUAL_UPDATE) < arrow.now():
             return f'Последнее обновление более {DAYS_TO_MANUAL_UPDATE} дней назад'
-        if last_update.shift(days=DAYS_TO_WEB_UPDATE) < arrow.now():
-            for source in DIVIDENDS_SOURCES:
-                local_df = self.get()
-                web_df = source(self.ticker).groupby(DATE).sum()
-                web_df = web_df[web_df.index >= pd.Timestamp(STATISTICS_START)]
-                if not web_df.index.difference(local_df.index).empty:
-                    return f'В источнике {source.__name__} присутствуют дополнительные данные'
-                local_df = local_df[web_df.index]
-                if not local_df.equals(web_df):
-                    return f'В источнике {source.__name__} не совпадают данные'
+        for source in DIVIDENDS_SOURCES:
+            df = self.get()
+            local_web_df = source(self.ticker).groupby(DATE).sum()
+            local_web_df = local_web_df[local_web_df.index >= pd.Timestamp(STATISTICS_START)]
+            if not local_web_df.index.difference(df.index).empty:
+                return f'В источнике {source.__name__} присутствуют дополнительные данные'
+            df = df[local_web_df.index]
+            if not df.equals(local_web_df):
+                return f'В источнике {source.__name__} не совпадают данные'
         return 'OK'
 
     def update(self):
