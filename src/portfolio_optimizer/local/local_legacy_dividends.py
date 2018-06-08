@@ -6,7 +6,7 @@ import pandas as pd
 
 from portfolio_optimizer.settings import DATA_PATH
 
-FILE_PATH = DATA_PATH / 'legacy_dividends' / 'dividends_dohod.xlsx'
+FILE_PATH = DATA_PATH / 'legacy_dividends' / 'dividends.xlsx'
 LEGACY_SHEET_NAME = 'Dividends'
 
 

@@ -40,5 +40,5 @@ def income_report(report_name: str, investor_name: str, years: int = 1):
     print(f'\n{investor_name} - {years} year(s) inflation adjusted average')
     for period, multiplier in time_periods.items():
         print(f'1{period}:',
-              f'Dividends = {rescale_and_format(dividends_dohod, multiplier)},',
+              f'Dividends = {rescale_and_format(dividends, multiplier)},',
               f'Income = {rescale_and_format(income, multiplier)}')
