@@ -22,8 +22,8 @@ class DividendsDataManager:
     """Загружает локальную версию дивидендов и проверяет наличие данных во внешних источниках"""
 
     def __init__(self, ticker: str):
-        self.ticker = ticker
-        self.file = DataFile(DIVIDENDS_CATEGORY, ticker)
+        self._ticker = ticker
+        self._file = DataFile(DIVIDENDS_CATEGORY, ticker)
 
     def need_update(self):
         """Проверяет необходимость обновления данных
@@ -33,14 +33,14 @@ class DividendsDataManager:
         при наличии новых данных в локальной версии web источника
         по прошествии времени (дивиденды не выплачиваются чаще чем раз в квартал)
         """
-        last_update = self.file.last_update()
+        last_update = self._file.last_update()
         if last_update is None:
             return 'Нет локальных данных'
         if last_update.shift(days=DAYS_TO_MANUAL_UPDATE) < arrow.now():
             return f'Последнее обновление более {DAYS_TO_MANUAL_UPDATE} дней назад'
         for source in DIVIDENDS_SOURCES:
             df = self.get()
-            local_web_df = source(self.ticker).groupby(DATE).sum()
+            local_web_df = source(self._ticker).groupby(DATE).sum()
             local_web_df = local_web_df[local_web_df.index >= pd.Timestamp(STATISTICS_START)]
             if not local_web_df.index.difference(df.index).empty:
                 return f'В источнике {source.__module__} присутствуют дополнительные данные'
@@ -50,23 +50,23 @@ class DividendsDataManager:
         return 'OK'
 
     def update(self):
-        """Обновляет локальную версию данных на основании данных из базы"""
+        """Обновляет локальную версию данных на основании данных из базы
+
+        Несколько платежей в одну дату объединяются
+        Берется 0 колонка с дивидендами и отбрасывается с комментариями
+        """
         connection = sqlite3.connect(DATABASE)
-        query = f'SELECT * FROM {self.ticker}'
+        query = f'SELECT * FROM {self._ticker}'
         df = pd.read_sql_query(query, connection, index_col=DATE, parse_dates=[DATE])
         df = df[df.index >= pd.Timestamp(STATISTICS_START)]
+        df = df.groupby(DATE).sum()
         df.sort_index(inplace=True)
-        df.columns = [self.ticker]
-        df = df[self.ticker]
-        self.file.dump(df)
-
-    def get_raw(self):
-        """Получение данных - несколько платежей в одну дату не объединяются"""
-        return self.file.load()
+        df.columns = [self._ticker]
+        self._file.dump(df[self._ticker])
 
     def get(self):
-        """Получение данных - несколько платежей в одну дату объединяются"""
-        return self.file.load().groupby(DATE).sum()
+        """Получение данных"""
+        return self._file.load()
 
 
 def monthly_dividends(tickers: tuple, last_date: pd.Timestamp):
@@ -122,8 +122,8 @@ if __name__ == '__main__':
     name = 'MSTT'
     manager = DividendsDataManager(name)
     print('Статус данных -', manager.need_update())
-    print(manager.get_raw())
+    print(manager.get())
     manager.update()
     print('Статус данных -', manager.need_update())
-    print(manager.get_raw())
+    print(manager.get())
     print(local_dividends_dohod.dividends(name).groupby(DATE).sum() / manager.get() - 1)

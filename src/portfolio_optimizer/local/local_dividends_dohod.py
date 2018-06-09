@@ -10,7 +10,7 @@ DIVIDENDS_CATEGORY = 'dividends_dohod'
 DAYS_TO_UPDATE = 7
 
 
-class DividendsDataManager(DataManager):
+class DividendsDohodDataManager(DataManager):
     """Реализует особенность загрузки истории дивидендов с обновлением раз в неделю
 
     Несколько платежей в одну дату суммируются
@@ -42,7 +42,7 @@ def dividends(ticker: str):
         В строках - даты выплаты дивидендов
         Значения - выплаченные дивиденды
     """
-    data = DividendsDataManager(ticker)
+    data = DividendsDohodDataManager(ticker)
     return data.get()
 
 
