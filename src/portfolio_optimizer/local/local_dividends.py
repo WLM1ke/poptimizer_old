@@ -42,8 +42,9 @@ class DividendsDataManager:
             df = self.get()
             local_web_df = source(self._ticker).groupby(DATE).sum()
             local_web_df = local_web_df[local_web_df.index >= pd.Timestamp(STATISTICS_START)]
-            if not local_web_df.index.difference(df.index).empty:
-                return f'В источнике {source.__module__} присутствуют дополнительные данные'
+            additional_data = local_web_df.index.difference(df.index)
+            if not additional_data.empty:
+                return f'В источнике {source.__module__} присутствуют дополнительные данные {additional_data}'
             df = df[local_web_df.index]
             if not np.allclose(df, local_web_df):
                 return f'В источнике {source.__module__} не совпадают данные'
@@ -119,7 +120,7 @@ def dividends_update_status(tickers: tuple):
 
 
 if __name__ == '__main__':
-    name = 'MSTT'
+    name = 'MTSS'
     manager = DividendsDataManager(name)
     print('Статус данных -', manager.need_update())
     print(manager.get())
