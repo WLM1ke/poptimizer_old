@@ -17,7 +17,12 @@ class DividendsDohodDataManager(DataManager):
     """
 
     def __init__(self, ticker: str):
+
         def web_dividends_function_with_aggregation():
+            """Web-данные содержат по несколько выплат на одну дату
+
+            Для прохождения валидации и последующих сопоставлений необходима агрегация
+            """
             return web.dividends_dohod(ticker).groupby(DATE).sum()
 
         super().__init__(DIVIDENDS_CATEGORY, ticker, web_dividends_function_with_aggregation)
