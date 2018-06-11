@@ -41,8 +41,8 @@ def test_need_update_less_data():
     df = manager.get()
     df = df.drop(pd.Timestamp('2018-01-23'))
     manager._file.dump(df)
-    assert manager.need_update() == ('В источнике portfolio_optimizer.local.local_dividends_dohod присутствуют '
-                                     'дополнительные данные')
+    msg = 'В источнике portfolio_optimizer.local.local_dividends_dohod присутствуют дополнительные данные'
+    assert msg in manager.need_update()
 
 
 def test_need_update_long_ago(monkeypatch):
@@ -79,7 +79,7 @@ def test_dividends_update_status():
     assert len(result) == 5
     assert result[0] == 'OK'
     assert result[1] == 'OK'
-    assert result[2] == ('В источнике portfolio_optimizer.local.local_dividends_dohod присутствуют '
-                         'дополнительные данные')
+    msg = 'В источнике portfolio_optimizer.local.local_dividends_dohod присутствуют дополнительные данные'
+    assert msg in result[2]
     assert result[3] == 'Нет локальных данных'
     assert result[4] == 'В источнике portfolio_optimizer.local.local_dividends_dohod не совпадают данные'
