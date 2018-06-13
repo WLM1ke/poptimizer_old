@@ -190,7 +190,7 @@ if __name__ == '__main__':
                TTLK=234,
                UPRO=1114,
                VSMO=83 + 5)
-    port = Portfolio(date='2018-06-11',
+    port = Portfolio(date='2018-05-11',
                      cash=311_587 + 584 + 1_457,
                      positions=pos)
     print(DividendsMetrics(port))
