@@ -116,7 +116,8 @@ def dividends_update_status(tickers: tuple):
     list of str or None
         Возвращает список, который содержит строки с текстовыми сообщениями о причинах неактуальности данных для тикера
     """
-    return [DividendsDataManager(ticker).need_update() for ticker in tickers]
+    return pd.Series(index=list(tickers),
+                     data=[DividendsDataManager(ticker).need_update() for ticker in tickers])
 
 
 if __name__ == '__main__':

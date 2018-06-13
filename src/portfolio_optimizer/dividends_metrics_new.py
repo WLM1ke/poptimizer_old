@@ -5,6 +5,7 @@ from functools import lru_cache
 import pandas as pd
 
 from portfolio_optimizer import local
+from portfolio_optimizer.local import dividends_update_status
 from portfolio_optimizer.portfolio import Portfolio, CASH, PORTFOLIO
 from portfolio_optimizer.settings import AFTER_TAX, T_SCORE
 
@@ -28,9 +29,10 @@ class DividendsMetrics:
                   self.std,
                   self.beta,
                   self.lower_bound,
-                  self.gradient]
+                  self.gradient,
+                  self.data_status]
         df = pd.concat(frames, axis=1)
-        df.columns = ['MEAN', 'STD', 'BETA', 'LOWER_BOUND', 'GRADIENT']
+        df.columns = ['MEAN', 'STD', 'BETA', 'LOWER_BOUND', 'GRADIENT', 'STATUS']
         return (f'\nКЛЮЧЕВЫЕ МЕТРИКИ ДИВИДЕНДОВ'
                 f'\n'
                 f'\nОжидаемые дивиденды - {self.expected_dividends:.0f}'
@@ -161,14 +163,34 @@ class DividendsMetrics:
         """Ожидаемые дивиденды по портфелю в рублевом выражении по нижней границе доверительного интервала"""
         return self.lower_bound[PORTFOLIO] * self._portfolio.value[PORTFOLIO]
 
+    @property
+    def data_status(self):
+        """Статус обновления данных по дивидендам"""
+        positions = self._portfolio.positions
+        status = dividends_update_status(positions[:-2])
+        return status.reindex(index=list(positions),
+                              fill_value='OK')
+
 
 if __name__ == '__main__':
-    pos = dict(UPRO=1267,
-               LSNGP=81,
+    pos = dict(AKRN=679,
+               BANEP=644 + 14 + 16,
+               CHMF=108 + 26,
+               GMKN=139 + 27,
                LKOH=123,
-               SNGSP=31,
-               TTLK=5)
+               LSNGP=59 + 6,
+               LSRG=172 + 0 + 80,
+               MFON=65 + 0 + 5,
+               MSTT=2436,
+               MTSS=1179 + 25,
+               MVID=186,
+               PRTK=13,
+               RTKMP=1628 + 382 + 99,
+               SNGSP=207,
+               TTLK=234,
+               UPRO=1114,
+               VSMO=83 + 5)
     port = Portfolio(date='2018-06-11',
-                     cash=4330.3,
+                     cash=311_587 + 584 + 1_457,
                      positions=pos)
     print(DividendsMetrics(port))

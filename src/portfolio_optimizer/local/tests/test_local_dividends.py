@@ -75,11 +75,11 @@ def test_monthly_dividends():
 def test_dividends_update_status():
     DividendsDataManager('MSTT').update()
     result = local_dividends.dividends_update_status(('CHMF', 'GMKN', 'AKRN', 'BANEP', 'MSTT'))
-    assert isinstance(result, list)
+    assert isinstance(result, pd.Series)
     assert len(result) == 5
-    assert result[0] == 'OK'
-    assert result[1] == 'OK'
+    assert result.iloc[0] == 'OK'
+    assert result.iloc[1] == 'OK'
     msg = 'В источнике portfolio_optimizer.local.local_dividends_dohod присутствуют дополнительные данные'
-    assert msg in result[2]
-    assert result[3] == 'Нет локальных данных'
-    assert result[4] == 'В источнике portfolio_optimizer.local.local_dividends_dohod не совпадают данные'
+    assert msg in result.iloc[2]
+    assert result.iloc[3] == 'Нет локальных данных'
+    assert result.iloc[4] == 'В источнике portfolio_optimizer.local.local_dividends_dohod не совпадают данные'
