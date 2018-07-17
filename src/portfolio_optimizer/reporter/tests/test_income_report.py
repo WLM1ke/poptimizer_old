@@ -1,6 +1,7 @@
 from pathlib import Path
 from shutil import copyfile
 
+import pandas as pd
 import pytest
 
 from portfolio_optimizer import local
@@ -39,7 +40,7 @@ def make_fake_cpi():
 
 def test_constant_prices_data(monkeypatch):
     monkeypatch.setattr(local, 'cpi', make_fake_cpi())
-    df = constant_prices_data('test', 'Igor', 1)
+    df = constant_prices_data('test', 'Igor', pd.Timestamp('2017-04-19'))
     assert df.shape == (13, 3)
     assert df.loc['2018-01-19', 'Inflow'] == pytest.approx(-6351.166136)
     assert df.loc['2017-07-19', 'Value'] == pytest.approx(12875.75482)
@@ -53,7 +54,7 @@ def test_rescale_and_format():
 
 def test_income_report(monkeypatch, capsys):
     monkeypatch.setattr(local, 'cpi', make_fake_cpi())
-    income_report('test', 'WLMike')
+    income_report('test', 'WLMike', pd.Timestamp('2017-04-19'))
     captured_string = capsys.readouterr().out
     assert 'WLMike' in captured_string
     assert '1Y: Dividends =    28 000, Income =    85 000' in captured_string
