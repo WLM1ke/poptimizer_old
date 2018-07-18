@@ -54,7 +54,7 @@ def income_report(report_name: str, investor_name: str, start_date: pd.Timestamp
     income = df['Value'].iloc[-1] - df['Value'].iloc[0] - df['Inflow'].iloc[1:].sum()
     months = len(df) - 1
     time_periods = dict(Y=12 / months, M=1 / months, W=12 * 7 / months / 365.25)
-    print(f'\n{investor_name} - {start_date.date()} inflation adjusted average')
+    print(f'\n{investor_name} - from {start_date.date()} inflation adjusted average')
     for period, multiplier in time_periods.items():
         print(f'1{period}:',
               f'Dividends = {rescale_and_format(dividends, multiplier)},',
