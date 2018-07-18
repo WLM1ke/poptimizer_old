@@ -1,11 +1,11 @@
 from pathlib import Path
 
 import pandas as pd
-from portfolio_optimizer.local.local_quotes import prices, volumes
-from portfolio_optimizer.local.local_quotes import quotes
-from portfolio_optimizer.web.labels import CLOSE_PRICE, VOLUME
 
 import settings
+from local.local_quotes import prices, volumes
+from local.local_quotes import quotes
+from web.labels import CLOSE_PRICE, VOLUME
 
 
 def test_get_quotes_history(tmpdir, monkeypatch):

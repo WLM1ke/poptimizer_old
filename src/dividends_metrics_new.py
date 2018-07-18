@@ -3,9 +3,9 @@
 from functools import lru_cache
 
 import pandas as pd
-from portfolio_optimizer import local
-from portfolio_optimizer.local import dividends_update_status
 
+import local
+from local import dividends_update_status
 from portfolio import Portfolio, CASH, PORTFOLIO
 from settings import AFTER_TAX, T_SCORE
 

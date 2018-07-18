@@ -2,8 +2,9 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from portfolio_optimizer.reporter.flow_and_dividends import make_12m_dividends_df, make_list_of_lists_dividends
-from portfolio_optimizer.reporter.flow_and_dividends import make_flow_df, make_list_of_lists_flow
+
+from reporter.flow_and_dividends import make_12m_dividends_df, make_list_of_lists_dividends
+from reporter.flow_and_dividends import make_flow_df, make_list_of_lists_flow
 
 
 def read_test_df():

@@ -1,21 +1,22 @@
 from pathlib import Path
 
 import pandas as pd
-import portfolio_optimizer.local.local_legacy_dividends
 import pytest
+
+import local.local_legacy_dividends
 
 
 @pytest.fixture(scope='module', autouse=True)
 def fake_legacy_dividends():
-    saved_path = portfolio_optimizer.local.local_legacy_dividends.FILE_PATH
+    saved_path = local.local_legacy_dividends.FILE_PATH
     fake_path = Path(__file__).parent / 'data' / 'dividends.xlsx'
-    portfolio_optimizer.local.local_legacy_dividends.FILE_PATH = fake_path
+    local.local_legacy_dividends.FILE_PATH = fake_path
     yield
-    portfolio_optimizer.local.local_legacy_dividends.FILE_PATH = saved_path
+    local.local_legacy_dividends.FILE_PATH = saved_path
 
 
 def test_get_legacy_dividends():
-    df = portfolio_optimizer.local.legacy_dividends(('UPRO', 'RTKMP', 'MSTT', 'MAGN', 'LSRG'))
+    df = local.legacy_dividends(('UPRO', 'RTKMP', 'MSTT', 'MAGN', 'LSRG'))
     assert df.index.equals(pd.Index([2012, 2013, 2014, 2015, 2016]))
     assert df.columns.equals(pd.Index(['UPRO', 'RTKMP', 'MSTT', 'MAGN', 'LSRG']))
     assert df.loc[2012, 'UPRO'] == pytest.approx(0.289541278733806)

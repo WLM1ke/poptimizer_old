@@ -1,7 +1,7 @@
 import pandas as pd
 
-from portfolio_optimizer.local import local_cpi
-from portfolio_optimizer.web.labels import CPI
+from local import local_cpi
+from web.labels import CPI
 
 
 def test_cpi():

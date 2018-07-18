@@ -1,6 +1,6 @@
 import pytest
 
-from portfolio_optimizer.web.web_cpi import cpi
+from web.web_cpi import cpi
 
 CHECK_POINTS = [('1991-01-31', 1.0620),
                 ('2018-01-31', 1.0031)]

@@ -2,7 +2,8 @@ import datetime
 import urllib.error
 
 import pytest
-from portfolio_optimizer.web.web_dividends_dohod import dividends_dohod, make_url
+
+from web.web_dividends_dohod import dividends_dohod, make_url
 
 
 def test_url():

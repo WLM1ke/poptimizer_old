@@ -1,7 +1,7 @@
 import pandas as pd
 
-from portfolio_optimizer.web.labels import CLOSE_PRICE
-from portfolio_optimizer.web.web_index import index, Index
+from web.labels import CLOSE_PRICE
+from web.web_index import index, Index
 
 
 def test_index_none_start_date():

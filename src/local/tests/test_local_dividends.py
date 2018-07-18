@@ -1,11 +1,11 @@
 from pathlib import Path
 
 import pandas as pd
-import portfolio_optimizer.local.local_dividends as local_dividends
 import pytest
-from portfolio_optimizer.local.local_dividends import DividendsDataManager
 
+import local.local_dividends as local_dividends
 import settings
+from local.local_dividends import DividendsDataManager
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -33,7 +33,7 @@ def test_need_update_wrong_data():
     df = manager.get()
     df.loc['2018-01-23'] = -1000
     manager._file.dump(df)
-    assert manager.need_update() == 'В источнике portfolio_optimizer.local.local_dividends_dohod не совпадают данные'
+    assert manager.need_update() == 'В источнике local.local_dividends_dohod не совпадают данные'
 
 
 def test_need_update_less_data():
@@ -41,7 +41,7 @@ def test_need_update_less_data():
     df = manager.get()
     df = df.drop(pd.Timestamp('2018-01-23'))
     manager._file.dump(df)
-    msg = 'В источнике portfolio_optimizer.local.local_dividends_dohod присутствуют дополнительные данные'
+    msg = 'В источнике local.local_dividends_dohod присутствуют дополнительные данные'
     assert msg in manager.need_update()
 
 
@@ -79,7 +79,7 @@ def test_dividends_update_status():
     assert len(result) == 5
     assert result.iloc[0] == 'OK'
     assert result.iloc[1] == 'OK'
-    msg = 'В источнике portfolio_optimizer.local.local_dividends_dohod присутствуют дополнительные данные'
+    msg = 'В источнике local.local_dividends_dohod присутствуют дополнительные данные'
     assert msg in result.iloc[2]
     assert result.iloc[3] == 'Нет локальных данных'
-    assert result.iloc[4] == 'В источнике portfolio_optimizer.local.local_dividends_dohod не совпадают данные'
+    assert result.iloc[4] == 'В источнике local.local_dividends_dohod не совпадают данные'

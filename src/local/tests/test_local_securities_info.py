@@ -1,11 +1,11 @@
 from pathlib import Path
 
 import pytest
-from portfolio_optimizer.local import data_manager
-from portfolio_optimizer.local.local_securities_info import aliases, securities_info
-from portfolio_optimizer.web.labels import LOT_SIZE, COMPANY_NAME, REG_NUMBER
 
 import settings
+from local import data_manager
+from local.local_securities_info import aliases, securities_info
+from web.labels import LOT_SIZE, COMPANY_NAME, REG_NUMBER
 
 
 @pytest.fixture(scope='module', autouse=True)

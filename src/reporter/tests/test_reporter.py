@@ -3,8 +3,9 @@ from shutil import copyfile
 
 import pandas as pd
 import pytest
-from portfolio_optimizer import Portfolio
-from portfolio_optimizer.reporter import reporter
+
+from portfolio import Portfolio
+from reporter import reporter
 
 POSITIONS = dict(MSTT=44,
                  RTKMP=15,

@@ -1,9 +1,9 @@
 from pathlib import Path
 
-import portfolio_optimizer.local.local_legacy_dividends
 import pytest
 
 import dividends_metrics
+import local.local_legacy_dividends
 import portfolio
 from portfolio import CASH, PORTFOLIO
 from settings import AFTER_TAX
@@ -11,11 +11,11 @@ from settings import AFTER_TAX
 
 @pytest.fixture(scope='module', autouse=True)
 def fake_legacy_dividends():
-    saved_path = portfolio_optimizer.local.local_legacy_dividends.FILE_PATH
+    saved_path = local.local_legacy_dividends.FILE_PATH
     fake_path = Path(__file__).parent.parent / 'local' / 'tests' / 'data' / 'dividends.xlsx'
-    portfolio_optimizer.local.local_legacy_dividends.FILE_PATH = fake_path
+    local.local_legacy_dividends.FILE_PATH = fake_path
     yield
-    portfolio_optimizer.local.local_legacy_dividends.FILE_PATH = saved_path
+    local.local_legacy_dividends.FILE_PATH = saved_path
 
 
 @pytest.fixture(scope='module', name='div')

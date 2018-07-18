@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from portfolio_optimizer.local.data_file import DataFile
 
 import settings
+from local.data_file import DataFile
 
 
 @pytest.fixture(scope='module', autouse=True)

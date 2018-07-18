@@ -1,9 +1,7 @@
 import pytest
-from portfolio_optimizer import Portfolio
-from portfolio_optimizer.reporter.portfolio_structure import drop_small_positions, MAX_TABLE_ROWS, OTHER, \
-    make_list_of_lists_table
 
-from portfolio import PORTFOLIO
+from portfolio import PORTFOLIO, Portfolio
+from reporter.portfolio_structure import drop_small_positions, MAX_TABLE_ROWS, OTHER, make_list_of_lists_table
 
 POSITIONS = dict(BANEP=200,
                  MFON=55,

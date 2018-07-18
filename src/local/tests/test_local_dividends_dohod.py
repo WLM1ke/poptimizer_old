@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from portfolio_optimizer.local import local_dividends_dohod
 
 import settings
+from local import local_dividends_dohod
 
 
 @pytest.fixture(scope='module', autouse=True)

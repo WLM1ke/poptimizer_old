@@ -3,10 +3,10 @@ from shutil import copyfile
 
 import pandas as pd
 import pytest
-from portfolio_optimizer import local
-from portfolio_optimizer.reporter import reporter
-from portfolio_optimizer.reporter.income_report import get_investor_data, constant_prices_data, rescale_and_format, \
-    income_report
+
+import local
+from reporter import reporter
+from reporter.income_report import get_investor_data, constant_prices_data, rescale_and_format, income_report
 
 
 @pytest.fixture(scope='module', autouse=True)

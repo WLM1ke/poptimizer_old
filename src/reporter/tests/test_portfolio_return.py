@@ -2,8 +2,9 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from portfolio_optimizer.reporter.portfolio_return import get_investors_names, portfolio_cum_return, index_cum_return
-from portfolio_optimizer.reporter.portfolio_return import make_list_of_lists_table
+
+from reporter.portfolio_return import get_investors_names, portfolio_cum_return, index_cum_return
+from reporter.portfolio_return import make_list_of_lists_table
 
 
 def read_test_df():

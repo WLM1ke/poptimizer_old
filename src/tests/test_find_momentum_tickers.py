@@ -1,13 +1,12 @@
 import pandas as pd
 import pytest
-from portfolio_optimizer import Portfolio
-from portfolio_optimizer.web.labels import REG_NUMBER
 
 import momentum_tickers
 from momentum_tickers import all_securities, all_securities_with_reg_number
 from momentum_tickers import non_portfolio_securities, make_new_portfolio, valid_volume
 from momentum_tickers import valid_return_gradient
-from portfolio import CASH
+from portfolio import CASH, Portfolio
+from web.labels import REG_NUMBER
 
 
 @pytest.fixture(scope='module', autouse=True, name='port')

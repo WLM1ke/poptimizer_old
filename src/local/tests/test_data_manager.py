@@ -3,10 +3,10 @@ from pathlib import Path
 import arrow
 import pandas as pd
 import pytest
-from portfolio_optimizer.local import data_manager
-from portfolio_optimizer.local.data_manager import DataManager
 
 import settings
+from local import data_manager
+from local.data_manager import DataManager
 
 
 @pytest.fixture(scope='module', autouse=True)

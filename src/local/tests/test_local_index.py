@@ -1,7 +1,7 @@
 import pandas as pd
 
-from portfolio_optimizer.local import local_index, data_manager
-from portfolio_optimizer.web.labels import CLOSE_PRICE
+from local import local_index, data_manager
+from web.labels import CLOSE_PRICE
 
 
 def test_index():
