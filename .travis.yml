@@ -13,7 +13,7 @@ before_script: # for Travis
   - "sh -e /etc/init.d/xvfb start"
   - sleep 3 # give xvfb some time to start
 script:
-  - python -m pytest src -v  --cov=src --cov-report=term-missing --cov-report=xml --setup-show
+  - pytest src -v  --cov=src --cov-report=term-missing --cov-report=xml --setup-show
 after_success:
   - codecov
   - python-codacy-coverage -r coverage.xml
