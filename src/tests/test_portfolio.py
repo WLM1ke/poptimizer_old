@@ -25,3 +25,10 @@ def test_portfolio_without_value():
     assert f'Дата - {date}' in port.__str__()
     assert port.value[PORTFOLIO] == 3_699_111.41
     assert port.weight['VSMO'] == pytest.approx(0.691071)
+
+
+def test_ticker_with_empty_history():
+    port = Portfolio(date='2018-03-19',
+                     cash=1000.21,
+                     positions=dict(GAZP=682, VSMO=145, KUNF=123))
+    assert port.price['KUNF'] == 0
