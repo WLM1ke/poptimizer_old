@@ -73,6 +73,7 @@ def parse_table_rows(table: BeautifulSoup):
                    pd.to_datetime(cells.date, dayfirst=True),
                    pd.to_numeric(cells.value.replace(',', '.')))
         else:
+            # Если появятся, то надо разобраться, как их корректно обрабатывать
             raise ValueError('Не утвержденные дивиденды')
 
 
