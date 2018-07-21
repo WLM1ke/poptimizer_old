@@ -24,9 +24,7 @@ def make_url(ticker: str):
 
 
 def get_html(url: str):
-    """Получает html
-
-    requests fails on SSL, using urllib.request"""
+    """Получает html"""
     try:
         with urllib.request.urlopen(url) as response:
             return response.read().decode('utf-8')
@@ -37,11 +35,12 @@ def get_html(url: str):
             raise error
 
 
-def pick_table(url: str, html: str):
+def get_html_table(url: str, table_index: int):
     """Выбирает таблицу с дивидендами на странице"""
+    html = get_html(url)
     soup = BeautifulSoup(html, 'lxml')
     try:
-        return soup.find_all('table')[TABLE_INDEX]
+        return soup.find_all('table')[table_index]
     except IndexError:
         raise IndexError(f'На странице {url} нет таблицы с дивидендами.')
 
@@ -102,8 +101,7 @@ def dividends_dohod(ticker: str) -> pd.Series:
         Значения - дивиденды
     """
     url = make_url(ticker)
-    html = get_html(url)
-    table = pick_table(url, html)
+    table = get_html_table(url, TABLE_INDEX)
     parsed_rows = parse_table_rows(table)
     return make_df(ticker, parsed_rows)
 
