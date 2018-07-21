@@ -48,8 +48,12 @@ def get_html_table(url: str, table_index: int):
 class RowParser:
     """Выбирает столбцы в ряду с датой закрытия реестра и дивидендами"""
 
-    def __init__(self, row: BeautifulSoup, tag: str = 'td'):
-        self.columns = [column.string for column in row.find_all(tag)]
+    def __init__(self, row: BeautifulSoup, is_header: bool = False):
+        if is_header:
+            column_html_tag = 'th'
+        else:
+            column_html_tag = 'td'
+        self.columns = [column.string for column in row.find_all(column_html_tag)]
 
     @property
     def date(self):
@@ -64,7 +68,7 @@ class RowParser:
 
 def validate_table_header(header: BeautifulSoup):
     """Проверка наименований столбцов с датой закрытия и дивидендами"""
-    cells = RowParser(header, 'th')
+    cells = RowParser(header, True)
     if cells.date != TH_DATE or cells.value != TH_VALUE:
         raise ValueError('Некорректные заголовки таблицы дивидендов.')
 
