@@ -19,7 +19,7 @@ VALUE_COLUMN = 7
 
 
 class RowParser:
-    """Выбирает столбцы в ряду с тикером, датой закрытия реестра и дивидендами"""
+    """Выбирает столбцы с тикером, датой закрытия реестра и дивидендами"""
 
     def __init__(self, row: BeautifulSoup, is_header: bool = False):
         if is_header:
