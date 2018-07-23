@@ -202,11 +202,9 @@ if __name__ == '__main__':
     pos = dict(MFON=55,
                LSNGP=81,
                MTSS=749,
-               GAZP=0,
                AKRN=795,
                MSRS=699,
                UPRO=1267,
-               MRSB=23,
                LKOH=123)
     port = Portfolio(date='2018-04-06',
                      cash=4330.3,

@@ -8,6 +8,10 @@ import local
 from portfolio import Portfolio, CASH, PORTFOLIO
 from settings import AFTER_TAX, T_SCORE
 
+# Период, который является источником для статистики
+DIVIDENDS_YEARS = 5
+DIVIDENDS_MONTHS = DIVIDENDS_YEARS * 12
+
 
 class DividendsMetrics:
     """Реализует основные метрики дивидендного потока для портфеля
@@ -35,34 +39,47 @@ class DividendsMetrics:
                 f'\n{df}')
 
     @property
-    def nominal_pretax(self):
-        """Дивиденды в номинальном выражении"""
+    def nominal_pretax_monthly(self):
+        """Дивиденды в номинальном выражении по месяцам"""
         positions = self._portfolio.positions
-        df = local.legacy_dividends(positions[:-2]).transpose()
+        df = local.monthly_dividends(positions[:-2], self._portfolio.date)
+        df = df.iloc[-DIVIDENDS_MONTHS:]
         df.reindex(index=positions)
-        df.loc[CASH] = 0
-        df.loc[PORTFOLIO] = df.multiply(self._portfolio.shares, axis='index').sum(axis=0)
+        df[CASH] = 0
+        df[PORTFOLIO] = df.multiply(self._portfolio.shares, axis='columns').sum(axis=1)
         return df
 
     @property
-    def real_after_tax(self):
-        """Дивиденды после уплаты налогов в реальном выражении (в ценах последнего года)
+    def real_after_tax_monthly(self):
+        """Дивиденды после уплаты налогов в реальном выражении по месяцам (в ценах последнего месяца)
 
         Все метрики опираются именно на реальные посленалоговые выплаты
         1 - ставка налога = AFTER_TAX указывается в модуле настроек
         """
-        nominal_pretax_dividends = self.nominal_pretax
-        years = nominal_pretax_dividends.columns
-        real_index = self._last_year_real_index(years)
-        real_pretax_dividends = nominal_pretax_dividends.multiply(real_index, axis='columns')
+        nominal_pretax_dividends = self.nominal_pretax_monthly
+        cpi = local.cpi_to_date(self._portfolio.date)
+        cum_cpi = cpi.iloc[-DIVIDENDS_MONTHS:].cumprod()
+        real_index = cum_cpi.iloc[-1] / cum_cpi
+        real_pretax_dividends = nominal_pretax_dividends.multiply(real_index, axis='index')
         return real_pretax_dividends * AFTER_TAX
 
-    @staticmethod
-    def _last_year_real_index(years):
-        """Индексы для пересчета в реальные цены конца последнего года"""
-        cum_cpi = local.cpi().cumprod()
-        years_ends = [pd.to_datetime(f'{year}-12-31') for year in years]
-        return (cum_cpi[years_ends[-1]] / cum_cpi[years_ends]).values
+    @property
+    def real_after_tax(self):
+        """Дивиденды после уплаты налогов в реальном выражении по годам (в ценах последнего месяца)
+
+        Все метрики опираются именно на реальные посленалоговые выплаты
+        1 - ставка налога = AFTER_TAX указывается в модуле настроек
+        """
+        real_after_tax = self.real_after_tax_monthly
+        end_month = self._portfolio.date.month
+
+        def yearly_aggregation(x: pd.Timestamp):
+            if x.month <= end_month:
+                return x + pd.DateOffset(month=end_month)
+            else:
+                return x + pd.DateOffset(years=1, month=end_month)
+
+        return real_after_tax.groupby(by=yearly_aggregation).sum()
 
     @property
     @lru_cache(maxsize=1)
@@ -70,12 +87,12 @@ class DividendsMetrics:
         """Дивидендная доходность"""
         dividends = self.real_after_tax
         inverse_prices = 1 / self._portfolio.price
-        return dividends.multiply(inverse_prices, axis='index')
+        return dividends.multiply(inverse_prices, axis='columns')
 
     @property
     def mean(self):
         """Матожидание дивидендной доходности"""
-        return self.yields.mean(axis='columns', skipna=False)
+        return self.yields.mean(axis='index', skipna=False)
 
     @property
     def std(self):
@@ -85,7 +102,7 @@ class DividendsMetrics:
         нулевой корреляции необходимо в качестве простого приема регуляризации, так как число лет существенно меньше
         количества позиций. Данное допущение используется во всех дальнейших расчетах
         """
-        std = self.yields.std(axis='columns', ddof=1, skipna=False)
+        std = self.yields.std(axis='index', ddof=1, skipna=False)
         tickers = std.index[:-2]
         weighted_std = std[tickers] * self._portfolio.weight[tickers]
         std[PORTFOLIO] = (weighted_std ** 2).sum(axis='index') ** 0.5
@@ -146,12 +163,24 @@ class DividendsMetrics:
 
 
 if __name__ == '__main__':
-    pos = dict(UPRO=1267,
-               LSNGP=81,
+    pos = dict(AKRN=679,
+               BANEP=644 + 14 + 16,
+               CHMF=108 + 26,
+               GMKN=139 + 27,
                LKOH=123,
-               SNGSP=31,
-               TTLK=5)
-    port = Portfolio(date='2018-06-11',
-                     cash=4330.3,
+               LSNGP=59 + 6,
+               LSRG=172 + 0 + 80,
+               MFON=65 + 0 + 5,
+               MSTT=2436,
+               MTSS=1179 + 25,
+               MVID=186,
+               PRTK=13,
+               RTKMP=1628 + 382 + 99,
+               SNGSP=207,
+               TTLK=234,
+               UPRO=1114,
+               VSMO=83 + 5)
+    port = Portfolio(date='2018-05-11',
+                     cash=311_587 + 584 + 1_457,
                      positions=pos)
     print(DividendsMetrics(port))
