@@ -110,5 +110,5 @@ ENV/
 .coverage
 
 # Personal files
-trading.py
+trading/
 reports/
