@@ -45,10 +45,10 @@ class RowParser:
 
 
 def validate_table_header(header: BeautifulSoup):
-    """Проверка количества столбцов и наименований с датой закрытия и дивидендами"""
+    """Проверка количества столбцов и наименований с тикером, датой закрытия и дивидендами"""
     columns_count = len(header.find_all('th'))
     if columns_count != 10:
-        raise ValueError('Некорректные заголовки таблицы дивидендов.')
+        raise ValueError('Некорректное количество столбцов в заголовке таблицы дивидендов.')
     cells = RowParser(header, True)
     if cells.ticker != TH_TICKER or cells.date != TH_DATE or cells.value != TH_VALUE:
         raise ValueError('Некорректные заголовки таблицы дивидендов.')
@@ -73,7 +73,7 @@ def parse_table_rows(table: BeautifulSoup):
                    pd.to_datetime(cells.date, dayfirst=True),
                    pd.to_numeric(cells.value.replace(',', '.')))
         else:
-            # Если появятся, то надо разобраться, как их корректно обрабатывать
+            # Если появятся ячейки без класса утвержденных дивидендов, то надо разобраться с обработкой
             raise ValueError('Не утвержденные дивиденды')
 
 
@@ -96,7 +96,9 @@ def dividends_smart_lab():
     """
     table = get_html_table(URL, TABLE_INDEX)
     parsed_rows = parse_table_rows(table)
-    return make_df(parsed_rows)
+    df = pd.DataFrame(data=parsed_rows,
+                      columns=[TICKER, DATE, DIVIDENDS])
+    return df.set_index(TICKER)
 
 
 if __name__ == '__main__':
