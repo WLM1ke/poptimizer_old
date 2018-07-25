@@ -45,8 +45,11 @@ def get_html_table(url: str, table_index: int):
         raise IndexError(f'На странице {url} нет таблицы с дивидендами.')
 
 
-class RowParser:
+class RowParserDohod:
     """Выбирает столбцы в ряду с датой закрытия реестра и дивидендами"""
+
+    date_column = DATE_COLUMN
+    value_column = VALUE_COLUMN
 
     def __init__(self, row: BeautifulSoup, is_header: bool = False):
         if is_header:
@@ -58,17 +61,17 @@ class RowParser:
     @property
     def date(self):
         """Дата закрытия реестра"""
-        return self.columns[DATE_COLUMN]
+        return self.columns[self.date_column]
 
     @property
     def value(self):
         """Размер дивиденда"""
-        return self.columns[VALUE_COLUMN]
+        return self.columns[self.value_column]
 
 
 def validate_table_header(header: BeautifulSoup):
     """Проверка наименований столбцов с датой закрытия и дивидендами"""
-    cells = RowParser(header, True)
+    cells = RowParserDohod(header, True)
     if cells.date != TH_DATE or cells.value != TH_VALUE:
         raise ValueError('Некорректные заголовки таблицы дивидендов.')
 
@@ -78,7 +81,7 @@ def parse_table_rows(table: BeautifulSoup):
     rows = table.find_all(name='tr', class_=None)
     validate_table_header(rows[0])
     for row in rows[1:]:
-        cells = RowParser(row)
+        cells = RowParserDohod(row)
         yield pd.to_datetime(cells.date, dayfirst=True), pd.to_numeric(cells.value)
 
 

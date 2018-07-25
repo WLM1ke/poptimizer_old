@@ -4,7 +4,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 
 from web.labels import TICKER, DATE, DIVIDENDS
-from web.web_dividends_dohod import get_html_table
+from web.web_dividends_dohod import get_html_table, RowParserDohod
 
 URL = 'https://smart-lab.ru/dividends/index/order_by_short_name/desc/'
 # Номер таблицы с дивидендами в документе
@@ -18,30 +18,17 @@ DATE_COLUMN = 4
 VALUE_COLUMN = 7
 
 
-class RowParser:
+class RowParserSmartLab(RowParserDohod):
     """Выбирает столбцы с тикером, датой закрытия реестра и дивидендами"""
 
-    def __init__(self, row: BeautifulSoup, is_header: bool = False):
-        if is_header:
-            column_html_tag = 'th'
-        else:
-            column_html_tag = 'td'
-        self.columns = [column.text for column in row.find_all(column_html_tag)]
+    ticker_column = TICKER_COLUMN
+    date_column = DATE_COLUMN
+    value_column = VALUE_COLUMN
 
     @property
     def ticker(self):
         """Тикер"""
-        return self.columns[TICKER_COLUMN]
-
-    @property
-    def date(self):
-        """Дата закрытия реестра"""
-        return self.columns[DATE_COLUMN]
-
-    @property
-    def value(self):
-        """Размер дивиденда"""
-        return self.columns[VALUE_COLUMN]
+        return self.columns[self.ticker_column]
 
 
 def validate_table_header(header: BeautifulSoup):
@@ -49,7 +36,7 @@ def validate_table_header(header: BeautifulSoup):
     columns_count = len(header.find_all('th'))
     if columns_count != 10:
         raise ValueError('Некорректное количество столбцов в заголовке таблицы дивидендов.')
-    cells = RowParser(header, True)
+    cells = RowParserSmartLab(header, True)
     if cells.ticker != TH_TICKER or cells.date != TH_DATE or cells.value != TH_VALUE:
         raise ValueError('Некорректные заголовки таблицы дивидендов.')
 
@@ -68,7 +55,7 @@ def parse_table_rows(table: BeautifulSoup):
     validate_table_footer(rows[-1])
     for row in rows[1:-1]:
         if 'dividend_approved' in row['class']:
-            cells = RowParser(row)
+            cells = RowParserSmartLab(row)
             yield (cells.ticker,
                    pd.to_datetime(cells.date, dayfirst=True),
                    pd.to_numeric(cells.value.replace(',', '.')))
