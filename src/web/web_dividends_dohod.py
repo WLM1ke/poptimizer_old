@@ -53,7 +53,7 @@ class RowParser:
             column_html_tag = 'th'
         else:
             column_html_tag = 'td'
-        self.columns = [column.string for column in row.find_all(column_html_tag)]
+        self.columns = [column.text for column in row.find_all(column_html_tag)]
 
     @property
     def date(self):
