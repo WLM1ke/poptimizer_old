@@ -199,15 +199,27 @@ class Optimizer:
 
 
 if __name__ == '__main__':
-    pos = dict(MFON=55,
-               LSNGP=81,
-               MTSS=749,
-               AKRN=795,
-               MSRS=699,
-               UPRO=1267,
-               LKOH=123)
-    port = Portfolio(date='2018-04-06',
-                     cash=4330.3,
+    pos = dict(AKRN=679,
+               BANEP=392,
+               CHMF=173,
+               GMKN=139,
+               LKOH=123,
+               LSNGP=59,
+               LSRG=1341,
+               MSRS=38,
+               MSTT=2181,
+               MTSS=1264,
+               MVID=141,
+               PMSBP=2715,
+               RTKMP=1674,
+               SNGSP=263,
+               TTLK=234,
+               UPRO=1272,
+               VSMO=101)
+    port = Portfolio(date='2018-07-24',
+                     cash=102_262,
                      positions=pos)
     optimizer = Optimizer(port)
     print(optimizer)
+    print(optimizer.dividends_metrics.std[PORTFOLIO])
+    print(optimizer.returns_metrics.std[PORTFOLIO])
