@@ -64,13 +64,6 @@ def parse_table_rows(table: BeautifulSoup):
             raise ValueError('Не утвержденные дивиденды')
 
 
-def make_df(parsed_rows):
-    """Формирует DataFrame"""
-    df = pd.DataFrame(data=parsed_rows,
-                      columns=[TICKER, DATE, DIVIDENDS])
-    return df.set_index(TICKER)
-
-
 def dividends_smart_lab():
     """
     Возвращает ожидаемые дивиденды с сайта https://smart-lab.ru/
