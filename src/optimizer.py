@@ -26,29 +26,47 @@ class Optimizer:
         self._returns_metrics = ReturnsMetrics(portfolio)
 
     def __str__(self):
+        return (f'\n{self._str_main_metrics()}'
+                f'\n'
+                f'\n{self._str_need_optimization()}'
+                f'\n'
+                f'\n{self.best_trade}'
+                f'\n'
+                f'\nКЛЮЧЕВЫЕ МЕТРИКИ ОПТИМАЛЬНОСТИ ПО ПАРЕТО'
+                f'\n'
+                f'\n{self._str_pareto_metrics()}')
+
+    def _str_main_metrics(self):
+        """Срока с информацией о просадке и дивидендах портфеля"""
         draw_down = self._returns_metrics.draw_down[PORTFOLIO]
         expected_dividends = self._dividends_metrics.expected_dividends
         minimal_dividends = self._dividends_metrics.minimal_dividends
-        main_metrics = (f'КЛЮЧЕВЫЕ МЕТРИКИ ПОРТФЕЛЯ'
-                        f'\nМаксимальная ожидаемая просадка - {draw_down:.4f}'
-                        f'\nОжидаемые дивиденды - {expected_dividends:.0f}'
-                        f'\nМинимальные дивиденды - {minimal_dividends:.0f}')
+        return (f'КЛЮЧЕВЫЕ МЕТРИКИ ПОРТФЕЛЯ'
+                f'\nМаксимальная ожидаемая просадка - {draw_down:.4f}'
+                f'\nОжидаемые дивиденды - {expected_dividends:.0f}'
+                f'\nМинимальные дивиденды - {minimal_dividends:.0f}')
 
+    def _str_need_optimization(self):
+        """Строка о необходимости оптимизации"""
         if self.t_dividends_growth > self.t_drawdown_growth:
             t_growth = self.t_dividends_growth
             best_gradient = 'дивидендов'
-            best_growth = self.dividends_gradient_growth
         else:
             t_growth = self.t_drawdown_growth
             best_gradient = 'просадки'
-            best_growth = self.drawdown_gradient_growth
         if t_growth > T_SCORE:
-            need_optimization = (f'ОПТИМИЗАЦИЯ ТРЕБУЕТСЯ'
-                                 f'\nПрирост {best_gradient} составляет {t_growth:.2f} СКО > {T_SCORE:.2f}')
+            return (f'ОПТИМИЗАЦИЯ ТРЕБУЕТСЯ'
+                    f'\nПрирост {best_gradient} составляет {t_growth:.2f} СКО > {T_SCORE:.2f}')
         else:
-            need_optimization = (f'ОПТИМИЗАЦИЯ НЕ ТРЕБУЕТСЯ'
-                                 f'\nПрирост {best_gradient} составляет {t_growth:.2f} СКО < {T_SCORE:.2f}')
+            return (f'ОПТИМИЗАЦИЯ НЕ ТРЕБУЕТСЯ'
+                    f'\nПрирост {best_gradient} составляет {t_growth:.2f} СКО < {T_SCORE:.2f}')
 
+    def _str_pareto_metrics(self):
+        """Сводная информация об оптимальности по Парето"""
+        if self.t_dividends_growth > self.t_drawdown_growth:
+            best_growth = self.dividends_gradient_growth
+        else:
+            best_growth = self.drawdown_gradient_growth
         frames = [self.dividends_metrics.gradient,
                   self.returns_metrics.gradient,
                   self.dominated,
@@ -57,16 +75,7 @@ class Optimizer:
         pareto_metrics = pd.concat(frames, axis=1)
         pareto_metrics.columns = ['D_GRADIENT', 'R_GRADIENT', 'DOMINATED', 'VOLUME_FACTOR', 'GRADIENT_GROWTH']
         pareto_metrics.sort_values('D_GRADIENT', ascending=False, inplace=True)
-
-        return (f'\n{main_metrics}'
-                f'\n'
-                f'\n{need_optimization}'
-                f'\n'
-                f'\n{self.best_trade}'
-                f'\n'
-                f'\nКЛЮЧЕВЫЕ МЕТРИКИ ОПТИМАЛЬНОСТИ ПО ПАРЕТО'
-                f'\n'
-                f'\n{pareto_metrics}')
+        return pareto_metrics
 
     @property
     def portfolio(self):
