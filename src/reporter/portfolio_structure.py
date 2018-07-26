@@ -42,7 +42,7 @@ def make_plot(portfolio: Portfolio, width: float, height: float):
     position_share = position_value.iloc[:-1] / position_value.iloc[-1]
     labels = position_share.index + position_share.apply(lambda x: f'\n{x * 100:.1f}%')
 
-    fig, ax = plt.subplots(1, 1, figsize=(width / inch, height / inch))
+    _, ax = plt.subplots(1, 1, figsize=(width / inch, height / inch))
     _, texts = ax.pie(position_share, labels=labels, startangle=90, counterclock=False, labeldistance=1.2)
     plt.setp(texts, size=8)
     ax.axis('equal')
