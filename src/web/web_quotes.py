@@ -45,8 +45,7 @@ class Quotes:
         with request.urlopen(self.url(block_position)) as response:
             json_data = json.load(response)
         self._validate_response(block_position, json_data)
-        return dict(data=json_data['history']['data'],
-                    columns=json_data['history']['columns'])
+        return {key: json_data['history'][key] for key in ['data', 'columns']}
 
     def _validate_response(self, block_position, json_data):
         """Первый запрос должен содержать не нулевое количество строк"""
