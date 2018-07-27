@@ -40,33 +40,23 @@ class Quotes:
         arg_str = '&'.join(query_args)
         return f'{url}?{arg_str}'
 
-    def get_json(self, block_position):
+    def get_json_data(self, block_position):
         """Загружает и проверяет json с данными"""
         with request.urlopen(self.url(block_position)) as response:
             json_data = json.load(response)
         self._validate_response(block_position, json_data)
-        return json_data
+        return dict(data=json_data['history']['data'],
+                    columns=json_data['history']['columns'])
 
     def _validate_response(self, block_position, json_data):
         """Первый запрос должен содержать не нулевое количество строк"""
-        if block_position == 0 and len(self._rows(json_data)) == 0:
+        if block_position == 0 and len(json_data['history']['data']) == 0:
             raise ValueError(f'Пустой ответ. Проверьте запрос: {self.url}')
-
-    @staticmethod
-    def _rows(json_data):
-        """Извлекает массив строк с данными из json"""
-        return json_data['history']['data']
-
-    @staticmethod
-    def _columns(json_data):
-        """"Извлекает массив наименований столбцов с данными из json"""
-        return json_data['history']['columns']
 
     def get_df(self, block_position):
         """Формирует DataFrame и выбирает необходимые колонки - даты, цены закрытия и объемы"""
-        json_data = self.get_json(block_position)
-        df = pd.DataFrame(data=self._rows(json_data),
-                          columns=self._columns(json_data))
+        json_data = self.get_json_data(block_position)
+        df = pd.DataFrame(**json_data)
         df[DATE] = pd.to_datetime(df['TRADEDATE'])
         df[CLOSE_PRICE] = pd.to_numeric(df['CLOSE'])
         df[VOLUME] = pd.to_numeric(df['VOLUME'])
