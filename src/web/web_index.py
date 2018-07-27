@@ -18,10 +18,11 @@ class Index(Quotes):
     def __init__(self, start_date):
         super().__init__(self._ticker, start_date)
 
-    @property
-    def df(self):
+    def get_df(self, block_position):
         """Выбирает из сырого DataFrame только с необходимые колонки - даты и цены закрытия"""
-        df = pd.DataFrame(data=self.rows, columns=self.columns)
+        json_data = self.get_json(block_position)
+        df = pd.DataFrame(data=self._rows(json_data),
+                          columns=self._columns(json_data))
         df[DATE] = pd.to_datetime(df['TRADEDATE'])
         df[CLOSE_PRICE] = pd.to_numeric(df['CLOSE'])
         return df[[DATE, CLOSE_PRICE]].set_index(DATE)

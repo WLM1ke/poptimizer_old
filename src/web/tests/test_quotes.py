@@ -1,3 +1,5 @@
+from collections import Iterable
+
 import pandas as pd
 
 from web.labels import CLOSE_PRICE, DATE, VOLUME
@@ -6,14 +8,15 @@ from web.web_quotes import quotes, Quotes
 
 def test_quotes_none_start_date():
     quotes_gen = Quotes('AKRN', None)
-    assert quotes_gen.url == ('https://iss.moex.com/iss/history/engines/stock/markets'
-                              '/shares/securities/AKRN.json?start=0')
-    assert quotes_gen.df.loc[0, DATE] == pd.Timestamp('2006-10-11')
+    assert quotes_gen.url(0) == ('https://iss.moex.com/iss/history/engines/stock/markets'
+                                 '/shares/securities/AKRN.json?start=0')
+    assert quotes_gen.get_df(0).loc[0, DATE] == pd.Timestamp('2006-10-11')
 
 
 def test_quotes_is_iterable():
     quotes_gen = Quotes('AKRN', pd.Timestamp('2017-03-01'))
-    assert quotes_gen.df.loc[0, DATE] == pd.Timestamp('2017-03-01')
+    assert isinstance(quotes_gen, Iterable)
+    assert quotes_gen.get_df(0).loc[0, DATE] == pd.Timestamp('2017-03-01')
     assert len(list(quotes_gen)) >= 3
 
 

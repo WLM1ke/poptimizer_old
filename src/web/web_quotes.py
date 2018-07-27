@@ -18,15 +18,21 @@ class Quotes:
 
     def __init__(self, ticker: str, start_date):
         self._ticker, self._start_date = ticker, start_date
-        self._block_position = 0
-        self._data = None
-        self.get_json()
 
-    @property
-    def url(self):
+    def __iter__(self):
+        block_position = 0
+        while True:
+            df = self.get_df(block_position)
+            df_len = len(df)
+            if df_len == 0:
+                raise StopIteration
+            block_position += df_len
+            yield df
+
+    def url(self, block_position):
         """Создает url для запроса к серверу http://iss.moex.com"""
         url = self._base_url + f'{self._ticker}.json'
-        query_args = [f'start={self._block_position}']
+        query_args = [f'start={block_position}']
         if self._start_date:
             if not isinstance(self._start_date, pd.Timestamp):
                 raise TypeError(self._start_date)
@@ -34,54 +40,37 @@ class Quotes:
         arg_str = '&'.join(query_args)
         return f'{url}?{arg_str}'
 
-    def get_json(self):
+    def get_json(self, block_position):
         """Загружает и проверяет json с данными"""
-        with request.urlopen(self.url) as response:
-            self._data = json.load(response)
-        self._validate_response()
+        with request.urlopen(self.url(block_position)) as response:
+            json_data = json.load(response)
+        self._validate_response(block_position, json_data)
+        return json_data
 
-    def _validate_response(self):
+    def _validate_response(self, block_position, json_data):
         """Первый запрос должен содержать не нулевое количество строк"""
-        if self._block_position == 0 and len(self) == 0:
+        if block_position == 0 and len(self._rows(json_data)) == 0:
             raise ValueError(f'Пустой ответ. Проверьте запрос: {self.url}')
 
-    def __len__(self):
-        return len(self.rows)
-
-    @property
-    def rows(self):
+    @staticmethod
+    def _rows(json_data):
         """Извлекает массив строк с данными из json"""
-        return self._data['history']['data']
+        return json_data['history']['data']
 
-    @property
-    def columns(self):
+    @staticmethod
+    def _columns(json_data):
         """"Извлекает массив наименований столбцов с данными из json"""
-        return self._data['history']['columns']
+        return json_data['history']['columns']
 
-    @property
-    def df(self):
-        """Формирует DataFrame и выбирает необходимые колонки - даты, цены закрытия и объемы."""
-        df = pd.DataFrame(data=self.rows, columns=self.columns)
+    def get_df(self, block_position):
+        """Формирует DataFrame и выбирает необходимые колонки - даты, цены закрытия и объемы"""
+        json_data = self.get_json(block_position)
+        df = pd.DataFrame(data=self._rows(json_data),
+                          columns=self._columns(json_data))
         df[DATE] = pd.to_datetime(df['TRADEDATE'])
         df[CLOSE_PRICE] = pd.to_numeric(df['CLOSE'])
         df[VOLUME] = pd.to_numeric(df['VOLUME'])
         return df[[DATE, CLOSE_PRICE, VOLUME]]
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        # если блок не пустой
-        if self:
-            # используем текущий результат парсинга
-            df = self.df
-            # перещелкиваем сдвиг на следующий блок и получаем новые данные
-            self._block_position += len(self)
-            self.get_json()
-            # выводим текущий результат парсинга
-            return df
-        else:
-            raise StopIteration
 
 
 def quotes(ticker, start=None):
