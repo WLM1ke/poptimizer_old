@@ -25,7 +25,7 @@ class Quotes:
             df = self.get_df(block_position)
             df_len = len(df)
             if df_len == 0:
-                raise StopIteration
+                break
             block_position += df_len
             yield df
 
