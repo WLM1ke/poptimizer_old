@@ -17,7 +17,7 @@ def make_temp_dir(tmpdir_factory):
 
 
 def test_dividends():
-    df = local_dividends_dohod.dividends('GAZP')
+    df = local_dividends_dohod.dividends_dohod('GAZP')
     assert isinstance(df, pd.Series)
     assert df.name == 'GAZP'
     assert df.index.is_monotonic_increasing

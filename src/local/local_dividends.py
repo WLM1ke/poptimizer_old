@@ -12,7 +12,7 @@ from settings import DATA_PATH
 from web.labels import DATE
 
 DIVIDENDS_CATEGORY = 'dividends'
-DIVIDENDS_SOURCES = [local_dividends_dohod.dividends]
+DIVIDENDS_SOURCES = [local_dividends_dohod.dividends_dohod]
 DAYS_TO_MANUAL_UPDATE = 90
 STATISTICS_START = '2010-01-01'
 DATABASE = str(DATA_PATH / DIVIDENDS_CATEGORY / 'dividends.db')
@@ -128,4 +128,4 @@ if __name__ == '__main__':
     manager.update()
     print('Статус данных -', manager.need_update())
     print(manager.get())
-    print(local_dividends_dohod.dividends(name).groupby(DATE).sum() / manager.get() - 1)
+    print(local_dividends_dohod.dividends_dohod(name).groupby(DATE).sum() / manager.get() - 1)

@@ -15,6 +15,7 @@ class DividendsDohodDataManager(DataManager):
 
     Несколько платежей в одну дату суммируются
     """
+    days_to_update = DAYS_TO_UPDATE
 
     def __init__(self, ticker: str):
 
@@ -29,12 +30,12 @@ class DividendsDohodDataManager(DataManager):
 
     def _need_update(self):
         """Обновление осуществляется через DAYS_TO_UPDATE дней после предыдущего"""
-        if self.file.last_update().shift(days=DAYS_TO_UPDATE) < arrow.now():
+        if self.file.last_update().shift(days=self.days_to_update) < arrow.now():
             return True
         return False
 
 
-def dividends(ticker: str):
+def dividends_dohod(ticker: str):
     """Сохраняет, при необходимости обновляет и возвращает дивиденды для тикеров
 
     Parameters
@@ -52,4 +53,4 @@ def dividends(ticker: str):
 
 
 if __name__ == '__main__':
-    print(dividends('MFON'))
+    print(dividends_dohod('MFON'))
