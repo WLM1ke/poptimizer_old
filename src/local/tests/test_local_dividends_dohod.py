@@ -32,6 +32,6 @@ def test_need_update_false():
 
 
 def test_need_update_true(monkeypatch):
-    monkeypatch.setattr(local_dividends_dohod, 'DAYS_TO_UPDATE', 0)
+    monkeypatch.setattr(local_dividends_dohod.DividendsDohodDataManager, 'days_to_update', 0)
     manager = local_dividends_dohod.DividendsDohodDataManager('GAZP')
     assert manager._need_update()

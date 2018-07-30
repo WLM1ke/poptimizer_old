@@ -2,6 +2,7 @@
 
 from local.local_cpi import cpi, cpi_to_date
 from local.local_dividends import monthly_dividends, dividends_update_status
+from local.local_dividends_smart_lab import dividends_smart_lab
 from local.local_index import index
 from local.local_legacy_dividends import legacy_dividends
 from local.local_quotes import prices
