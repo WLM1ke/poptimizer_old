@@ -72,12 +72,13 @@ class DividendsMetrics:
         """
         real_after_tax = self.real_after_tax_monthly
         end_month = self._portfolio.date.month
+        day_end = self._portfolio.date.day
 
         def yearly_aggregation(x: pd.Timestamp):
             if x.month <= end_month:
-                return x + pd.DateOffset(month=end_month)
+                return x + pd.DateOffset(month=end_month, day=day_end)
             else:
-                return x + pd.DateOffset(years=1, month=end_month)
+                return x + pd.DateOffset(years=1, month=end_month, day=day_end)
 
         return real_after_tax.groupby(by=yearly_aggregation).sum()
 
@@ -163,24 +164,25 @@ class DividendsMetrics:
 
 
 if __name__ == '__main__':
-    pos = dict(AKRN=679,
-               BANEP=644 + 14 + 16,
-               CHMF=108 + 26,
-               GMKN=139 + 27,
-               LKOH=123,
-               LSNGP=59 + 6,
-               LSRG=172 + 0 + 80,
-               MFON=65 + 0 + 5,
-               MSTT=2436,
-               MTSS=1179 + 25,
-               MVID=186,
-               PRTK=13,
-               RTKMP=1628 + 382 + 99,
-               SNGSP=207,
+    pos = dict(AKRN=676,
+               BANEP=392,
+               CHMF=173,
+               GMKN=139,
+               LKOH=183,
+               LSNGP=596,
+               LSRG=2346,
+               MSRS=128,
+               MSTT=1823,
+               MTSS=1348,
+               MVID=141,
+               PMSBP=2715,
+               RTKMP=1674,
+               SNGSP=263,
                TTLK=234,
-               UPRO=1114,
-               VSMO=83 + 5)
-    port = Portfolio(date='2018-05-11',
-                     cash=311_587 + 584 + 1_457,
+               UPRO=1272,
+               VSMO=101)
+    port = Portfolio(date='2018-07-27',
+                     cash=2_482 + 7_764 + 3_416,
                      positions=pos)
     print(DividendsMetrics(port))
+
