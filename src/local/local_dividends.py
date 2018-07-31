@@ -6,13 +6,14 @@ import arrow
 import numpy as np
 import pandas as pd
 
-from local import local_dividends_dohod
+from local import local_dividends_dohod, local_dividends_smart_lab
 from local.data_file import DataFile
 from settings import DATA_PATH
 from web.labels import DATE
 
 DIVIDENDS_CATEGORY = 'dividends'
-DIVIDENDS_SOURCES = [local_dividends_dohod.dividends_dohod]
+DIVIDENDS_SOURCES = [local_dividends_dohod.dividends_dohod,
+                     local_dividends_smart_lab.dividends_smart_lab]
 DAYS_TO_MANUAL_UPDATE = 90
 STATISTICS_START = '2010-01-01'
 DATABASE = str(DATA_PATH / DIVIDENDS_CATEGORY / 'dividends.db')
@@ -121,11 +122,8 @@ def dividends_update_status(tickers: tuple):
 
 
 if __name__ == '__main__':
-    name = 'ENRU'
+    name = 'MTSS'
     manager = DividendsDataManager(name)
     print('Статус данных -', manager.need_update())
-    print(manager.get())
     manager.update()
     print('Статус данных -', manager.need_update())
-    print(manager.get())
-    print(local_dividends_dohod.dividends_dohod(name).groupby(DATE).sum() / manager.get() - 1)
