@@ -103,24 +103,6 @@ def monthly_dividends(tickers: tuple, last_date: pd.Timestamp):
     return df.groupby(by=monthly_aggregation).sum()
 
 
-def dividends_update_status(tickers: tuple):
-    """Возвращает статус обновления данных по дивидендам
-
-
-    Parameters
-    ----------
-    tickers
-        Кортеж тикеров, для которых нужно предоставить данные
-
-    Returns
-    -------
-    list of str or None
-        Возвращает список, который содержит строки с текстовыми сообщениями о причинах неактуальности данных для тикера
-    """
-    return pd.Series(index=list(tickers),
-                     data=[DividendsDataManager(ticker).need_update() for ticker in tickers])
-
-
 if __name__ == '__main__':
     name = 'MTSS'
     manager = DividendsDataManager(name)

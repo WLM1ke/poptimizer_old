@@ -70,16 +70,3 @@ def test_monthly_dividends():
     assert df.loc['2010-02-17', 'GMKN'] == pytest.approx(0)
     assert df.loc['2010-06-17', 'GMKN'] == pytest.approx(210)
     assert df.loc['2011-05-17', 'GMKN'] == pytest.approx(180)
-
-
-def test_dividends_update_status():
-    DividendsDataManager('MSTT').update()
-    result = local_dividends.dividends_update_status(('CHMF', 'GMKN', 'AKRN', 'BANEP', 'MSTT'))
-    assert isinstance(result, pd.Series)
-    assert len(result) == 5
-    assert result.iloc[0] == 'OK'
-    assert result.iloc[1] == 'OK'
-    msg = 'В источнике local.local_dividends_dohod присутствуют дополнительные данные'
-    assert msg in result.iloc[2]
-    assert result.iloc[3] == 'Нет локальных данных'
-    assert result.iloc[4] == 'В источнике local.local_dividends_dohod не совпадают данные'

@@ -70,3 +70,8 @@ class DataFile:
         """Загружает данные из файла"""
         if self.last_update() is not None:
             return pd.read_msgpack(self.data_path)
+
+
+if __name__ == '__main__':
+    data = DataFile('macro', 'qqq')
+    print(data.load())

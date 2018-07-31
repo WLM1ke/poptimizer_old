@@ -43,3 +43,8 @@ def test_second_dump():
     assert data.last_update() > time1
     assert not data.load().equals(df1)
     assert data.load().equals(df2)
+
+
+def test_no_file():
+    data = DataFile('macro', 'qqq')
+    assert data.load() is None
