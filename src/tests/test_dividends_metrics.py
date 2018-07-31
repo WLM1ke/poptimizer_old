@@ -61,3 +61,15 @@ def test_str(div):
     assert 'BETA' in text
     assert 'LOWER_BOUND' in text
     assert 'GRADIENT' in text
+
+
+def test_end_of_month_shape():
+    positions = dict(AKRN=679,
+                     GMKN=139,
+                     LSRG=172,
+                     MSTT=2436,
+                     TTLK=234)
+    port = Portfolio(date='2018-07-30',
+                     cash=311_587,
+                     positions=positions)
+    return DividendsMetrics(port).real_after_tax.shape == (5, 7)
