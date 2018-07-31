@@ -4,6 +4,7 @@ import arrow
 
 import web
 from local.data_manager import DataManager
+from web.labels import TICKER, DIVIDENDS
 
 DIVIDENDS_CATEGORY = 'dividends_smart_lab'
 DIVIDENDS_NAME = 'dividends_smart_lab'
@@ -34,10 +35,14 @@ class SmartLabDataManager(DataManager):
             self.file.dump(df_new)
 
 
-def dividends_smart_lab():
-    data = SmartLabDataManager()
-    return data.get()
-
+def dividends_smart_lab(ticker: str = None):
+    data = SmartLabDataManager().get()
+    if ticker:
+        data = data[data[TICKER] == ticker][DIVIDENDS]
+        data.name = ticker
+        return data
+    else:
+        return data
 
 if __name__ == '__main__':
-    print(dividends_smart_lab())
+    print(dividends_smart_lab('AKRN'))

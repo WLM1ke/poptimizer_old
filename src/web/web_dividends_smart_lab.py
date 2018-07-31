@@ -78,7 +78,7 @@ def dividends_smart_lab():
     parsed_rows = parse_table_rows(table)
     df = pd.DataFrame(data=parsed_rows,
                       columns=[TICKER, DATE, DIVIDENDS])
-    return df.set_index(TICKER)
+    return df.set_index(DATE)
 
 
 if __name__ == '__main__':
