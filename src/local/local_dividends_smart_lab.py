@@ -36,6 +36,20 @@ class SmartLabDataManager(DataManager):
 
 
 def dividends_smart_lab(ticker: str = None):
+    """Возвращает данные об ожидаемых дивидендах на СмартЛабе
+
+    Без параметров - всю имеющуюся информацию, или для конкретного тикера
+
+    Parameters
+    ----------
+    ticker
+        Тикер для которого необходимо предоставить информацию
+
+    Returns
+    -------
+    pandas.DataFrame
+        Информация сроках и размере предстоящих выплат
+    """
     data = SmartLabDataManager().get()
     if ticker:
         data = data[data[TICKER] == ticker][DIVIDENDS]
@@ -44,5 +58,7 @@ def dividends_smart_lab(ticker: str = None):
     else:
         return data
 
+
 if __name__ == '__main__':
-    print(dividends_smart_lab('AKRN'))
+    print(dividends_smart_lab('CHMF'))
+    print(dividends_smart_lab())

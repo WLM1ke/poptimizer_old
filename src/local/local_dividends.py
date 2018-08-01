@@ -9,7 +9,7 @@ import pandas as pd
 from local import local_dividends_dohod, local_dividends_smart_lab
 from local.data_file import DataFile
 from settings import DATA_PATH
-from web.labels import DATE
+from web.labels import DATE, TICKER, DIVIDENDS
 
 DIVIDENDS_CATEGORY = 'dividends'
 DIVIDENDS_SOURCES = [local_dividends_dohod.dividends_dohod,
@@ -103,9 +103,39 @@ def monthly_dividends(tickers: tuple, last_date: pd.Timestamp):
     return df.groupby(by=monthly_aggregation).sum()
 
 
+def smart_lab_status(tickers: tuple):
+    """Информация об актуальности данных в основной локальной базе дивидендов
+
+    Parameters
+    ----------
+    tickers
+        Основные тикеры, для которых нужно проверить актуальность данных
+
+    Returns
+    -------
+    tuple of list
+        Нулевой элемент кортежа - список тикеров из переданных без актуальной информации в локальной базе
+        Первый элемент кортежа - список тикеров со СмартЛаба, по которым нет актуальной информации в локальной базе
+    """
+    df = local_dividends_smart_lab.dividends_smart_lab()
+    result = ([], [])
+    for i in range(len(df)):
+        date = df.index[i]
+        ticker = df.iloc[i][TICKER]
+        value = df.iloc[i][DIVIDENDS]
+        local_data = DividendsDataManager(ticker).get()
+        if (local_data is None) or (date not in local_data.index) or (local_data[date] != value):
+            if ticker in tickers:
+                result[0].append(ticker)
+            else:
+                result[1].append(ticker)
+    return result
+
+
 if __name__ == '__main__':
     name = 'MTSS'
     manager = DividendsDataManager(name)
     print('Статус данных -', manager.need_update())
     manager.update()
     print('Статус данных -', manager.need_update())
+    print(smart_lab_status(('CHMF',)))
