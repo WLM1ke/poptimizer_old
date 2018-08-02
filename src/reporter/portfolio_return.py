@@ -43,7 +43,7 @@ def index_cum_return(df):
 
 def make_plot(df: pd.DataFrame, width: float, height: float):
     """Строит график стоимости портфеля и возвращает объект pdf-изображения"""
-    fig, ax = plt.subplots(1, 1, figsize=(width / inch, height / inch))
+    _, ax = plt.subplots(1, 1, figsize=(width / inch, height / inch))
     ax.spines['top'].set_visible(False)
     ax.spines['bottom'].set_visible(False)
     ax.spines['right'].set_visible(False)

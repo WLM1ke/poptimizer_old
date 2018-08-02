@@ -95,6 +95,7 @@ def monthly_dividends(tickers: tuple, last_date: pd.Timestamp):
     df = df.reindex(index=index)
 
     def monthly_aggregation(x: pd.Timestamp):
+        """Агрегация месячных данных - конец месяца соответствует дню месяца из аргумента"""
         if x.day <= month_end_day:
             return x + pd.DateOffset(day=month_end_day)
         else:
@@ -135,7 +136,7 @@ def smart_lab_status(tickers: tuple):
 if __name__ == '__main__':
     name = 'MTSS'
     manager = DividendsDataManager(name)
-    print('Статус данных -', manager.need_update())
     manager.update()
+    print(manager.get())
+    print()
     print('Статус данных -', manager.need_update())
-    print(smart_lab_status(('CHMF',)))
