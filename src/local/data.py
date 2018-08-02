@@ -17,7 +17,7 @@ class Datum:
         self._time = arrow.now(TIME_ZONE)
 
     def __str__(self):
-        return f'Datum(Value={self.value}, time={self.time})'
+        return f'Datum(value={self.value}, time={self.time})'
 
     @property
     def value(self):
