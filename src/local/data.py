@@ -2,10 +2,11 @@
 
 import arrow
 
+# Часовой пояс MOEX
 TIME_ZONE = 'Europe/Moscow'
 
 
-class Datum:
+class Data:
     """Класс с данными, который хранит и автоматически обновляет дату последнего изменения данных
 
     Поддерживается операция присвоения значения с помощью =
@@ -17,7 +18,7 @@ class Datum:
         self._time = arrow.now(TIME_ZONE)
 
     def __str__(self):
-        return f'Datum(value={self.value}, time={self.time})'
+        return f'{data.__class__.__name__}(value={self.value}, time={self.time})'
 
     @property
     def value(self):
@@ -36,7 +37,7 @@ class Datum:
 
 
 if __name__ == '__main__':
-    data = Datum(42)
+    data = Data(42)
     print(data)
     data.value = 24
     print(data)
