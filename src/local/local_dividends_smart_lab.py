@@ -34,6 +34,12 @@ class SmartLabDataManager(DataManager):
             df_new = self.source_function()
             self.file.dump(df_new)
 
+    def create(self):
+        """Создает локальный файл с нуля или перезаписывает существующий"""
+        print(f'Создание локальных данных {self.frame_category} -> {self.frame_name}')
+        df = self.source_function()
+        self.file.dump(df)
+
 
 def dividends_smart_lab(ticker: str = None):
     """Возвращает данные об ожидаемых дивидендах на СмартЛабе
@@ -61,4 +67,5 @@ def dividends_smart_lab(ticker: str = None):
 
 if __name__ == '__main__':
     print(dividends_smart_lab('CHMF'))
+    print()
     print(dividends_smart_lab())
