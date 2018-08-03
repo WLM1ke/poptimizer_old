@@ -1,24 +1,20 @@
 """Класс с данными, который хранит и автоматически обновляет дату последнего изменения данных"""
 
-import arrow
-
-# Часовой пояс MOEX
-TIME_ZONE = 'Europe/Moscow'
-
+import time
 
 class Data:
     """Класс с данными, который хранит и автоматически обновляет дату последнего изменения данных
 
-    Поддерживается операция присвоения значения с помощью =
-    Время изменения данных хранится в часовом поясе MOEX
+    Поддерживается операция присвоения значения с  оператором =
+    Время хранится в формате epoch
     """
 
     def __init__(self, value):
         self._value = value
-        self._time = arrow.now(TIME_ZONE)
+        self._time = time.time()
 
     def __str__(self):
-        return f'{data.__class__.__name__}(value={self.value}, time={self.time})'
+        return f'{data.__class__.__name__}(value={self.value}, time={time.ctime(self.time)})'
 
     @property
     def value(self):
@@ -28,11 +24,11 @@ class Data:
     @value.setter
     def value(self, value):
         self._value = value
-        self._time = arrow.now(TIME_ZONE)
+        self._time = time.time()
 
     @property
     def time(self):
-        """Время обновления данных в часовом поясе MOEX"""
+        """Время обновления данных - epoch"""
         return self._time
 
 
@@ -41,3 +37,4 @@ if __name__ == '__main__':
     print(data)
     data.value = 24
     print(data)
+    print(data.time)
