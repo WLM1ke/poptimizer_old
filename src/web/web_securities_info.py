@@ -84,4 +84,4 @@ def securities_info(tickers: tuple = tuple()):
 
 
 if __name__ == "__main__":
-    print(securities_info(('CHMF',)))
+    print(securities_info(tuple()))

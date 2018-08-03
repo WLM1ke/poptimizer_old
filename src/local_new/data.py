@@ -11,10 +11,10 @@ class Data:
 
     def __init__(self, value):
         self._value = value
-        self._time = time.time()
+        self._update_time = time.time()
 
     def __str__(self):
-        return f'{data.__class__.__name__}(value={self.value}, time={time.ctime(self.time)})'
+        return f'{self.__class__.__name__}(value={self.value}, update_time={time.ctime(self._update_time)})'
 
     @property
     def value(self):
@@ -24,12 +24,12 @@ class Data:
     @value.setter
     def value(self, value):
         self._value = value
-        self._time = time.time()
+        self._update_time = time.time()
 
     @property
-    def time(self):
+    def update_time(self):
         """Время обновления данных - epoch"""
-        return self._time
+        return self._update_time
 
 
 if __name__ == '__main__':
@@ -37,4 +37,4 @@ if __name__ == '__main__':
     print(data)
     data.value = 24
     print(data)
-    print(data.time)
+    print(data.update_time)
