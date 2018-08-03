@@ -12,7 +12,7 @@ install:
 before_script: # for Travis
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
-  - sleep 3 # give xvfb some update_time to start
+  - sleep 3 # give xvfb some time to start
 script:
   - pytest src -v  --cov=src --cov-report=term-missing --cov-report=xml --setup-show
 after_success:
