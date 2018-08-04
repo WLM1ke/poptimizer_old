@@ -134,7 +134,7 @@ def smart_lab_status(tickers: tuple):
 
 
 if __name__ == '__main__':
-    name = 'AKRN'
+    name = 'KZOSP'
     manager = DividendsDataManager(name)
     manager.update()
     print(manager.get())

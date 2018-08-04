@@ -17,3 +17,9 @@ def test_data():
 
 def test_str():
     assert 'Data(value=111, update_time=' in str(Data(111))
+
+
+def test_empty_data():
+    data = Data()
+    assert data.value is None
+    assert data.update_time is None

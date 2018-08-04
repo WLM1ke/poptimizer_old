@@ -2,19 +2,26 @@
 
 import time
 
+
 class Data:
     """Класс с данными, который хранит и автоматически обновляет дату последнего изменения данных
 
     Поддерживается операция присвоения значения с  оператором =
     Время хранится в формате epoch
+    Если значение не присвоено при создании, значение и время обновления None
     """
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         self._value = value
-        self._update_time = time.time()
+        if value is None:
+            self._update_time = None
+        else:
+            self._update_time = time.time()
+        pass
 
     def __str__(self):
-        return f'{self.__class__.__name__}(value={self.value}, update_time={time.ctime(self._update_time)})'
+        update_time = None if self._update_time is None else time.ctime(self._update_time)
+        return f'{self.__class__.__name__}(value={self.value}, update_time={update_time})'
 
     @property
     def value(self):
@@ -38,3 +45,4 @@ if __name__ == '__main__':
     data.value = 24
     print(data)
     print(data.update_time)
+    print(Data())
