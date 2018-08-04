@@ -45,6 +45,6 @@ def test_second_dump():
     assert data.load().equals(df2)
 
 
-def test_no_file():
+def test_no_file2():
     data = DataFile('macro', 'qqq')
     assert data.load() is None

@@ -64,4 +64,4 @@ class DataFile:
 
 
 if __name__ == '__main__':
-    pass
+    print(DataFile('qqq', 'qqq'))
