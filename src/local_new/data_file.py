@@ -18,6 +18,15 @@ class DataFile:
     """
 
     def __init__(self, data_category: str, data_name: str):
+        """
+        Parameters
+        ----------
+        data_category
+            Каталог в котором хранятся однородные данные - может быть None, тогда данные будут сохраняться в корне
+            глобального каталога данных
+        data_name
+            Название серии данных
+        """
         self._data_category = data_category
         self._data_name = data_name
         if self.data_path.exists():
@@ -28,9 +37,19 @@ class DataFile:
 
     def __str__(self):
         return (f'{self.__class__.__name__}('
-                f'data_category={self._data_category}, '
-                f'data_name={self._data_name}, '
+                f'data_category={self.data_category}, '
+                f'data_name={self.data_name}, '
                 f'data={self._data})')
+
+    @property
+    def data_category(self):
+        """Категория данных"""
+        return self._data_category
+
+    @property
+    def data_name(self):
+        """Название данных"""
+        return self._data_name
 
     @property
     def data_path(self):
@@ -58,9 +77,9 @@ class DataFile:
             pickle.dump(self._data, data_file, protocol=PICKLE_VERSION)
 
     @property
-    def update_time(self):
+    def last_update(self):
         """Время обновления данных - epoch. Если сохраненного значения нет, то None"""
-        return self._data.update_time
+        return self._data.last_update
 
 
 if __name__ == '__main__':

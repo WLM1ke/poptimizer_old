@@ -8,18 +8,18 @@ def test_data():
     data = Data(42)
     time1 = time.time()
     assert data.value == 42
-    assert time0 <= data.update_time <= time1
+    assert time0 <= data.last_update <= time1
     data.value = 24
     time2 = time.time()
     assert data.value == 24
-    assert time1 <= data.update_time <= time2
+    assert time1 <= data.last_update <= time2
 
 
 def test_str():
-    assert 'Data(value=111, update_time=' in str(Data(111))
+    assert 'Data(value=111, last_update=' in str(Data(111))
 
 
 def test_empty_data():
     data = Data()
     assert data.value is None
-    assert data.update_time is None
+    assert data.last_update is None

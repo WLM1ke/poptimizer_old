@@ -14,14 +14,13 @@ class Data:
     def __init__(self, value=None):
         self._value = value
         if value is None:
-            self._update_time = None
+            self._last_update = None
         else:
-            self._update_time = time.time()
-        pass
+            self._last_update = time.time()
 
     def __str__(self):
-        update_time = None if self._update_time is None else time.ctime(self._update_time)
-        return f'{self.__class__.__name__}(value={self.value}, update_time={update_time})'
+        last_update = None if self._last_update is None else time.ctime(self._last_update)
+        return f'{self.__class__.__name__}(value={self.value}, last_update={last_update})'
 
     @property
     def value(self):
@@ -31,12 +30,12 @@ class Data:
     @value.setter
     def value(self, value):
         self._value = value
-        self._update_time = time.time()
+        self._last_update = time.time()
 
     @property
-    def update_time(self):
+    def last_update(self):
         """Время обновления данных - epoch"""
-        return self._update_time
+        return self._last_update
 
 
 if __name__ == '__main__':
@@ -44,5 +43,5 @@ if __name__ == '__main__':
     print(data)
     data.value = 24
     print(data)
-    print(data.update_time)
+    print(data.last_update)
     print(Data())
