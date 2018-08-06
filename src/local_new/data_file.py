@@ -17,7 +17,7 @@ class DataFile:
     Каждый ряд в отдельном файле в формате Pickle
     """
 
-    def __init__(self, data_category: str, data_name: str):
+    def __init__(self, data_category, data_name: str):
         """
         Parameters
         ----------

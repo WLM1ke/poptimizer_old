@@ -17,11 +17,11 @@ END_OF_TRADING_DAY = dict(hour=19, minute=45, second=0, microsecond=0)
 class AbstractDataManager(ABC):
     """Организация создания, обновления и предоставления локальных DataFrame"""
 
-    # Характеристики индекса данных
+    # Требования к индексу данных
     is_unique = True
     is_monotonic = True
     # Нужно ли перезаписать новыми данными с нуля при обновлении
-    create_from_scratch = False
+    update_from_scratch = False
 
     def __init__(self, data_category: str, data_name: str):
         """
@@ -34,7 +34,7 @@ class AbstractDataManager(ABC):
             Название серии данных
         """
         self._data = DataFile(data_category, data_name)
-        if self.last_update is None:
+        if self._data.last_update is None:
             self.create()
         elif self.next_update < arrow.now():
             self.update()
@@ -67,8 +67,9 @@ class AbstractDataManager(ABC):
     @abstractmethod
     def download_all(self):
         """Загружает все необходимые данные и при необходимости проводит их первичную обработку"""
-        pass
+        raise NotImplementedError
 
+    @abstractmethod
     def download_update(self):
         """Загружает данные с последнего значения включительно в существующих данных
 
@@ -82,7 +83,7 @@ class AbstractDataManager(ABC):
 
         Индекс данных проверяется на уникальность и монотонность
         """
-        print(f'Создание локальных данных с нуля {self._data.frame_category} -> {self._data.frame_name}')
+        print(f'Создание локальных данных с нуля {self._data.data_category} -> {self._data.data_name}')
         df = self.download_all()
         self._validate_index(df.index)
         self._data.value = df
@@ -101,20 +102,18 @@ class AbstractDataManager(ABC):
         Во время обновления проверяется совпадение новых данных со существующими
         Индекс всех данных проверяется на уникальность и монотонность
         """
-        if self.create_from_scratch:
+        if self.update_from_scratch:
             self.create()
             return
-        print(f'Обновление локальных данных {self._data.frame_category} -> {self._data.frame_name}')
+        print(f'Обновление локальных данных {self._data.data_category} -> {self._data.data_name}')
         df_old = self.value
         try:
             df_new = self.download_update()
         except NotImplementedError:
             df_new = self.download_all()
         self._validate_new(df_old, df_new)
-        new_elements = df_new.index.difference(df_old.index)
-        full_index = df_old.index.append(new_elements)
-        df = df_old.reindex(index=full_index)
-        df.loc[new_elements] = df_new.loc[new_elements]
+        old_elements = df_old.index.difference(df_new.index)
+        df = df_old.loc[old_elements].append(df_new)
         self._validate_index(df.index)
         self._data.value = df
 
@@ -132,5 +131,5 @@ class AbstractDataManager(ABC):
             condition = condition_not_object and condition_object
         if not condition:
             raise ValueError(f'Ошибка обновления данных - существующие данные не соответствуют новым:\n'
-                             f'Категория - {self._data.frame_category}\n'
-                             f'Название - {self._data.frame_name}\n')
+                             f'Категория - {self._data.data_category}\n'
+                             f'Название - {self._data.data_name}\n')
