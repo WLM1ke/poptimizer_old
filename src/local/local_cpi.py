@@ -1,24 +1,31 @@
-"""Сохраняет, обновляет и загружает локальную версию данных по CPI"""
+"""Реализация менеджера данных для CPI и вспомогательные функции"""
 
 import pandas as pd
 
 import web
-from local.data_manager import DataManager
+from local_new.data_manager import AbstractDataManager
 
-CPI_CATEGORY = 'macro'
+CPI_CATEGORY = None
 CPI_NAME = 'cpi'
 
 
-class CPIDataManager(DataManager):
-    """Реализует особенность загрузки потребительской инфляции"""
+class CPIDataManager(AbstractDataManager):
+    """Реализует особенность загрузки и хранения потребительской инфляции
 
+    Локальные данные по CPI хранятся в корне глобальной директории данных
+    """
     def __init__(self):
-        super().__init__(CPI_CATEGORY, CPI_NAME, web.cpi)
+        super().__init__(CPI_CATEGORY, CPI_NAME)
+
+    def download_all(self):
+        return web.cpi()
+
+    def download_update(self):
+        super().download_update()
 
 
 def cpi():
-    """
-    Сохраняет, обновляет и загружает локальную версию данных по CPI
+    """Сохраняет, обновляет и загружает локальную версию данных по CPI
 
     Returns
     -------
@@ -27,7 +34,7 @@ def cpi():
         Инфляция 1,2% за месяц соответствует 1.012
     """
     data = CPIDataManager()
-    return data.get()
+    return data.value
 
 
 def cpi_to_date(last_date: pd.Timestamp):
@@ -59,4 +66,4 @@ def cpi_to_date(last_date: pd.Timestamp):
 
 
 if __name__ == '__main__':
-    print(cpi_to_date(pd.Timestamp('2018-07-19')))
+    print(cpi_to_date(pd.Timestamp('2018-08-25')))

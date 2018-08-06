@@ -23,7 +23,7 @@ class AbstractDataManager(ABC):
     # Нужно ли перезаписать новыми данными с нуля при обновлении
     update_from_scratch = False
 
-    def __init__(self, data_category: str, data_name: str):
+    def __init__(self, data_category, data_name: str):
         """
         Parameters
         ----------
