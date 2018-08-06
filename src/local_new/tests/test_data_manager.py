@@ -106,13 +106,14 @@ def test_non_unique():
 def test_non_monotonic():
     class DataManager(data_manager.AbstractDataManager):
         def download_all(self):
-            return pd.Series(data=[1, 2], index=[2, 1])
+            return pd.Series(data=[1, 2], index=[1, 2])
 
         def download_update(self):
-            super().download_update()
+            return pd.Series(data=[2, 3], index=[2, 0])
 
+    data = DataManager('cat1', 'data0')
     with pytest.raises(ValueError) as error_info:
-        DataManager('cat1', 'data0')
+        data.update()
     assert 'У новых данных индекс не возрастает монотонно' == str(error_info.value)
 
 
