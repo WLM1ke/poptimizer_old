@@ -30,7 +30,7 @@ class Optimizer:
                 f'\n'
                 f'\n{self._str_need_optimization()}'
                 f'\n'
-                f'\n{self.best_trade}'
+                f'\n{self._best_trade}'
                 f'\n'
                 f'\nКЛЮЧЕВЫЕ МЕТРИКИ ОПТИМАЛЬНОСТИ ПО ПАРЕТО'
                 f'\n'
@@ -60,6 +60,35 @@ class Optimizer:
         else:
             return (f'ОПТИМИЗАЦИЯ НЕ ТРЕБУЕТСЯ'
                     f'\nПрирост {best_gradient} составляет {t_growth:.2f} СКО < {T_SCORE:.2f}')
+
+    @property
+    def _best_trade(self):
+        """Возвращает строчку с рекомендацией по сделкам
+
+        Предпочтение отдается приросту градиента с большим потенциалом увеличения t-статистики и позиции с максимальным
+        приростом градиента
+
+        Лучшая позиция на продажу сокращается до нуля, но не более чем на MAX_TRADE от объема портфеля
+        Продажа бьется на 5 сделок с округлением в большую сторону
+
+        Лучшая покупка осуществляется на объем доступного кэша, но не более чем на MAX_TRADE от объема портфеля
+        Покупка бьется на 5 сделок
+        """
+        portfolio = self.portfolio
+        # Отбрасывается портфель и кэш из рекомендаций
+        if self.t_dividends_growth > self.t_drawdown_growth:
+            best_sell = self.dividends_gradient_growth.iloc[:-2].idxmax()
+        else:
+            best_sell = self.drawdown_gradient_growth.iloc[:-2].idxmax()
+        sell_weight = max(0, min(portfolio.weight[best_sell], MAX_TRADE - portfolio.weight[CASH]))
+        sell_value = sell_weight * portfolio.value[PORTFOLIO]
+        sell_5_lots = max(1, int(sell_value / portfolio.lot_size[best_sell] / portfolio.price[best_sell] / 5 + 0.5))
+        best_buy = self.dominated[best_sell]
+        buy_value = min(portfolio.value[CASH], MAX_TRADE * portfolio.value[PORTFOLIO])
+        buy_5_lots = max(1, int(buy_value / portfolio.lot_size[best_buy] / portfolio.price[best_buy] / 5))
+        return (f'РЕКОМЕНДУЕТСЯ'
+                f'\nПродать {best_sell} - 5 сделок по {sell_5_lots} лотов'
+                f'\nКупить {best_buy} - 5 сделок по {buy_5_lots} лотов')
 
     def _str_pareto_metrics(self):
         """Сводная информация об оптимальности по Парето"""
@@ -176,35 +205,6 @@ class Optimizer:
             matrix = self._drawdown_growth_matrix()
         return matrix.apply(func=lambda x: x.idxmax() if x.max() > 0 else "",
                             axis='columns')
-
-    @property
-    def best_trade(self):
-        """Возвращает строчку с рекомендацией по сделкам
-
-        Предпочтение отдается приросту градиента с большим потенциалом увеличения t-статистики и позиции с максимальным
-        приростом градиента
-
-        Лучшая позиция на продажу сокращается до нуля, но не более чем на MAX_TRADE от объема портфеля
-        Продажа бьется на 5 сделок с округлением в большую сторону
-
-        Лучшая покупка осуществляется на объем доступного кэша, но не более чем на MAX_TRADE от объема портфеля
-        Покупка бьется на 5 сделок
-        """
-        portfolio = self.portfolio
-        # Отбрасывается портфель и кэш из рекомендаций
-        if self.t_dividends_growth > self.t_drawdown_growth:
-            best_sell = self.dividends_gradient_growth.iloc[:-2].idxmax()
-        else:
-            best_sell = self.drawdown_gradient_growth.iloc[:-2].idxmax()
-        sell_weight = max(0, min(portfolio.weight[best_sell], MAX_TRADE - portfolio.weight[CASH]))
-        sell_value = sell_weight * portfolio.value[PORTFOLIO]
-        sell_5_lots = int(round(sell_value / portfolio.lot_size[best_sell] / portfolio.price[best_sell] / 5 + 0.5))
-        best_buy = self.dominated[best_sell]
-        buy_value = min(portfolio.value[CASH], MAX_TRADE * portfolio.value[PORTFOLIO])
-        buy_5_lots = int(buy_value / portfolio.lot_size[best_buy] / portfolio.price[best_buy] / 5)
-        return (f'РЕКОМЕНДУЕТСЯ'
-                f'\nПродать {best_sell} - 5 сделок по {sell_5_lots} лотов'
-                f'\nКупить {best_buy} - 5 сделок по {buy_5_lots} лотов')
 
 
 if __name__ == '__main__':

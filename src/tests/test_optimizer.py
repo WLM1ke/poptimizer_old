@@ -78,7 +78,7 @@ def test_t_drawdown_growth(opt):
 
 
 def test_best_trade(opt):
-    best_string = opt.best_trade
+    best_string = opt._best_trade
     assert 'Продать MSTT - 5 сделок по 25 лотов' in best_string
     assert 'Купить LSRG - 5 сделок по 26 лотов' in best_string
 
