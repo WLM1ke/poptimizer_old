@@ -30,7 +30,7 @@ class Optimizer:
                 f'\n'
                 f'\n{self._str_need_optimization()}'
                 f'\n'
-                f'\n{self._best_trade}'
+                f'\n{self._str_best_trade()}'
                 f'\n'
                 f'\nКЛЮЧЕВЫЕ МЕТРИКИ ОПТИМАЛЬНОСТИ ПО ПАРЕТО'
                 f'\n'
@@ -61,8 +61,7 @@ class Optimizer:
             return (f'ОПТИМИЗАЦИЯ НЕ ТРЕБУЕТСЯ'
                     f'\nПрирост {best_gradient} составляет {t_growth:.2f} СКО < {T_SCORE:.2f}')
 
-    @property
-    def _best_trade(self):
+    def _str_best_trade(self):
         """Возвращает строчку с рекомендацией по сделкам
 
         Предпочтение отдается приросту градиента с большим потенциалом увеличения t-статистики и позиции с максимальным
@@ -157,8 +156,9 @@ class Optimizer:
 
         Для позиций не имеющих доминирующих - прирост 0
         Учитывается понижающий коэффициент для низколиквидных доминирующих акций
+        Портфель и кэш не могут доминировать
         """
-        matrix = self._dividends_growth_matrix()
+        matrix = self._dividends_growth_matrix().iloc[:, :-2]
         return matrix.apply(func=lambda x: x.max(), axis='columns')
 
     @property
@@ -167,8 +167,9 @@ class Optimizer:
 
         Для позиций не имеющих доминирующих - прирост 0
         Учитывается понижающий коэффициент для низколиквидных доминирующих акций
+        Портфель и кэш не могут доминировать
         """
-        matrix = self._drawdown_growth_matrix()
+        matrix = self._drawdown_growth_matrix().iloc[:, :-2]
         return matrix.apply(func=lambda x: x.max(), axis='columns')
 
     @property
@@ -177,8 +178,9 @@ class Optimizer:
 
         Линейное приближение - доля позиций умножается на градиент роста. Результат нормируется на СКО
         дивидендов портфеля для удобства сравнения с критическим уровнем t-статистик
+        Портфель и кэш исключаются из расчетов
         """
-        weighted_growth = (self.portfolio.weight * self.dividends_gradient_growth).sum()
+        weighted_growth = (self.portfolio.weight * self.dividends_gradient_growth)[:-2].sum()
         return weighted_growth / self.dividends_metrics.std[PORTFOLIO]
 
     @property
@@ -187,8 +189,9 @@ class Optimizer:
 
         Линейное приближение - доля позиций умножается на градиент роста. Результат нормируется на СКО
         дивидендов портфеля для удобства сравнения с критическим уровнем t-статистик
+        Портфель и кэш исключаются из расчетов
         """
-        weighted_growth = (self.portfolio.weight * self.drawdown_gradient_growth).sum()
+        weighted_growth = (self.portfolio.weight * self.drawdown_gradient_growth)[:-2].sum()
         return weighted_growth / self.returns_metrics.std[PORTFOLIO]
 
     @property
@@ -200,35 +203,34 @@ class Optimizer:
         Учитывается понижающий коэффициент для низколиквидных доминирующих акций
         """
         if self.t_dividends_growth > self.t_drawdown_growth:
-            matrix = self._dividends_growth_matrix()
+            matrix = self._dividends_growth_matrix().iloc[:, :-2]
         else:
-            matrix = self._drawdown_growth_matrix()
-        return matrix.apply(func=lambda x: x.idxmax() if x.max() > 0 else "",
-                            axis='columns')
+            matrix = self._drawdown_growth_matrix().iloc[:, :-2]
+        df = matrix.apply(func=lambda x: x.idxmax() if x.max() > 0 else "",
+                          axis='columns')
+        df[-2:] = ""
+        return df
 
 
 if __name__ == '__main__':
-    pos = dict(AKRN=679,
-               BANEP=392,
-               CHMF=173,
-               GMKN=139,
-               LKOH=123,
-               LSNGP=59,
-               LSRG=1341,
-               MSRS=38,
-               MSTT=2181,
-               MTSS=1264,
-               MVID=141,
-               PMSBP=2715,
-               RTKMP=1674,
-               SNGSP=263,
-               TTLK=234,
-               UPRO=1272,
-               VSMO=101)
-    port = Portfolio(date='2018-07-24',
-                     cash=102_262,
-                     positions=pos)
+    POSITIONS = dict(AKRN=578,
+                     BANEP=412,
+                     CHMF=222,
+                     GMKN=171,
+                     LKOH=340,
+                     LSNGP=18,
+                     LSRG=2346,
+                     MSRS=128,
+                     MSTT=1823,
+                     MTSS=1348,
+                     PMSBP=2715,
+                     RTKMP=1674,
+                     SNGSP=308,
+                     TTLK=234,
+                     UPRO=1058,
+                     VSMO=102)
+    port = Portfolio(date='2018-08-07',
+                     cash=254_799 + 1_227 + 3_416,
+                     positions=POSITIONS)
     optimizer = Optimizer(port)
     print(optimizer)
-    print(optimizer.dividends_metrics.std[PORTFOLIO])
-    print(optimizer.returns_metrics.std[PORTFOLIO])
