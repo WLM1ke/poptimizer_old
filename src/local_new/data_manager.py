@@ -46,6 +46,16 @@ class AbstractDataManager(ABC):
                 f'{self.value}')
 
     @property
+    def data_category(self):
+        """Категория данных"""
+        return self._data.data_category
+
+    @property
+    def data_name(self):
+        """Название данных"""
+        return self._data.data_name
+
+    @property
     def value(self):
         """Возвращает сохраненное значение данных. Если сохраненного значения нет, то None"""
         return self._data.value
@@ -53,7 +63,7 @@ class AbstractDataManager(ABC):
     @property
     def last_update(self):
         """Время обновления данных - arrow в часовом поясе MOEX"""
-        return arrow.get(self._data.last_update, tzinfo=MARKET_TIME_ZONE)
+        return arrow.get(self._data.last_update).to(MARKET_TIME_ZONE)
 
     @property
     def next_update(self):

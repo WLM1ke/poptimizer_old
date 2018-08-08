@@ -135,3 +135,9 @@ def test_str(data_manager_class):
     string = str(data_manager_class('cat8', 'data5'))
     assert 'Последнее обновление -' in string
     assert 'Следующее обновление - ' in string
+
+
+def test_utcoffset(data_manager_class):
+    data = data_manager_class('cat8', 'data5')
+    assert data.last_update.utcoffset().seconds == 10800
+    assert data.next_update.utcoffset().seconds == 10800
