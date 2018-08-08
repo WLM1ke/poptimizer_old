@@ -1,74 +1,49 @@
-"""Загружает локальную версию данных по дивидендам и обновляет после ручной проверки"""
+"""Реализация менеджера данных для дивидендов и вспомогательные функции"""
 
 import sqlite3
 
-import arrow
-import numpy as np
 import pandas as pd
+from pandas.io.sql import DatabaseError
 
-from local import local_dividends_dohod, local_dividends_smart_lab
-from local.data_file import DataFile
+from local_new.data_manager import AbstractDataManager
 from settings import DATA_PATH
-from web.labels import DATE, TICKER, DIVIDENDS
+from web.labels import DATE
 
 DIVIDENDS_CATEGORY = 'dividends'
-DIVIDENDS_SOURCES = [local_dividends_dohod.dividends_dohod,
-                     local_dividends_smart_lab.dividends_smart_lab]
-DAYS_TO_MANUAL_UPDATE = 90
 STATISTICS_START = '2010-01-01'
-DATABASE = str(DATA_PATH / DIVIDENDS_CATEGORY / 'dividends.db')
+DATABASE = DATA_PATH / 'dividends.db'
 
 
-class DividendsDataManager:
-    """Загружает локальную версию дивидендов и проверяет наличие данных во внешних источниках"""
+class DividendsDataManager(AbstractDataManager):
+    """Организация создания, обновления и предоставления локальных DataFrame
+
+    Данные загружаются из локальной базы данных и сохраняются в общем формате DataManager
+    """
 
     def __init__(self, ticker: str):
-        self._ticker = ticker
-        self._file = DataFile(DIVIDENDS_CATEGORY, ticker)
+        super().__init__(DIVIDENDS_CATEGORY, ticker)
 
-    def need_update(self):
-        """Проверяет необходимость обновления данных
-
-        Обновление нужно:
-        при отсутствии локальных данных
-        при наличии новых данных в локальной версии web источника
-        по прошествии времени (дивиденды не выплачиваются чаще чем раз в квартал)
-        """
-        last_update = self._file.last_update()
-        if last_update is None:
-            return 'Нет локальных данных'
-        if last_update.shift(days=DAYS_TO_MANUAL_UPDATE) < arrow.now():
-            return f'Последнее обновление более {DAYS_TO_MANUAL_UPDATE} дней назад'
-        for source in DIVIDENDS_SOURCES:
-            df = self.get()
-            local_web_df = source(self._ticker).groupby(DATE).sum()
-            local_web_df = local_web_df[local_web_df.index >= pd.Timestamp(STATISTICS_START)]
-            additional_data = local_web_df.index.difference(df.index)
-            if not additional_data.empty:
-                return f'В источнике {source.__module__} присутствуют дополнительные данные {additional_data}'
-            df = df[local_web_df.index]
-            if not np.allclose(df, local_web_df):
-                return f'В источнике {source.__module__} не совпадают данные'
-        return 'OK'
-
-    def update(self):
-        """Обновляет локальную версию данных на основании данных из базы
+    def download_all(self):
+        """Загружает данные из базы базы данных
 
         Несколько платежей в одну дату объединяются
         Берется 0 колонка с дивидендами и отбрасывается с комментариями
         """
         connection = sqlite3.connect(DATABASE)
-        query = f'SELECT * FROM {self._ticker}'
-        df = pd.read_sql_query(query, connection, index_col=DATE, parse_dates=[DATE])
-        df = df[df.index >= pd.Timestamp(STATISTICS_START)]
-        df = df.groupby(DATE).sum()
-        df.sort_index(inplace=True)
-        df.columns = [self._ticker]
-        self._file.dump(df[self._ticker])
+        query = f'SELECT DATE, DIVIDENDS FROM {self.data_name}'
+        try:
+            df = pd.read_sql_query(query, connection, index_col=DATE, parse_dates=[DATE])
+        except DatabaseError:
+            raise ValueError(f'Дивиденды {self.data_name} отсутствуют в базе данных')
+        else:
+            df = df[df.index >= pd.Timestamp(STATISTICS_START)]
+            # Несколько выплат в одну дату объединяются
+            df = df.groupby(DATE).sum()
+            df.columns = [self.data_name]
+            return df[self.data_name]
 
-    def get(self):
-        """Получение данных"""
-        return self._file.load()
+    def download_update(self):
+        super().download_update()
 
 
 def monthly_dividends(tickers: tuple, last_date: pd.Timestamp):
@@ -87,7 +62,7 @@ def monthly_dividends(tickers: tuple, last_date: pd.Timestamp):
         Столбцы - отдельные тикеры
         Строки - последние даты месяца
     """
-    frames = (DividendsDataManager(ticker).get() for ticker in tickers)
+    frames = (DividendsDataManager(ticker).value for ticker in tickers)
     df = pd.concat(frames, axis='columns')
     month_end_day = last_date.day
     start_date = pd.Timestamp(STATISTICS_START) + pd.DateOffset(day=month_end_day) + pd.DateOffset(days=1)
@@ -104,39 +79,5 @@ def monthly_dividends(tickers: tuple, last_date: pd.Timestamp):
     return df.groupby(by=monthly_aggregation).sum()
 
 
-def smart_lab_status(tickers: tuple):
-    """Информация об актуальности данных в основной локальной базе дивидендов
-
-    Parameters
-    ----------
-    tickers
-        Основные тикеры, для которых нужно проверить актуальность данных
-
-    Returns
-    -------
-    tuple of list
-        Нулевой элемент кортежа - список тикеров из переданных без актуальной информации в локальной базе
-        Первый элемент кортежа - список тикеров со СмартЛаба, по которым нет актуальной информации в локальной базе
-    """
-    df = local_dividends_smart_lab.dividends_smart_lab()
-    result = ([], [])
-    for i in range(len(df)):
-        date = df.index[i]
-        ticker = df.iloc[i][TICKER]
-        value = df.iloc[i][DIVIDENDS]
-        local_data = DividendsDataManager(ticker).get()
-        if (local_data is None) or (date not in local_data.index) or (local_data[date] != value):
-            if ticker in tickers:
-                result[0].append(ticker)
-            else:
-                result[1].append(ticker)
-    return result
-
-
 if __name__ == '__main__':
-    name = 'KZOSP'
-    manager = DividendsDataManager(name)
-    manager.update()
-    print(manager.get())
-    print()
-    print('Статус данных -', manager.need_update())
+    print(DividendsDataManager('RTKMP'))
