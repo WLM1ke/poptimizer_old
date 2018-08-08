@@ -114,4 +114,4 @@ def dividends_dohod(ticker: str) -> pd.Series:
 
 
 if __name__ == '__main__':
-    print(dividends_dohod('AKRN'))
+    print(dividends_dohod('SNGSP'))

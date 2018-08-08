@@ -27,14 +27,15 @@ class DividendsDataManager(AbstractDataManager):
         """Загружает данные из базы базы данных
 
         Несколько платежей в одну дату объединяются
-        Берется 0 колонка с дивидендами и отбрасывается с комментариями
+        Берется колонка с дивидендами и отбрасывается с комментариями
+        В случае отсутсвия данных возвращается пустая Series
         """
         connection = sqlite3.connect(DATABASE)
         query = f'SELECT DATE, DIVIDENDS FROM {self.data_name}'
         try:
             df = pd.read_sql_query(query, connection, index_col=DATE, parse_dates=[DATE])
         except DatabaseError:
-            raise ValueError(f'Дивиденды {self.data_name} отсутствуют в базе данных')
+            return pd.Series(name=self.data_name, index=pd.DatetimeIndex([], name=DATE))
         else:
             df = df[df.index >= pd.Timestamp(STATISTICS_START)]
             # Несколько выплат в одну дату объединяются
@@ -80,4 +81,4 @@ def monthly_dividends(tickers: tuple, last_date: pd.Timestamp):
 
 
 if __name__ == '__main__':
-    print(DividendsDataManager('RTKMP'))
+    print(DividendsDataManager('ALRS'))
