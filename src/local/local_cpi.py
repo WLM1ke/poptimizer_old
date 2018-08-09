@@ -66,4 +66,4 @@ def cpi_to_date(last_date: pd.Timestamp):
 
 
 if __name__ == '__main__':
-    print(cpi_to_date(pd.Timestamp('2018-08-25')))
+    help(CPIDataManager().download_all)

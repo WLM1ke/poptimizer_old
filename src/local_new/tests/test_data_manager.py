@@ -35,6 +35,8 @@ def test_data_manager_create(data_manager_class):
     assert data.value.equals(pd.DataFrame(data={'col1': [1, 2], 'col2': ['a', 'f']}))
     assert t0 < data.last_update
     assert data.last_update < data.next_update
+    assert data.data_category == 'cat8'
+    assert data.data_name == 'data5'
 
 
 def test_data_manager_update(monkeypatch, data_manager_class):

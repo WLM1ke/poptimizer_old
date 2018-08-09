@@ -1,38 +1,24 @@
-"""Сохраняет, обновляет и загружает локальную версию данных по дивидендам с dohod.ru"""
-
-import arrow
-
+"""Реализация менеджера данных по дивидендам с dohod.ru"""
 import web
-from local.data_manager import DataManager
+from local_new.data_manager import AbstractDataManager
 from web.labels import DATE
 
-DIVIDENDS_CATEGORY = 'dividends_dohod'
-DAYS_TO_UPDATE = 7
+DOHOD_CATEGORY = 'dohod.ru'
 
 
-class DividendsDohodDataManager(DataManager):
-    """Реализует особенность загрузки истории дивидендов с обновлением раз в неделю
+class DohodDataManager(AbstractDataManager):
+    """Организация создания, обновления и предоставления локальных DataFrame
 
-    Несколько платежей в одну дату суммируются
+    Данные загружаются с сайта dohod.ru
     """
-    days_to_update = DAYS_TO_UPDATE
-
     def __init__(self, ticker: str):
+        super().__init__(DOHOD_CATEGORY, ticker)
 
-        def web_dividends_function_with_aggregation():
-            """Web-данные содержат по несколько выплат на одну дату
+    def download_all(self):
+        return web.dividends_dohod(self.data_name).groupby(DATE).sum()
 
-            Для прохождения валидации и последующих сопоставлений необходима агрегация
-            """
-            return web.dividends_dohod(ticker).groupby(DATE).sum()
-
-        super().__init__(DIVIDENDS_CATEGORY, ticker, web_dividends_function_with_aggregation)
-
-    def _need_update(self):
-        """Обновление осуществляется через DAYS_TO_UPDATE дней после предыдущего"""
-        if self.file.last_update().shift(days=self.days_to_update) < arrow.now():
-            return True
-        return False
+    def download_update(self):
+        super().download_update()
 
 
 def dividends_dohod(ticker: str):
@@ -48,8 +34,8 @@ def dividends_dohod(ticker: str):
         В строках - даты выплаты дивидендов
         Значения - выплаченные дивиденды
     """
-    data = DividendsDohodDataManager(ticker)
-    return data.get()
+    data = DohodDataManager(ticker)
+    return data.value
 
 
 if __name__ == '__main__':
