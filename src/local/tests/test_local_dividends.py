@@ -17,40 +17,6 @@ def make_temp_dir(tmpdir_factory):
     settings.DATA_PATH = saved_path
 
 
-def test_need_update_no_data():
-    manager = DividendsDataManager('AKRN')
-    assert manager.need_update() == 'Нет локальных данных'
-
-
-def test_need_update_ok():
-    manager = DividendsDataManager('AKRN')
-    manager.update()
-    assert manager.need_update() == 'OK'
-
-
-def test_need_update_wrong_data():
-    manager = DividendsDataManager('AKRN')
-    df = manager.get()
-    df.loc['2018-01-23'] = -1000
-    manager._file.dump(df)
-    assert manager.need_update() == 'В источнике local.local_dividends_dohod не совпадают данные'
-
-
-def test_need_update_less_data():
-    manager = DividendsDataManager('AKRN')
-    df = manager.get()
-    df = df.drop(pd.Timestamp('2018-01-23'))
-    manager._file.dump(df)
-    msg = 'В источнике local.local_dividends_dohod присутствуют дополнительные данные'
-    assert msg in manager.need_update()
-
-
-def test_need_update_long_ago(monkeypatch):
-    monkeypatch.setattr(local_dividends, 'DAYS_TO_MANUAL_UPDATE', 0)
-    manager = DividendsDataManager('AKRN')
-    assert manager.need_update() == 'Последнее обновление более 0 дней назад'
-
-
 def test_monthly_dividends():
     DividendsDataManager('CHMF').update()
     DividendsDataManager('GMKN').update()
@@ -70,3 +36,11 @@ def test_monthly_dividends():
     assert df.loc['2010-02-17', 'GMKN'] == pytest.approx(0)
     assert df.loc['2010-06-17', 'GMKN'] == pytest.approx(210)
     assert df.loc['2011-05-17', 'GMKN'] == pytest.approx(180)
+
+
+def test_no_data_in_data_base():
+    df = DividendsDataManager('TEST').value
+    assert isinstance(df, pd.Series)
+    assert df.name == 'TEST'
+    assert len(df) == 0
+    assert isinstance(df.index, pd.DatetimeIndex)
