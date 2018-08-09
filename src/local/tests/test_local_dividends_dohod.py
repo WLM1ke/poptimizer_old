@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import arrow
 import pandas as pd
 import pytest
 
@@ -26,12 +27,13 @@ def test_dividends():
     assert df.loc['2017-07-20'] == 8.04
 
 
-def test_need_update_false():
-    manager = local_dividends_dohod.DividendsDohodDataManager('GAZP')
-    assert not manager._need_update()
-
-
-def test_need_update_true(monkeypatch):
-    monkeypatch.setattr(local_dividends_dohod.DividendsDohodDataManager, 'days_to_update', 0)
-    manager = local_dividends_dohod.DividendsDohodDataManager('GAZP')
-    assert manager._need_update()
+def test_update():
+    time0 = arrow.now()
+    manager = local_dividends_dohod.DohodDataManager('LKOH')
+    assert manager.last_update > time0
+    df = manager.value
+    time1 = arrow.now()
+    assert manager.last_update < time1
+    manager.update()
+    assert manager.last_update > time1
+    assert df.equals(manager.value)
