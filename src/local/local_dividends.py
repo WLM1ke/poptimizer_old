@@ -28,7 +28,7 @@ class DividendsDataManager(AbstractDataManager):
 
         Несколько платежей в одну дату объединяются
         Берется колонка с дивидендами и отбрасывается с комментариями
-        В случае отсутсвия данных возвращается пустая Series
+        В случае отсутствия данных возвращается пустая Series
         """
         connection = sqlite3.connect(DATABASE)
         query = f'SELECT DATE, DIVIDENDS FROM {self.data_name}'

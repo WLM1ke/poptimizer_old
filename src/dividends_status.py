@@ -1,15 +1,12 @@
 """Функции проверки статуса дивидендов"""
-import arrow
-import numpy as np
 import pandas as pd
 
 from local import local_dividends_smart_lab, local_dividends_dohod
 from local.local_dividends import DividendsDataManager, STATISTICS_START
-from web.labels import TICKER, DIVIDENDS, DATE
+from web.labels import TICKER, DIVIDENDS
 
 DIVIDENDS_SOURCES = [local_dividends_dohod.dividends_dohod,
                      local_dividends_smart_lab.dividends_smart_lab]
-DAYS_TO_MANUAL_UPDATE = 90
 
 
 def smart_lab_status(tickers: tuple):
@@ -41,30 +38,37 @@ def smart_lab_status(tickers: tuple):
     return result
 
 
-def need_update(ticker: str):
+def dividends_status(ticker: str):
     """Проверяет необходимость обновления данных
 
-    Обновление нужно:
-    при наличии новых данных в локальной версии web источника
-    по прошествии времени (дивиденды не выплачиваются чаще чем раз в квартал)
+    Сравнивает основные данные по дивидендам с альтернативными источниками и выводит результаты сравнения
+
+    Parameters
+    ----------
+    ticker
+        Тикер
+
+    Returns
+    -------
+    list
+        Список из DataFrame с результатами сравнения для каждого источника данных
     """
     manager = DividendsDataManager(ticker)
-    last_update = manager.last_update
-    if last_update.shift(days=DAYS_TO_MANUAL_UPDATE) < arrow.now():
-        return f'Последнее обновление более {DAYS_TO_MANUAL_UPDATE} дней назад'
+    df = manager.value
+    result = []
     for source in DIVIDENDS_SOURCES:
-        df = manager.value
-        local_web_df = source(manager.data_name).groupby(DATE).sum()
-        local_web_df = local_web_df[local_web_df.index >= pd.Timestamp(STATISTICS_START)]
-        additional_data = local_web_df.index.difference(df.index)
-        if not additional_data.empty:
-            return f'В источнике {source.__module__} присутствуют дополнительные данные {additional_data}'
-        df = df[local_web_df.index]
-        if not np.allclose(df, local_web_df):
-            return f'В источнике {source.__module__} не совпадают данные'
-    return 'OK'
+        print(f'\nСРАВНЕНИЕ ОСНОВНЫХ ДАННЫХ С {source.__name__}\n')
+        source_df = source(ticker)
+        source_df = source_df[source_df.index >= pd.Timestamp(STATISTICS_START)]
+        source_df.name = source.__name__
+        compare_df = pd.concat([df, source_df], axis='columns')
+        compare_df['STATUS'] = ''
+        compare_df.loc[compare_df[ticker] != compare_df[source.__name__], 'STATUS'] = 'ERROR'
+        print(compare_df)
+        result.append(compare_df)
+    return result
 
 
 if __name__ == '__main__':
     print(smart_lab_status(('AKRN', 'CHMF', 'RTKMP')))
-    print(need_update('TTLK'))
+    dividends_status('ENRU')
