@@ -1,44 +1,27 @@
-"""Сохраняет локальную версию дивидендов со smart-lab.ru"""
-
-import arrow
-
+"""Реализация менеджера данных по дивидендам с smart-lab.ru"""
 import web
-from local.data_manager import DataManager
+from local_new.data_manager import AbstractDataManager
 from web.labels import TICKER, DIVIDENDS
 
-DIVIDENDS_CATEGORY = 'dividends_smart_lab'
-DIVIDENDS_NAME = 'dividends_smart_lab'
-DAYS_TO_UPDATE = 1
+SMART_LAB_DATA = 'smart-lab.ru'
 
 
-class SmartLabDataManager(DataManager):
-    """Осуществляет загрузку локальной версии данных раз в день"""
-    days_to_update = DAYS_TO_UPDATE
+class SmartLabDataManager(AbstractDataManager):
+    """Организация создания, обновления и предоставления локальных DataFrame
 
+    Данные загружаются с сайта smart-lab.ru
+    """
+    is_unique = False
+    is_monotonic = False
+    update_from_scratch = True
     def __init__(self):
-        super().__init__(DIVIDENDS_CATEGORY, DIVIDENDS_NAME, web.dividends_smart_lab)
+        super().__init__(None, SMART_LAB_DATA)
 
-    def _need_update(self):
-        """Обновление осуществляется через DAYS_TO_UPDATE дней после предыдущего"""
-        if self.file.last_update().shift(days=self.days_to_update) < arrow.now():
-            return True
-        return False
+    def download_all(self):
+        return web.dividends_smart_lab()
 
-    def update(self):
-        """Обновляет локальные данные, если наступило время очередного обновления
-
-        Во время обновления проверяется совпадение новых данных со существующими
-        """
-        if self._need_update():
-            print(f'Обновление локальных данных {self.frame_category} -> {self.frame_name}')
-            df_new = self.source_function()
-            self.file.dump(df_new)
-
-    def create(self):
-        """Создает локальный файл с нуля или перезаписывает существующий"""
-        print(f'Создание локальных данных {self.frame_category} -> {self.frame_name}')
-        df = self.source_function()
-        self.file.dump(df)
+    def download_update(self):
+        super().download_update()
 
 
 def dividends_smart_lab(ticker: str = None):
@@ -56,7 +39,7 @@ def dividends_smart_lab(ticker: str = None):
     pandas.DataFrame
         Информация сроках и размере предстоящих выплат
     """
-    data = SmartLabDataManager().get()
+    data = SmartLabDataManager().value
     if ticker:
         data = data[data[TICKER] == ticker][DIVIDENDS]
         data.name = ticker
@@ -67,5 +50,4 @@ def dividends_smart_lab(ticker: str = None):
 
 if __name__ == '__main__':
     print(dividends_smart_lab('CHMF'))
-    print()
     print(dividends_smart_lab())
