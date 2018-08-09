@@ -213,24 +213,33 @@ class Optimizer:
 
 
 if __name__ == '__main__':
-    POSITIONS = dict(AKRN=578,
-                     BANEP=412,
-                     CHMF=222,
-                     GMKN=171,
-                     LKOH=340,
-                     LSNGP=18,
-                     LSRG=2346,
-                     MSRS=128,
-                     MSTT=1823,
-                     MTSS=1348,
+    POSITIONS = dict(AKRN=679,
+                     BANEP=392,
+                     CHMF=173,
+                     GMKN=139,
+                     LKOH=123,
+                     LSNGP=59,
+                     LSRG=1341,
+                     MSRS=38,
+                     MSTT=2181,
+                     MTSS=1264,
+                     MVID=141,
                      PMSBP=2715,
                      RTKMP=1674,
-                     SNGSP=308,
+                     SNGSP=263,
                      TTLK=234,
-                     UPRO=1058,
-                     VSMO=102)
-    port = Portfolio(date='2018-08-07',
-                     cash=254_799 + 1_227 + 3_416,
+                     UPRO=1272,
+                     VSMO=101)
+    port = Portfolio(date='2018-07-24',
+                     cash=102_262,
                      positions=POSITIONS)
     optimizer = Optimizer(port)
     print(optimizer)
+    dfs = [optimizer.dividends_metrics.gradient,
+           optimizer.returns_metrics.gradient,
+           optimizer.portfolio.weight,
+           optimizer.portfolio.volume_factor]
+    print(optimizer.dividends_metrics.std[PORTFOLIO])
+    print(optimizer.t_dividends_growth)
+    print(optimizer.returns_metrics.std[PORTFOLIO])
+    # optimizer.dividends_gradient_growth.to_excel('data.xlsx')

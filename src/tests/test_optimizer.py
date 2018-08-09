@@ -42,11 +42,11 @@ def test_dividends_gradient_growth(opt):
     assert gradient_growth['MSTT'] == pytest.approx(0.0150019046805012 * AFTER_TAX)
     assert gradient_growth['MSRS'] == pytest.approx(0.0060675423458529 * AFTER_TAX)
     assert gradient_growth['RTKMP'] == pytest.approx(0.0 * AFTER_TAX)
-    assert gradient_growth['LSNGP'] == pytest.approx(0.0129806691989018 * AFTER_TAX)
+    assert gradient_growth['LSNGP'] == pytest.approx(0.0129806845953583 * AFTER_TAX)
     assert gradient_growth['LKOH'] == pytest.approx(0.0 * AFTER_TAX)
     assert gradient_growth['PMSBP'] == pytest.approx(0.0 * AFTER_TAX)
     assert gradient_growth['CHMF'] == pytest.approx(0.0 * AFTER_TAX)
-    assert gradient_growth['GMKN'] == pytest.approx(0.0000101803108241548 * AFTER_TAX)
+    assert gradient_growth['GMKN'] == pytest.approx(0.0000103831583048243 * AFTER_TAX)
 
 
 def test_drawdown_gradient_growth(opt):
@@ -70,16 +70,16 @@ def test_dominated(opt):
 
 
 def test_t_dividends_growth(opt):
-    assert opt.t_dividends_growth == pytest.approx(1.2114075447347)
+    assert opt.t_dividends_growth == pytest.approx(0.615029013474924)
 
 
 def test_t_drawdown_growth(opt):
-    assert opt.t_drawdown_growth == pytest.approx(4.63018492773357)
+    assert opt.t_drawdown_growth == pytest.approx(2.23435983550963)
 
 
 def test_best_trade(opt):
-    best_string = opt._str_best_trade
-    assert 'Продать MSTT - 5 сделок по 25 лотов' in best_string
+    best_string = opt._str_best_trade()
+    assert 'Продать MSTT - 5 сделок по 19 лотов' in best_string
     assert 'Купить LSRG - 5 сделок по 26 лотов' in best_string
 
 
@@ -87,14 +87,14 @@ def test_str_t_score_10(opt, monkeypatch):
     monkeypatch.setattr(optimizer, 'T_SCORE', 10.0)
     report = str(opt)
     assert 'ОПТИМИЗАЦИЯ НЕ ТРЕБУЕТСЯ' in report
-    t_score = 4.63018492773357
+    t_score = 2.23435983550963
     assert f'Прирост просадки составляет {t_score:.2f} СКО < 10.00' in report
 
 
 def test_str_t_score(opt):
     report = str(opt)
     assert 'ОПТИМИЗАЦИЯ ТРЕБУЕТСЯ' in report
-    t_score = 4.63018492773357
+    t_score = 2.23435983550963
     assert f'Прирост просадки составляет {t_score:.2f} СКО > 2.00' in report
 
 
@@ -102,5 +102,5 @@ def test_str_dividends(opt, monkeypatch):
     monkeypatch.setattr(Optimizer, 't_drawdown_growth', 0)
     report = str(opt)
     assert 'ОПТИМИЗАЦИЯ НЕ ТРЕБУЕТСЯ' in report
-    t_score = 1.2114075447347
+    t_score = 0.615029013474924
     assert f'Прирост дивидендов составляет {t_score:.2f} СКО < 2.00' in report
