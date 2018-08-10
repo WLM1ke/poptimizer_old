@@ -1,34 +1,27 @@
 """Сохраняет, обновляет и загружает локальную версию информации об акциях"""
-
 from functools import lru_cache
 
 import web
-from local.data_manager import DataManager
-from web.labels import LOT_SIZE, COMPANY_NAME, REG_NUMBER
+from local_new.data_manager import AbstractDataManager
+from web.labels import COMPANY_NAME, REG_NUMBER, LOT_SIZE
 
-SECURITIES_INFO_CATEGORY = 'securities_info'
 SECURITIES_INFO_MANE = 'securities_info'
 
 
-class SecuritiesInfoDataManager(DataManager):
-    """Реализует особенность валидации информации об акциях"""
+class SecuritiesInfoDataManager(AbstractDataManager):
+    """Менеджер локальной информации об акциях
 
-    def __init__(self, tickers: tuple):
-        self.tickers = tickers
+    Вся информация загружается одним запросом для сокращения числа обращений к серверу MOEX
+    """
 
-        def source_function():
-            """Возвращает web данные кроме последней цены, которая непрерывно обновляется"""
-            return web.securities_info(tickers)[[COMPANY_NAME, REG_NUMBER, LOT_SIZE]]
+    def __init__(self):
+        super().__init__(None, SECURITIES_INFO_MANE)
 
-        super().__init__(SECURITIES_INFO_CATEGORY, SECURITIES_INFO_MANE, source_function)
+    def download_all(self):
+        return web.securities_info()[[COMPANY_NAME, REG_NUMBER, LOT_SIZE]]
 
-    def _need_update(self):
-        if super()._need_update():
-            return True
-        if not all(self.get().index.contains(ticker) for ticker in self.tickers):
-            return True
-        return False
-
+    def download_update(self):
+        super().download_update()
 
 def securities_info(tickers: tuple):
     """Возвращает данные по тикерам из списка и при необходимости обновляет локальные данные
@@ -44,9 +37,8 @@ def securities_info(tickers: tuple):
         В строках тикеры
         В столбцах данные по размеру лота, регистрационному номеру и краткому наименованию
     """
-    data = SecuritiesInfoDataManager(tickers)
-    return data.get().loc[tickers, :]
-
+    data = SecuritiesInfoDataManager()
+    return data.value.loc[tickers, :]
 
 @lru_cache(maxsize=1)
 def lot_size(tickers: tuple):
@@ -86,5 +78,5 @@ def aliases(ticker: str):
 
 
 if __name__ == '__main__':
-    print(securities_info(('GTSS',)))
-    print(aliases('GTSS'))
+    print(securities_info(('UPRO',)))
+    print(aliases('UPRO'))
