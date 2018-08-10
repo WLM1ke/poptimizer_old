@@ -3,7 +3,7 @@ import web
 from local_new.data_manager import AbstractDataManager
 from web.labels import TICKER, DIVIDENDS
 
-SMART_LAB_DATA = 'smart-lab.ru'
+SMART_LAB_NAME = 'smart-lab'
 
 
 class SmartLabDataManager(AbstractDataManager):
@@ -15,7 +15,7 @@ class SmartLabDataManager(AbstractDataManager):
     is_monotonic = False
     update_from_scratch = True
     def __init__(self):
-        super().__init__(None, SMART_LAB_DATA)
+        super().__init__(None, SMART_LAB_NAME)
 
     def download_all(self):
         return web.dividends_smart_lab()

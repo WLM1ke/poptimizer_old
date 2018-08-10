@@ -1,18 +1,22 @@
 """Сохраняет, обновляет и загружает локальную версию данных по индексу MOEX Russia Net Total Return (Resident)"""
-
 import web
-from local.data_manager import DataManager
+from local_new.data_manager import AbstractDataManager
 
-INDEX_CATEGORY = 'index'
+
 INDEX_NAME = 'MCFTRR'
 
 
-class IndexDataManager(DataManager):
-    """Реализует особенность загрузки исторических котировок по индексу"""
-
+class IndexDataManager(AbstractDataManager):
+    """Реализует особенность хранения и загрузки исторических котировок по индексу"""
     def __init__(self):
-        super().__init__(INDEX_CATEGORY, INDEX_NAME, web.index, web.index)
+        super().__init__(None, INDEX_NAME)
 
+    def download_all(self):
+        return web.index()
+
+    def download_update(self):
+        last_date = self.value.index[-1]
+        return web.index(last_date)
 
 def index():
     """
@@ -26,7 +30,7 @@ def index():
         В строках даты торгов
     """
     data = IndexDataManager()
-    return data.get()
+    return data.value
 
 
 if __name__ == '__main__':
