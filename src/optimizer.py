@@ -242,4 +242,4 @@ if __name__ == '__main__':
     print(optimizer.dividends_metrics.std[PORTFOLIO])
     print(optimizer.t_dividends_growth)
     print(optimizer.returns_metrics.std[PORTFOLIO])
-    # optimizer.dividends_gradient_growth.to_excel('data.xlsx')
+    # pd.concat(dfs, axis='columns').to_excel('data.xlsx')
