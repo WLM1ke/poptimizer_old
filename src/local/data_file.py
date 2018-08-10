@@ -3,7 +3,7 @@
 import pickle
 
 import settings
-from local_new.data import Data
+from local.data import Data
 
 PICKLE_VERSION = pickle.HIGHEST_PROTOCOL
 DATA_FILE_EXTENSION = f'.pickle{PICKLE_VERSION}'

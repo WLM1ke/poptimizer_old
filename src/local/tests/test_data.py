@@ -1,6 +1,6 @@
 import time
 
-from local_new.data import Data
+from local.data import Data
 
 
 def test_data():
