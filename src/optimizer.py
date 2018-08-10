@@ -48,24 +48,20 @@ class Optimizer:
 
     def _str_need_optimization(self):
         """Строка о необходимости оптимизации"""
-        if self.t_dividends_growth > self.t_drawdown_growth:
-            t_growth = self.t_dividends_growth
-            best_gradient = 'дивидендов'
+        t_dividends = self.t_dividends_growth
+        t_drawdown = self.t_drawdown_growth
+        if max(t_dividends, t_drawdown) > T_SCORE:
+            str_beginning = f'ОПТИМИЗАЦИЯ ТРЕБУЕТСЯ'
         else:
-            t_growth = self.t_drawdown_growth
-            best_gradient = 'просадки'
-        if t_growth > T_SCORE:
-            return (f'ОПТИМИЗАЦИЯ ТРЕБУЕТСЯ'
-                    f'\nПрирост {best_gradient} составляет {t_growth:.2f} СКО > {T_SCORE:.2f}')
-        else:
-            return (f'ОПТИМИЗАЦИЯ НЕ ТРЕБУЕТСЯ'
-                    f'\nПрирост {best_gradient} составляет {t_growth:.2f} СКО < {T_SCORE:.2f}')
+            str_beginning = f'ОПТИМИЗАЦИЯ НЕ ТРЕБУЕТСЯ'
+        return (f'{str_beginning}'
+                f'\nПрирост дивидендов - {t_dividends:.2f} СКО'
+                f'\nПрирост просадки - {t_drawdown:.2f} СКО')
 
     def _str_best_trade(self):
         """Возвращает строчку с рекомендацией по сделкам
 
-        Предпочтение отдается приросту градиента с большим потенциалом увеличения t-статистики и позиции с максимальным
-        приростом градиента
+        Предпочтение отдается перемене позиций максимально увеличивающих дивиденды
 
         Лучшая позиция на продажу сокращается до нуля, но не более чем на MAX_TRADE от объема портфеля
         Продажа бьется на 5 сделок минимум по 1 лоту
@@ -75,10 +71,7 @@ class Optimizer:
         """
         portfolio = self.portfolio
         # Отбрасывается портфель и кэш из рекомендаций
-        if self.t_dividends_growth > self.t_drawdown_growth:
-            best_sell = self.dividends_gradient_growth.iloc[:-2].idxmax()
-        else:
-            best_sell = self.drawdown_gradient_growth.iloc[:-2].idxmax()
+        best_sell = self.dividends_gradient_growth.iloc[:-2].idxmax()
         sell_weight = max(0, min(portfolio.weight[best_sell], MAX_TRADE - portfolio.weight[CASH]))
         sell_value = sell_weight * portfolio.value[PORTFOLIO]
         sell_5_lots = max(1, int(sell_value / portfolio.lot_size[best_sell] / portfolio.price[best_sell] / 5 + 0.5))
@@ -91,15 +84,11 @@ class Optimizer:
 
     def _str_pareto_metrics(self):
         """Сводная информация об оптимальности по Парето"""
-        if self.t_dividends_growth > self.t_drawdown_growth:
-            best_growth = self.dividends_gradient_growth
-        else:
-            best_growth = self.drawdown_gradient_growth
         frames = [self.dividends_metrics.gradient,
                   self.returns_metrics.gradient,
                   self.dominated,
                   self.portfolio.volume_factor,
-                  best_growth]
+                  self.dividends_gradient_growth]
         pareto_metrics = pd.concat(frames, axis=1)
         pareto_metrics.columns = ['D_GRADIENT', 'R_GRADIENT', 'DOMINATED', 'VOLUME_FACTOR', 'GRADIENT_GROWTH']
         pareto_metrics.sort_values('D_GRADIENT', ascending=False, inplace=True)
@@ -198,14 +187,10 @@ class Optimizer:
     def dominated(self):
         """Для каждой позиции выдает доминирующую ее по Парето
 
-        Если доминирующих несколько, то выбирается позиция с максимальным ростом градиента
-        Предпочтение отдается приросту градиента с большим потенциалом увеличения t-статистики
-        Учитывается понижающий коэффициент для низколиквидных доминирующих акций
+        Если доминирующих несколько, то выбирается позиция с максимальным ростом градиента дивидендов
+        Портфель и кэш не доминируются
         """
-        if self.t_dividends_growth > self.t_drawdown_growth:
-            matrix = self._dividends_growth_matrix().iloc[:, :-2]
-        else:
-            matrix = self._drawdown_growth_matrix().iloc[:, :-2]
+        matrix = self._dividends_growth_matrix().iloc[:, :-2]
         df = matrix.apply(func=lambda x: x.idxmax() if x.max() > 0 else "",
                           axis='columns')
         df[-2:] = ""

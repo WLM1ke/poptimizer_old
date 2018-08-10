@@ -65,7 +65,7 @@ def test_drawdown_gradient_growth(opt):
 
 def test_dominated(opt):
     dominated = opt.dominated
-    assert dominated['UPRO'] == 'VSMO'
+    assert dominated['UPRO'] == 'RTKMP'
     assert dominated['LSRG'] == ''
     assert dominated['VSMO'] == ''
     assert dominated['SNGSP'] == 'CHMF'
@@ -81,28 +81,24 @@ def test_t_drawdown_growth(opt):
 
 def test_best_trade(opt):
     best_string = opt._str_best_trade()
-    assert 'Продать MSTT - 5 сделок по 19 лотов' in best_string
-    assert 'Купить LSRG - 5 сделок по 26 лотов' in best_string
+    assert 'Продать AKRN - 5 сделок по 5 лотов' in best_string
+    assert 'Купить CHMF - 5 сделок по 2 лотов' in best_string
 
 
 def test_str_t_score_10(opt, monkeypatch):
     monkeypatch.setattr(optimizer, 'T_SCORE', 10.0)
     report = str(opt)
     assert 'ОПТИМИЗАЦИЯ НЕ ТРЕБУЕТСЯ' in report
-    t_score = 2.17621763863156
-    assert f'Прирост просадки составляет {t_score:.2f} СКО < 10.00' in report
+    t_dividends = 0.613956329529872
+    t_return = 2.17621763863156
+    assert f'Прирост дивидендов - {t_dividends:.2f} СКО' in report
+    assert f'Прирост просадки - {t_return:.2f} СКО' in report
 
 
 def test_str_t_score(opt):
     report = str(opt)
     assert 'ОПТИМИЗАЦИЯ ТРЕБУЕТСЯ' in report
-    t_score = 2.17621763863156
-    assert f'Прирост просадки составляет {t_score:.2f} СКО > 2.00' in report
-
-
-def test_str_dividends(opt, monkeypatch):
-    monkeypatch.setattr(Optimizer, 't_drawdown_growth', 0)
-    report = str(opt)
-    assert 'ОПТИМИЗАЦИЯ НЕ ТРЕБУЕТСЯ' in report
-    t_score = 0.613956329529872
-    assert f'Прирост дивидендов составляет {t_score:.2f} СКО < 2.00' in report
+    t_dividends = 0.613956329529872
+    t_return = 2.17621763863156
+    assert f'Прирост дивидендов - {t_dividends:.2f} СКО' in report
+    assert f'Прирост просадки - {t_return:.2f} СКО' in report
