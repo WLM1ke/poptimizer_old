@@ -5,7 +5,7 @@ import sqlite3
 import pandas as pd
 from pandas.io.sql import DatabaseError
 
-from local_new.data_manager import AbstractDataManager
+from local.data_manager import AbstractDataManager
 from settings import DATA_PATH
 from web.labels import DATE
 

@@ -4,8 +4,8 @@ import functools
 import pandas as pd
 
 import web
+from local.data_manager import AbstractDataManager
 from local.local_securities_info import aliases
-from local_new.data_manager import AbstractDataManager
 from web.labels import DATE, VOLUME, CLOSE_PRICE
 
 QUOTES_CATEGORY = 'quotes'

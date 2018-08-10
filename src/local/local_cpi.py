@@ -3,7 +3,7 @@
 import pandas as pd
 
 import web
-from local_new.data_manager import AbstractDataManager
+from local.data_manager import AbstractDataManager
 
 CPI_CATEGORY = None
 CPI_NAME = 'cpi'

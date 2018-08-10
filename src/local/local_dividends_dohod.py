@@ -1,6 +1,6 @@
 """Реализация менеджера данных по дивидендам с dohod.ru"""
 import web
-from local_new.data_manager import AbstractDataManager
+from local.data_manager import AbstractDataManager
 from web.labels import DATE
 
 DOHOD_CATEGORY = 'dohod.ru'

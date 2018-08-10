@@ -1,6 +1,6 @@
 """Сохраняет, обновляет и загружает локальную версию данных по индексу MOEX Russia Net Total Return (Resident)"""
 import web
-from local_new.data_manager import AbstractDataManager
+from local.data_manager import AbstractDataManager
 
 
 INDEX_NAME = 'MCFTRR'

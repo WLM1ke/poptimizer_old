@@ -1,77 +1,86 @@
-"""Организация хранения локальных DataFrames"""
+"""Хранение локальных данных"""
 
-import json
-
-import arrow
-import pandas as pd
+import pickle
 
 import settings
+from local_new.data import Data
 
-INDEX_FILE_NAME = 'index.json'
-DATA_FILE_EXTENSION = '.msg'
+PICKLE_VERSION = pickle.HIGHEST_PROTOCOL
+DATA_FILE_EXTENSION = f'.pickle{PICKLE_VERSION}'
 
 
 class DataFile:
-    """Обеспечивает функционал сохранения, загрузки и даты изменения для файла
+    """Обеспечивает функционал сохранения и загрузки объектов Data
 
-    Данные хранятся в каталоге установленном в глобальных настройках. Каждая категория данных в отдельной подкаталоге.
-    Каждый ряд в отдельном файле в формате MessagePack
-
-    В корне каталога данных ведется файл index.json в виде словаря str(frame_category->frame_name): дата изменения
+    Данные хранятся в каталоге установленном в глобальных настройках
+    Каждая категория данных в отдельной подкаталоге
+    Каждый ряд в отдельном файле в формате Pickle
     """
 
-    def __init__(self, frame_category: str, frame_name: str):
-        self.frame_category = frame_category
-        self.frame_name = frame_name
-        self.data_path = self._make_data_path(frame_category, f'{frame_name}{DATA_FILE_EXTENSION}')
-        self.index_path = self._make_data_path(None, INDEX_FILE_NAME)
+    def __init__(self, data_category, data_name: str):
+        """
+        Parameters
+        ----------
+        data_category
+            Каталог в котором хранятся однородные данные - может быть None, тогда данные будут сохраняться в корне
+            глобального каталога данных
+        data_name
+            Название серии данных
+        """
+        self._data_category = data_category
+        self._data_name = data_name
+        if self.data_path.exists():
+            with open(self.data_path, 'rb') as data_file:
+                self._data = pickle.load(data_file)
+        else:
+            self._data = Data()
 
-    @staticmethod
-    def _make_data_path(subfolder, file: str):
+    def __str__(self):
+        return (f'{self.__class__.__name__}('
+                f'data_category={self.data_category}, '
+                f'data_name={self.data_name}, '
+                f'data={self._data})')
+
+    @property
+    def data_category(self):
+        """Категория данных"""
+        return self._data_category
+
+    @property
+    def data_name(self):
+        """Название данных"""
+        return self._data_name
+
+    @property
+    def data_path(self):
         """Возвращает путь к файлу и при необходимости создает необходимые директории
 
         Директории создаются в глобальной директории данных из файла настроек
         """
-        if subfolder is None:
-            folder = settings.DATA_PATH
-        else:
-            folder = settings.DATA_PATH / subfolder
+        folder = settings.DATA_PATH
+        if self._data_category is not None:
+            folder = folder / self._data_category
         if not folder.exists():
             folder.mkdir(parents=True)
-        return folder / file
+        return folder / f'{self._data_name}{DATA_FILE_EXTENSION}'
 
+    @property
+    def value(self):
+        """Возвращает сохраненное значение данных. Если сохраненного значения нет, то None"""
+        return self._data.value
+
+    @value.setter
+    def value(self, value):
+        """Сохраняет новое значение данных"""
+        self._data.value = value
+        with open(self.data_path, 'wb') as data_file:
+            pickle.dump(self._data, data_file, protocol=PICKLE_VERSION)
+
+    @property
     def last_update(self):
-        """Возвращает дату последнего обновления из индекса
-
-        Если данные отсутствуют в индексе, то возвращает None
-        """
-        if self.index_path.exists():
-            with self.index_path.open('r') as file:
-                update_dict = json.load(file)
-            date = update_dict.get(f'{self.frame_category}->{self.frame_name}', None)
-            if date:
-                return arrow.get(date)
-            return date
-        return None
-
-    def dump(self, df):
-        """Сохраняет DataFrame и обновляет информацию в индексе"""
-        df.to_msgpack(self.data_path)
-        if self.index_path.exists():
-            with self.index_path.open('r') as file:
-                index_dict = json.load(file)
-        else:
-            index_dict = {}
-        index_dict[f'{self.frame_category}->{self.frame_name}'] = arrow.now().for_json()
-        with self.index_path.open('w') as file:
-            json.dump(index_dict, file, sort_keys=True, indent=2)
-
-    def load(self):
-        """Загружает данные из файла"""
-        if self.last_update() is not None:
-            return pd.read_msgpack(self.data_path)
+        """Время обновления данных - epoch. Если сохраненного значения нет, то None"""
+        return self._data.last_update
 
 
 if __name__ == '__main__':
-    data = DataFile('macro', 'qqq')
-    print(data.load())
+    print(DataFile('qqq', 'qqq'))
