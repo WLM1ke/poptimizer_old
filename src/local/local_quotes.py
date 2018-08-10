@@ -1,39 +1,42 @@
-"""Сохраняет, обновляет и загружает локальную версию данных по индексу котировкам"""
-
+"""Менеджер данных по котировкам и вспомогательные функции"""
 import functools
 
 import pandas as pd
 
 import web
-from local.data_manager import DataManager
 from local.local_securities_info import aliases
-from web.labels import CLOSE_PRICE, DATE, VOLUME
+from local_new.data_manager import AbstractDataManager
+from web.labels import DATE, VOLUME, CLOSE_PRICE
 
 QUOTES_CATEGORY = 'quotes'
 
 
-class QuotesManager(DataManager):
-    """Реализует особенность загрузки 'длинной' истории котировок"""
+class QuotesDataManager(AbstractDataManager):
+    """Реализует особенность загрузки и хранения 'длинной' истории котировок"""
 
-    def __init__(self, ticker: str):
-        web_quotes_function = functools.partial(web.quotes, ticker=ticker)
-        super().__init__(QUOTES_CATEGORY, ticker, None, web_quotes_function)
+    def __init__(self, ticker):
+        super().__init__(QUOTES_CATEGORY, ticker)
 
-    def create(self):
-        """Создает локальную версию истории котировок, склеенную из всех тикеров аналогов"""
-        print(f'Создание локальных данных {self.frame_category} -> {self.frame_name}')
+    def download_all(self):
+        """Загружает историю котировок, склеенную из всех тикеров аналогов
+
+        Если на одну дату приходится несколько результатов торгов, то выбирается с максимальным оборотом
+        """
         df = pd.concat(self._yield_aliases_quotes_history())
-        # Для каждой даты выбирается тикер с максимальным оборотом
-        df = df.loc[df.groupby(DATE)[VOLUME].idxmax()]
-        df = df.sort_index()
-        self.file.dump(df)
+        return df.loc[df.groupby(DATE)[VOLUME].idxmax()]
 
     def _yield_aliases_quotes_history(self):
         """Генерирует истории котировок для все тикеров аналогов заданного тикера"""
-        ticker = self.frame_name
+        ticker = self.data_name
         aliases_tickers = aliases(ticker)
         for ticker in aliases_tickers:
             yield web.quotes(ticker)
+
+    def download_update(self):
+        ticker = self.data_name
+        last_date = self.value.index[-1]
+        return web.quotes(ticker, last_date)
+
 
 
 @functools.lru_cache(maxsize=None)
@@ -55,8 +58,8 @@ def quotes(ticker: str):
         В строках даты торгов.
         В столбцах [CLOSE, VOLUME] цена закрытия и оборот в штуках.
     """
-    data = QuotesManager(ticker)
-    return data.get()
+    data = QuotesDataManager(ticker)
+    return data.value
 
 
 @functools.lru_cache(maxsize=1)
@@ -100,4 +103,4 @@ def volumes(tickers: tuple):
 
 
 if __name__ == '__main__':
-    print(quotes('AKRN'))
+    pass

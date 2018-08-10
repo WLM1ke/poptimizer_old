@@ -45,7 +45,7 @@ class DataManager:
         Во время обновления проверяется совпадение новых данных со существующими
         """
         if self._need_update():
-            print(f'Обновление локальных данных {self.frame_category} -> {self.frame_name}')
+            print(f'Обновление данных: {self.frame_category} -> {self.frame_name}')
             df_old = self.get()
             if self.update_function:
                 df_new = self.update_function(start=df_old.index[-1])
@@ -90,7 +90,7 @@ class DataManager:
 
     def create(self):
         """Создает локальный файл с нуля или перезаписывает существующий"""
-        print(f'Создание локальных данных {self.frame_category} -> {self.frame_name}')
+        print(f'Создание данных: {self.frame_category} -> {self.frame_name}')
         df = self.source_function()
         if not df.index.is_unique:
             raise ValueError(f'У новых данных не уникальный индекс {df}')

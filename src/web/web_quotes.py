@@ -86,7 +86,7 @@ def quotes(ticker, start=None):
     df = pd.concat(gen, ignore_index=True)
     # Для каждой даты выбирается режим торгов с максимальным оборотом
     df = df.loc[df.groupby(DATE)[VOLUME].idxmax()]
-    df = df.set_index(DATE).sort_index()
+    df = df.set_index(DATE)
     return df
 
 
