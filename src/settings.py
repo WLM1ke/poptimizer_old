@@ -4,8 +4,9 @@ from pathlib import Path
 
 import pandas as pd
 
-# Количество колонок в распечатках
-pd.options.display.max_columns = 20
+# Количество колонок в распечатках без переноса на несколько страниц
+pd.set_option('display.max_columns', 20)
+pd.set_option('display.width', None)
 
 # Путь к данным - данные состоящие из нескольких серий хранятся в отдельных директориях внутри базовой директории
 DATA_PATH = Path(__file__).parents[1] / 'data'
@@ -23,4 +24,4 @@ AFTER_TAX = 1 - 0.13
 MAX_TRADE = 0.006
 
 # Минимальный оборот акции - преимущества акции квадратичо снижаются при приближении оборота к данному уровню
-VOLUME_CUT_OFF = 3.2 * MAX_TRADE
+VOLUME_CUT_OFF = 3.6 * MAX_TRADE

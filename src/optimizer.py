@@ -88,9 +88,11 @@ class Optimizer:
                   self.returns_metrics.gradient,
                   self.dominated,
                   self.portfolio.volume_factor,
-                  self.dividends_gradient_growth]
+                  self.dividends_gradient_growth,
+                  self.drawdown_gradient_growth]
         pareto_metrics = pd.concat(frames, axis=1)
-        pareto_metrics.columns = ['D_GRADIENT', 'R_GRADIENT', 'DOMINATED', 'VOLUME_FACTOR', 'GRADIENT_GROWTH']
+        pareto_metrics.columns = ['D_GRADIENT', 'R_GRADIENT', 'DOMINATED', 'VOLUME_FACTOR', 'DIVIDENDS_GROWTH',
+                                  'DRAWDOWN_GROWTH']
         pareto_metrics.sort_values('D_GRADIENT', ascending=False, inplace=True)
         return pareto_metrics
 
