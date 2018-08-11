@@ -1,4 +1,5 @@
 """Функции проверки статуса дивидендов"""
+import numpy as np
 import pandas as pd
 
 from local import local_dividends_smart_lab, local_dividends_dohod
@@ -54,6 +55,7 @@ def dividends_status(ticker: str):
         Список из DataFrame с результатами сравнения для каждого источника данных
     """
     manager = DividendsDataManager(ticker)
+    manager.update()
     df = manager.value
     result = []
     for source in DIVIDENDS_SOURCES:
@@ -62,13 +64,12 @@ def dividends_status(ticker: str):
         source_df = source_df[source_df.index >= pd.Timestamp(STATISTICS_START)]
         source_df.name = source.__name__
         compare_df = pd.concat([df, source_df], axis='columns')
-        compare_df['STATUS'] = ''
-        compare_df.loc[compare_df[ticker] != compare_df[source.__name__], 'STATUS'] = 'ERROR'
+        compare_df['STATUS'] = 'ERROR'
+        compare_df.loc[np.isclose(compare_df[ticker].values, compare_df[source.__name__].values), 'STATUS'] = ''
         print(compare_df)
         result.append(compare_df)
     return result
 
 
 if __name__ == '__main__':
-    print(smart_lab_status(('AKRN', 'CHMF', 'RTKMP')))
-    dividends_status('ENRU')
+    dividends_status('ALRS')

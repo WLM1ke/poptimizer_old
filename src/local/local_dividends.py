@@ -19,7 +19,7 @@ class DividendsDataManager(AbstractDataManager):
 
     Данные загружаются из локальной базы данных и сохраняются в общем формате DataManager
     """
-
+    update_from_scratch = True
     def __init__(self, ticker: str):
         super().__init__(DIVIDENDS_CATEGORY, ticker)
 
