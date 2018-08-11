@@ -1,10 +1,10 @@
 from pathlib import Path
 
+import pandas as pd
 import pytest
 
 import settings
-from local import data_manager
-from local.local_securities_info import aliases, securities_info
+from local.local_securities_info import aliases, securities_info, SecuritiesInfoDataManager, lot_size
 from web.labels import LOT_SIZE, COMPANY_NAME, REG_NUMBER
 
 
@@ -48,16 +48,19 @@ def test_all_tickers_are_new_security_info():
     assert df.loc['GAZP', REG_NUMBER] == '1-02-00028-A'
     assert df.loc['SNGSP', LOT_SIZE] == 100
 
-
-def test_need_update(monkeypatch):
-    patch_day = data_manager.END_OF_CURRENT_TRADING_DAY.shift(days=10)
-    monkeypatch.setattr(data_manager, 'END_OF_CURRENT_TRADING_DAY', patch_day)
-    df = securities_info(('KBTK', 'MOEX'))
-    assert len(df.index) == 2
-    assert df.loc['KBTK', COMPANY_NAME] == 'КузбТК ао'
-    assert df.loc['MOEX', REG_NUMBER] == '1-05-08443-H'
-    assert df.loc['KBTK', LOT_SIZE] == 10
-
-
 def test_aliases():
     assert aliases('UPRO') == ('UPRO', 'EONR', 'OGK4')
+
+
+def test_download_update():
+    with pytest.raises(NotImplementedError):
+        SecuritiesInfoDataManager().download_update()
+
+
+def test_lot_size():
+    df = lot_size(('AKRN', 'SNGSP', 'KBTK'))
+    assert isinstance(df, pd.Series)
+    assert df.shape == (3,)
+    assert df['AKRN'] == 1
+    assert df['SNGSP'] == 100
+    assert df['KBTK'] == 10
