@@ -228,4 +228,4 @@ if __name__ == '__main__':
            optimizer.portfolio.volume_factor]
     print(optimizer.dividends_metrics.std[PORTFOLIO])
     print(optimizer.returns_metrics.std[PORTFOLIO])
-    # pd.concat(dfs, axis='columns').to_excel('data.xlsx')
+    pd.concat(dfs, axis='columns').to_excel('data.xlsx')
