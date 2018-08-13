@@ -7,8 +7,9 @@ import pandas as pd
 import local
 from portfolio import Portfolio, CASH, PORTFOLIO
 from settings import AFTER_TAX, T_SCORE
-
 # Период, который является источником для статистики
+from utils.aggregation import yearly_aggregation_func
+
 DIVIDENDS_YEARS = 5
 DIVIDENDS_MONTHS = DIVIDENDS_YEARS * 12
 
@@ -71,16 +72,7 @@ class DividendsMetrics:
         1 - ставка налога = AFTER_TAX указывается в модуле настроек
         """
         real_after_tax = self.real_after_tax_monthly
-        end_month = self._portfolio.date.month
-        day_end = self._portfolio.date.day
-
-        def yearly_aggregation(x: pd.Timestamp):
-            if x.month <= end_month:
-                return x + pd.DateOffset(month=end_month, day=day_end)
-            else:
-                return x + pd.DateOffset(years=1, month=end_month, day=day_end)
-
-        return real_after_tax.groupby(by=yearly_aggregation).sum()
+        return real_after_tax.groupby(by=yearly_aggregation_func(self._portfolio.date)).sum()
 
     @property
     @lru_cache(maxsize=1)
