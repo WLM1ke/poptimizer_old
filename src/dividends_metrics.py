@@ -184,4 +184,4 @@ if __name__ == '__main__':
     port = Portfolio(date='2018-07-27',
                      cash=2_482 + 7_764 + 3_416,
                      positions=pos)
-    print(DividendsMetrics(port).real_after_tax)
+    print(DividendsMetrics(port).yields)

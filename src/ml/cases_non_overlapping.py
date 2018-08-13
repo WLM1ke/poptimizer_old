@@ -93,11 +93,3 @@ if __name__ == '__main__':
     lags_ = 5
     cc = cases_non_overlapping(tuple(key for key in POSITIONS), pd.Timestamp('2017-05-21'), lags=lags_)
     print(cc)
-    cc.to_excel('data.xlsx')
-    from sklearn.model_selection import LeaveOneGroupOut
-
-    x = cc[[DATE, TICKER] + [f'lag - {lag}' for lag in range(1, lags_ + 1)]]
-    y = cc['lag - 0']
-    print((y == 0).sum())
-    groups = cc[TICKER]
-    print(len(list(LeaveOneGroupOut().split(x, y, groups))))
