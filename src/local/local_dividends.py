@@ -7,6 +7,7 @@ from pandas.io.sql import DatabaseError
 
 from local.data_manager import AbstractDataManager
 from settings import DATA_PATH
+from utils.aggregation import monthly_aggregation_func
 from web.labels import DATE
 
 DIVIDENDS_CATEGORY = 'dividends'
@@ -19,7 +20,6 @@ class DividendsDataManager(AbstractDataManager):
 
     Данные загружаются из локальной базы данных и сохраняются в общем формате DataManager
     """
-    update_from_scratch = True
     def __init__(self, ticker: str):
         super().__init__(DIVIDENDS_CATEGORY, ticker)
 
@@ -66,19 +66,15 @@ def monthly_dividends(tickers: tuple, last_date: pd.Timestamp):
     frames = (DividendsDataManager(ticker).value for ticker in tickers)
     df = pd.concat(frames, axis='columns')
     month_end_day = last_date.day
-    start_date = pd.Timestamp(STATISTICS_START) + pd.DateOffset(day=month_end_day) + pd.DateOffset(days=1)
-    index = pd.DatetimeIndex(start=start_date, end=last_date, freq='D')
-    df = df.reindex(index=index)
-
-    def monthly_aggregation(x: pd.Timestamp):
-        """Агрегация месячных данных - конец месяца соответствует дню месяца из аргумента"""
-        if x.day <= month_end_day:
-            return x + pd.DateOffset(day=month_end_day)
-        else:
-            return x + pd.DateOffset(months=1, day=month_end_day)
-
-    return df.groupby(by=monthly_aggregation).sum()
+    crop_date = pd.Timestamp(STATISTICS_START) + pd.DateOffset(day=month_end_day, days=1)
+    df = df.loc[crop_date:, :]
+    df = df.groupby(by=monthly_aggregation_func(last_date)).sum()
+    start_date = pd.Timestamp(STATISTICS_START) + pd.DateOffset(months=1, day=month_end_day)
+    offset = pd.DateOffset(months=1, day=month_end_day)
+    index = pd.DatetimeIndex(start=start_date, end=last_date, freq=offset)
+    df = df.reindex(index=index, fill_value=0)
+    return df
 
 
 if __name__ == '__main__':
-    print(DividendsDataManager('ALRS'))
+    print(monthly_dividends(tuple(['PIKK', 'AKRN', 'CHMF', 'GMKN']), pd.Timestamp('2018-08-13')))

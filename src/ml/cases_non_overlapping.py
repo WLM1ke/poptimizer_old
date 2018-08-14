@@ -89,7 +89,8 @@ def cases_non_overlapping(tickers: tuple, last_date: pd.Timestamp, lags=5):
 if __name__ == '__main__':
     POSITIONS = dict(GMKN=146,
                      LSRG=2346,
-                     MSTT=1823)
+                     MSTT=1823,
+                     PIKK=12)
     lags_ = 5
-    cc = cases_non_overlapping(tuple(key for key in POSITIONS), pd.Timestamp('2017-05-21'), lags=lags_)
+    cc = cases_non_overlapping(tuple(key for key in POSITIONS), pd.Timestamp('2018-08-13'), lags=lags_)
     print(cc)
