@@ -53,17 +53,22 @@ def monthly_cpi(last_date: pd.Timestamp):
         В строках значения инфляции для каждого месяца
         Инфляция 1,2% за месяц соответствует 1.012
     """
-    df = cpi()
+    df = cpi()[:last_date + pd.DateOffset(day=31)]
+    offset = pd.DateOffset(months=1, day=last_date.day)
     index = pd.DatetimeIndex(name=df.index.name,
-                             freq='M',
-                             start=df.index[0],
-                             end=last_date + pd.DateOffset(day=31))
+                             freq=offset,
+                             start=df.index[0] + pd.DateOffset(day=last_date.day),
+                             end=last_date)
+    old_len = len(df.index)
+    df.index = index[:old_len]
     df = df.reindex(index)
     df = df.fillna(df.shift(12))
-    index = index.map(pd.DateOffset(day=last_date.day))
-    df.index = index
     return df
 
 
 if __name__ == '__main__':
-    help(CPIDataManager().download_all)
+    df = cpi()
+    print(df.shape)
+    last_date = pd.Timestamp('2018-07-30')
+    day = last_date.day
+    print(monthly_cpi(last_date))

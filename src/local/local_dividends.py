@@ -1,5 +1,5 @@
 """Реализация менеджера данных для дивидендов и вспомогательные функции"""
-
+import functools
 import sqlite3
 
 import pandas as pd
@@ -47,6 +47,14 @@ class DividendsDataManager(AbstractDataManager):
         super().download_update()
 
 
+@functools.lru_cache(maxsize=1)
+def tickers_dividends(tickers: tuple):
+    """Сводная информация по дивидендам для заданных тикеров"""
+    frames = (DividendsDataManager(ticker).value for ticker in tickers)
+    df = pd.concat(frames, axis='columns')
+    return df
+
+
 def monthly_dividends(tickers: tuple, last_date: pd.Timestamp):
     """Возвращает ряды данных по месячным дивидендам для кортежа тикеров
 
@@ -63,8 +71,7 @@ def monthly_dividends(tickers: tuple, last_date: pd.Timestamp):
         Столбцы - отдельные тикеры
         Строки - последние даты месяца
     """
-    frames = (DividendsDataManager(ticker).value for ticker in tickers)
-    df = pd.concat(frames, axis='columns')
+    df = tickers_dividends(tickers)
     month_end_day = last_date.day
     crop_date = pd.Timestamp(STATISTICS_START) + pd.DateOffset(day=month_end_day, days=1)
     df = df.loc[crop_date:, :]
@@ -77,4 +84,12 @@ def monthly_dividends(tickers: tuple, last_date: pd.Timestamp):
 
 
 if __name__ == '__main__':
-    print(monthly_dividends(tuple(['PIKK', 'AKRN', 'CHMF', 'GMKN']), pd.Timestamp('2018-08-13')))
+    import cProfile
+    import pstats
+
+    pr = cProfile.Profile()
+    pr.enable()
+    print(tickers_dividends(tuple(['PIKK', 'AKRN', 'CHMF', 'GMKN'])))
+    pr.disable()
+    ps = pstats.Stats(pr).sort_stats('cumulative')
+    ps.print_stats()
