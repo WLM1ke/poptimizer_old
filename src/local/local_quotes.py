@@ -105,4 +105,4 @@ def volumes(tickers: tuple):
 if __name__ == '__main__':
     for ticker in ['GMKN', 'LSRG', 'MSTT']:
         df = QuotesDataManager(ticker).value
-        print(df.loc['2010-06-21', CLOSE_PRICE])
+        print(df.loc['2014-12-30', CLOSE_PRICE])

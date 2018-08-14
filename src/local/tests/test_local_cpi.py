@@ -3,7 +3,7 @@ import pytest
 
 import web
 from local import local_cpi
-from local.local_cpi import CPIDataManager, cpi_to_date
+from local.local_cpi import CPIDataManager, monthly_cpi
 from web.labels import CPI
 
 
@@ -33,7 +33,7 @@ def test_download_update():
 def test_cpi_to_date(monkeypatch):
     fake_df = local_cpi.cpi()[:'2018-06-30']
     monkeypatch.setattr(local_cpi, 'cpi', lambda: fake_df)
-    df = cpi_to_date(pd.Timestamp('2018-08-06'))
+    df = monthly_cpi(pd.Timestamp('2018-08-06'))
     assert len(df) == 332
     assert df.index[0] == pd.Timestamp('1991-01-06')
     assert df.index[-1] == pd.Timestamp('2018-08-06')

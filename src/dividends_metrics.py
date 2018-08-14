@@ -58,7 +58,7 @@ class DividendsMetrics:
         1 - ставка налога = AFTER_TAX указывается в модуле настроек
         """
         nominal_pretax_dividends = self.nominal_pretax_monthly
-        cpi = local.cpi_to_date(self._portfolio.date)
+        cpi = local.monthly_cpi(self._portfolio.date)
         cum_cpi = cpi.iloc[-DIVIDENDS_MONTHS:].cumprod()
         real_index = cum_cpi.iloc[-1] / cum_cpi
         real_pretax_dividends = nominal_pretax_dividends.multiply(real_index, axis='index')

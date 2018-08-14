@@ -29,7 +29,7 @@ def real_prices_and_dividends(tickers, last_date):
     start_date = (pd.Timestamp(STATISTICS_START)
                   + pd.DateOffset(month=last_date.month, day=last_date.day)
                   + pd.DateOffset(days=1))
-    cpi = local.cpi_to_date(last_date)[start_date:]
+    cpi = local.monthly_cpi(last_date)[start_date:]
     cum_cpi = cpi.cumprod()
     real_after_tax_dividends = real_after_tax_yearly_dividends(tickers, start_date, last_date, cum_cpi)
     cum_cpi = cum_cpi.reindex(real_after_tax_dividends.index)
@@ -89,8 +89,7 @@ def cases_non_overlapping(tickers: tuple, last_date: pd.Timestamp, lags=5):
 if __name__ == '__main__':
     POSITIONS = dict(GMKN=146,
                      LSRG=2346,
-                     MSTT=1823,
-                     PIKK=12)
+                     MSTT=1823)
     lags_ = 5
     cc = cases_non_overlapping(tuple(key for key in POSITIONS), pd.Timestamp('2018-08-13'), lags=lags_)
     print(cc)

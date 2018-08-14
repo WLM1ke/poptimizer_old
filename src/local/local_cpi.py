@@ -37,7 +37,7 @@ def cpi():
     return data.value
 
 
-def cpi_to_date(last_date: pd.Timestamp):
+def monthly_cpi(last_date: pd.Timestamp):
     """Месячная инфляция с учетом даты окончания
 
     Даты, на которую дана месячная инфляция соответствует дню месяца из last_date

@@ -1,6 +1,6 @@
 """Сохраняет, обновляет и загружает локальную версию данных"""
 
-from local.local_cpi import cpi, cpi_to_date
+from local.local_cpi import cpi, monthly_cpi
 from local.local_dividends import monthly_dividends
 from local.local_dividends_dohod import dividends_dohod
 from local.local_dividends_smart_lab import dividends_smart_lab

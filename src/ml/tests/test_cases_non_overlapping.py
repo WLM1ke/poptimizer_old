@@ -14,7 +14,7 @@ LAST_DATE = pd.Timestamp('2017-05-21')
 START_DATE = (pd.Timestamp(STATISTICS_START)
               + pd.DateOffset(month=LAST_DATE.month, day=LAST_DATE.day)
               + pd.DateOffset(days=1))
-CUM_CPI = local.cpi_to_date(LAST_DATE)[START_DATE:].cumprod()
+CUM_CPI = local.monthly_cpi(LAST_DATE)[START_DATE:].cumprod()
 
 
 def test_real_after_tax_yearly_dividends():
