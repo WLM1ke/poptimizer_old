@@ -81,6 +81,7 @@ def test_valid_return_gradient(port):
     assert not valid_return_gradient(port, 'TTLK', 2)
     assert not valid_return_gradient(port, 'GAZP', 2)
     assert not valid_return_gradient(port, 'VSMO', 0)
+    assert valid_return_gradient(port, 'TTLK', -1)
 
 
 TICKER_CASES = ['ARSA', 'SNGSP', 'ALNU']
