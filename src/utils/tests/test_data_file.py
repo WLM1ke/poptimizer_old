@@ -39,9 +39,15 @@ def test_from_file():
 
 def test_data_path():
     data = DataFile('cat1', 'data1')
-    assert data.data_path.parts[-1] == 'data1.pickle4'
-    assert data.data_path.parts[-2] == 'cat1'
+    assert data.data_path.parts[-1] == 'cat1.pickle4'
+    assert data.data_path.parts[-2] == 'data1'
     assert data.data_path.parents[1] == settings.DATA_PATH
+
+
+def test_data_path_no_cat():
+    data = DataFile(None, 'data1')
+    assert data.data_path.parts[-1] == 'data1.pickle4'
+    assert data.data_path.parents[0] == settings.DATA_PATH
 
 
 def test_str():
