@@ -44,9 +44,11 @@ class CasesIterator:
 
     def cases(self, date: pd.Timestamp):
         """Возвращает кейсы для заданной даты"""
-        dividends_yield = self._real_dividends_yields(date).T
+        dividends_yield = self._real_dividends_yields(date)
+        date = dividends_yield.index[-2]
+        dividends_yield = dividends_yield.T
         dividends_yield.index.name = TICKER
-        dividends_yield[DATE] = dividends_yield.columns[-2]
+        dividends_yield[DATE] = date
         dividends_yield.set_index(DATE, append=True, inplace=True)
         dividends_yield.columns = (f'lag - {i}' for i in range(self._lags, -1, -1))
         return dividends_yield.dropna()
@@ -63,7 +65,7 @@ def all_case(tickers: tuple, last_date: pd.Timestamp, lags: int = 5):
     tickers
         Кортеж тикеров
     last_date
-        Последняя дата, на которую нужно подготовить уейсы
+        Последняя дата, на которую нужно подготовить кейсы
     lags
         Количество лагов для данных по дивидендам
 
