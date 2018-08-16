@@ -5,7 +5,10 @@ import local
 from local.local_dividends import STATISTICS_START
 from settings import AFTER_TAX
 from utils.aggregation import yearly_aggregation_func
+from utils.data_manager import AbstractDataManager
 from web.labels import TICKER, DATE
+
+CASES_NAME = 'cases'
 
 MONTH_IN_YEAR = 12
 
@@ -54,6 +57,31 @@ class CasesIterator:
         return dividends_yield.dropna()
 
 
+class CasesDataManager(AbstractDataManager):
+    """Сохраняет кейсы и обновляет раз в день с нуля"""
+    update_from_scratch = True
+    is_monotonic = False
+
+    def __init__(self, tickers: tuple, last_date: pd.Timestamp, lags: int = 5):
+        self._params = (tickers, last_date, lags)
+        super().__init__(None, CASES_NAME)
+        if self.value.shape[1] != lags + 1:
+            raise ValueError(f'Локальная версия для {self.value.shape[1] - 1} лагов'
+                             f'\nДолжна быть для {lags}')
+        if self.value.index[-1][1] != last_date + pd.DateOffset(years=-1):
+            raise ValueError(f'Локальная версия для {self.value.index[-1][1]} даты'
+                             f'\nДолжна быть для {last_date + pd.DateOffset(years=-1)}')
+        if set(tickers) != set(self.value.index.levels[0]):
+            raise ValueError(f'Локальная версия для {sorted(set(tickers))} тикеров'
+                             f'\nДолжна быть для {sorted(set(self.value.index.levels[0]))}')
+
+    def download_all(self):
+        return pd.concat(CasesIterator(*self._params))
+
+    def download_update(self):
+        super().download_update()
+
+
 def all_case(tickers: tuple, last_date: pd.Timestamp, lags: int = 5):
     """Возвращает обучающую выборку до указанной даты включительно
 
@@ -75,8 +103,7 @@ def all_case(tickers: tuple, last_date: pd.Timestamp, lags: int = 5):
         Мультииндекс - тикер, дата нулевого периода
         Столбцы - лаговые значения дивидендов, а в последнем столбце значение без лага
     """
-    return pd.concat(CasesIterator(tickers, last_date, lags))
-
+    return CasesDataManager(tickers, last_date, lags).value
 
 if __name__ == '__main__':
     POSITIONS = dict(AKRN=563,
@@ -99,14 +126,5 @@ if __name__ == '__main__':
                      MVID=0,
                      ALRS=0)
 
-    import cProfile
-    import pstats
-
-    pr = cProfile.Profile()
-    pr.enable()
-
-    print(all_case(tuple(key for key in POSITIONS), pd.Timestamp('2018-08-13')))
-
-    pr.disable()
-    ps = pstats.Stats(pr).sort_stats('cumulative')
-    ps.print_stats()
+    manager = CasesDataManager(tuple(key for key in POSITIONS), pd.Timestamp('2018-08-13'))
+    print(manager.value)

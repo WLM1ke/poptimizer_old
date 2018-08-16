@@ -5,7 +5,6 @@ import pandas as pd
 import web
 from utils.data_manager import AbstractDataManager
 
-CPI_CATEGORY = None
 CPI_NAME = 'cpi'
 
 
@@ -15,7 +14,7 @@ class CPIDataManager(AbstractDataManager):
     Локальные данные по CPI хранятся в корне глобальной директории данных
     """
     def __init__(self):
-        super().__init__(CPI_CATEGORY, CPI_NAME)
+        super().__init__(None, CPI_NAME)
 
     def download_all(self):
         return web.cpi()
