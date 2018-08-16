@@ -5,9 +5,9 @@ import sqlite3
 import pandas as pd
 from pandas.io.sql import DatabaseError
 
-from local.data_manager import AbstractDataManager
 from settings import DATA_PATH
 from utils.aggregation import monthly_aggregation_func
+from utils.data_manager import AbstractDataManager
 from web.labels import DATE
 
 DIVIDENDS_CATEGORY = 'dividends'

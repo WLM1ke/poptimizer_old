@@ -2,7 +2,7 @@
 from functools import lru_cache
 
 import web
-from local.data_manager import AbstractDataManager
+from utils.data_manager import AbstractDataManager
 from web.labels import COMPANY_NAME, REG_NUMBER, LOT_SIZE
 
 SECURITIES_INFO_MANE = 'securities_info'

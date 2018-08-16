@@ -1,6 +1,6 @@
 """Реализация менеджера данных по дивидендам с smart-lab.ru"""
 import web
-from local.data_manager import AbstractDataManager
+from utils.data_manager import AbstractDataManager
 from web.labels import TICKER, DIVIDENDS
 
 SMART_LAB_NAME = 'smart-lab'
