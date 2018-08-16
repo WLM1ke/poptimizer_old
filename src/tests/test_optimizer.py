@@ -53,10 +53,10 @@ def test_dividends_gradient_growth(opt):
 
 def test_drawdown_gradient_growth(opt):
     gradient_growth = opt.drawdown_gradient_growth
-    assert gradient_growth['MSTT'] == pytest.approx(0.401179998945854)
-    assert gradient_growth['MSRS'] == pytest.approx(0.0331956932664258)
+    assert gradient_growth['MSTT'] == pytest.approx(0.401214460511816)
+    assert gradient_growth['MSRS'] == pytest.approx(0.0338249311250068)
     assert gradient_growth['RTKMP'] == pytest.approx(0.0)
-    assert gradient_growth['LSNGP'] == pytest.approx(0.0520518303997583)
+    assert gradient_growth['LSNGP'] == pytest.approx(0.0508412824832902)
     assert gradient_growth['LKOH'] == pytest.approx(0.0)
     assert gradient_growth['PMSBP'] == pytest.approx(0.0)
     assert gradient_growth['CHMF'] == pytest.approx(0.0)
@@ -76,7 +76,7 @@ def test_t_dividends_growth(opt):
 
 
 def test_t_drawdown_growth(opt):
-    assert opt.t_drawdown_growth == pytest.approx(2.17713132107009)
+    assert opt.t_drawdown_growth == pytest.approx(2.16179212543025)
 
 
 def test_best_trade(opt):
@@ -90,7 +90,7 @@ def test_str_t_score_10(opt, monkeypatch):
     report = str(opt)
     assert 'ОПТИМИЗАЦИЯ НЕ ТРЕБУЕТСЯ' in report
     t_dividends = 0.613956329529872
-    t_return = 2.17713132107009
+    t_return = 2.16179212543025
     assert f'Прирост дивидендов - {t_dividends:.2f} СКО' in report
     assert f'Прирост просадки - {t_return:.2f} СКО' in report
 
@@ -99,6 +99,6 @@ def test_str_t_score(opt):
     report = str(opt)
     assert 'ОПТИМИЗАЦИЯ ТРЕБУЕТСЯ' in report
     t_dividends = 0.613956329529872
-    t_return = 2.17713132107009
+    t_return = 2.16179212543025
     assert f'Прирост дивидендов - {t_dividends:.2f} СКО' in report
     assert f'Прирост просадки - {t_return:.2f} СКО' in report
