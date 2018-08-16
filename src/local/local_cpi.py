@@ -67,8 +67,7 @@ def monthly_cpi(last_date: pd.Timestamp):
 
 
 if __name__ == '__main__':
-    df = cpi()
-    print(df.shape)
-    last_date = pd.Timestamp('2018-07-30')
-    day = last_date.day
-    print(monthly_cpi(last_date))
+    df_ = cpi()
+    print(df_.shape)
+    date = pd.Timestamp('2018-07-30')
+    print(monthly_cpi(date))

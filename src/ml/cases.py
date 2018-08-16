@@ -78,23 +78,21 @@ def all_case(tickers: tuple, last_date: pd.Timestamp, lags: int = 5):
 
 if __name__ == '__main__':
     POSITIONS = dict(AKRN=563,
-                     BANEP=488 + 19,
-                     CHMF=234 + 26 + 8,
-                     GMKN=146 + 29,
-                     LKOH=340 + 18,
+                     BANEP=488,
+                     CHMF=234,
+                     GMKN=146,
+                     LKOH=340,
                      LSNGP=18,
-                     LSRG=2346 + 64 + 80,
-                     MSRS=128 + 117,
+                     LSRG=2346,
+                     MSRS=128,
                      MSTT=1823,
-                     MTSS=1383 + 36,
-                     PMSBP=2873 + 418 + 336,
-                     RTKMP=1726 + 382 + 99,
+                     MTSS=1383,
+                     PMSBP=2873,
+                     RTKMP=1726,
                      SNGSP=318,
                      TTLK=234,
-                     UPRO=986 + 0 + 9,
+                     UPRO=986,
                      VSMO=102,
-                     # Старые бумаги с нулевым весом - не исключать
-                     # Новые бумаги с нулевым весом - должно быть 3 штуки
                      PRTK=0,
                      MVID=0,
                      ALRS=0)
