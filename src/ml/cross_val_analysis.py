@@ -88,10 +88,11 @@ def draw_measured_vs_predicted(regression, x, y, groups, param_name=None, param_
         Массив значений параметра
     """
     if param_name:
-        _, ax_list = plt.subplots(1, 3, figsize=(18, 6), squeeze=False)
+        fig, ax_list = plt.subplots(1, 3, figsize=(18, 6), squeeze=False)
 
     else:
-        _, ax_list = plt.subplots(1, 2, figsize=(12, 6), squeeze=False)
+        fig, ax_list = plt.subplots(1, 2, figsize=(12, 6), squeeze=False)
+    fig.tight_layout(pad=3)
     group_cv = LeaveOneGroupOut()
     for row, cv in enumerate([group_cv]):
         draw_cross_val_predict(ax_list[row, 0], regression, x, y, groups, cv)
