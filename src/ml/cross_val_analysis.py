@@ -55,7 +55,7 @@ def draw_validation_curve(ax, regression, x, y, groups, cv, param_name, param_ra
     min_val = test_scores_mean.argmin()
     ax.grid()
     ax.set_title(f'Validation curve - {regression.__class__.__name__}'
-                 f'\nMin: {param_name} - {param_range[min_val]} = {test_scores_mean.min():0.2f}')
+                 f'\nBest: {param_name} - {param_range[min_val]} = {test_scores_mean.min():0.2f}')
     ax.set_xlabel(f'{param_name}')
     lw = 2
     ax.plot(param_range, train_scores_mean, label="Training score",
