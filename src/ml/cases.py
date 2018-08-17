@@ -82,7 +82,7 @@ class CasesDataManager(AbstractDataManager):
         super().download_update()
 
 
-def all_case(tickers: tuple, last_date: pd.Timestamp, lags: int = 5):
+def all_cases(tickers: tuple, last_date: pd.Timestamp, lags: int = 5):
     """Возвращает обучающую выборку до указанной даты включительно
 
     Для каждого тикера и Timestamp начала нулевого периода значение реальной годовой дивидендной доходности с

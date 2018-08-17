@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from dividends_metrics import DividendsMetrics
-from ml.cases import CasesIterator, all_case, CasesDataManager
+from ml.cases import CasesIterator, all_cases, CasesDataManager
 from portfolio import Portfolio
 from utils.data_file import DataFile
 
@@ -74,13 +74,13 @@ def get_params():
 def test_errors(params):
     tickers, date, lags = params
     with pytest.raises(ValueError) as info:
-        all_case(tickers, date, lags + 1)
+        all_cases(tickers, date, lags + 1)
     assert 'лагов' in str(info.value)
     with pytest.raises(ValueError) as info:
-        all_case(tickers, date + pd.DateOffset(months=-1), lags)
+        all_cases(tickers, date + pd.DateOffset(months=-1), lags)
     assert 'даты' in str(info.value)
     with pytest.raises(ValueError) as info:
-        all_case(tickers[:-1], date, lags)
+        all_cases(tickers[:-1], date, lags)
     assert 'тикеров' in str(info.value)
 
 
