@@ -2,9 +2,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.dummy import DummyRegressor
 from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import LeaveOneGroupOut, cross_val_predict, learning_curve, validation_curve
+from sklearn.model_selection import cross_val_predict, learning_curve, validation_curve, KFold
 
 from ml.cases import all_cases
 
@@ -16,7 +15,7 @@ def draw_cross_val_predict(ax, regression, x, y, groups, cv):
     """График прогнозируемого с помощью кросс-валидации значения против фактического значения"""
     predicted = cross_val_predict(regression, x, y, groups=groups, cv=cv)
     mse = mean_squared_error(y, predicted)
-    ax.set_title(f'{regression.__class__.__name__} - {cv.__class__.__name__}'
+    ax.set_title(f'{regression.__class__.__name__}'
                  f'\nMSE^0,5 = {mse ** 0.5:0.2f}')
     ax.scatter(y, predicted, edgecolors=(0, 0, 0))
     ax.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=1)
@@ -26,7 +25,7 @@ def draw_cross_val_predict(ax, regression, x, y, groups, cv):
 
 def draw_learning_curve(ax, regression, x, y, groups, cv):
     """График кривой обучения в зависимости от размера выборки"""
-    ax.set_title(f'Learning curve - {regression.__class__.__name__}')
+    ax.set_title(f'Learning curve')
     ax.set_xlabel('Training examples')
     train_sizes, train_scores, test_scores = learning_curve(regression, x, y,
                                                             groups=groups,
@@ -54,10 +53,11 @@ def draw_validation_curve(ax, regression, x, y, groups, cv, param_name, param_ra
     test_scores_mean = (-np.mean(test_scores, axis=1)) ** 0.5
     min_val = test_scores_mean.argmin()
     ax.grid()
-    ax.set_title(f'Validation curve - {regression.__class__.__name__}'
+    ax.set_title(f'Validation curve'
                  f'\nBest: {param_name} - {param_range[min_val]} = {test_scores_mean.min():0.2f}')
     ax.set_xlabel(f'{param_name}')
     lw = 2
+    param_range = [str(i) for i in param_range]
     ax.plot(param_range, train_scores_mean, label="Training score",
             color="r", lw=lw)
     ax.plot(param_range, test_scores_mean, label="Cross-validation score",
@@ -65,7 +65,7 @@ def draw_validation_curve(ax, regression, x, y, groups, cv, param_name, param_ra
     ax.legend(loc="best")
 
 
-def draw_measured_vs_predicted(regression, x, y, groups, param_name=None, param_range=None):
+def draw_cross_val_analysis(regression, x, y, groups, param_name=None, param_range=None):
     """Рисует графики для анализа кросс-валидации LeaveOneGroupOut
 
     В каждом ряду как минимум два графика: прогнозируемого против фактического значения и кривая обучения в зависимости
@@ -93,7 +93,7 @@ def draw_measured_vs_predicted(regression, x, y, groups, param_name=None, param_
     else:
         fig, ax_list = plt.subplots(1, 2, figsize=(12, 6), squeeze=False)
     fig.tight_layout(pad=3)
-    group_cv = LeaveOneGroupOut()
+    group_cv = KFold(n_splits=len(set(groups.values)), shuffle=True, random_state=SEED)
     for row, cv in enumerate([group_cv]):
         draw_cross_val_predict(ax_list[row, 0], regression, x, y, groups, cv)
         draw_learning_curve(ax_list[row, 1], regression, x, y, groups, cv)
@@ -121,11 +121,13 @@ if __name__ == '__main__':
                      VSMO=102,
                      PRTK=0,
                      MVID=0,
-                     ALRS=0)
-    cases = all_cases(tuple(key for key in POSITIONS), pd.Timestamp('2018-08-16'))
+                     IRKT=0,
+                     TATNP=0)
+    cases = all_cases(tuple(key for key in POSITIONS), pd.Timestamp('2018-08-17'))
     cases.reset_index(inplace=True)
     y_ = cases.iloc[:, -1] * 100
     x_ = cases.iloc[:, 2:-1] * 100
     groups_ = cases.iloc[:, 0]
+    from sklearn.dummy import DummyRegressor
     regression_ = DummyRegressor(strategy='mean')
-    draw_measured_vs_predicted(regression_, x_, y_, groups_, 'strategy', ['mean', 'median'])
+    draw_cross_val_analysis(regression_, x_, y_, groups_, 'strategy', ['mean', 'median'])
