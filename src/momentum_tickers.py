@@ -3,7 +3,7 @@
 import random
 
 import web
-from portfolio import CASH, PORTFOLIO, Portfolio
+from portfolio import CASH, Portfolio
 from returns_metrics import ReturnsMetrics
 from web.labels import REG_NUMBER
 
@@ -60,9 +60,9 @@ def valid_volume(portfolio: Portfolio, ticker: str):
 
 
 def valid_return_gradient(portfolio: Portfolio, ticker: str, t_score: float):
-    """Распечатывает градиент доходности и проверяет, что он больше t_score СКО с поправкой на оборот"""
+    """Проверяет, что градиент доходности больше t_score СКО в момент просадки с поправкой на оборот"""
     returns_metrics = ReturnsMetrics(portfolio)
-    std = returns_metrics.std[PORTFOLIO]
+    std = returns_metrics.std_at_draw_down
     gradient = returns_metrics.gradient[ticker]
     volume = portfolio.volume_factor[ticker]
     ticker_t_score = gradient / std * volume
@@ -109,4 +109,4 @@ if __name__ == '__main__':
                      value=3_699_111.41)
     print(port.volume_factor)
     metrics = ReturnsMetrics(port)
-    print(metrics.gradient / metrics.std[PORTFOLIO])
+    print(metrics.gradient / metrics.std_at_draw_down)
