@@ -76,7 +76,7 @@ def test_t_dividends_growth(opt):
 
 
 def test_t_drawdown_growth(opt):
-    assert opt.t_drawdown_growth == pytest.approx(2.16179212543025)
+    assert opt.t_drawdown_growth == pytest.approx(0.472858179816854)
 
 
 def test_best_trade(opt):
@@ -90,15 +90,16 @@ def test_str_t_score_10(opt, monkeypatch):
     report = str(opt)
     assert 'ОПТИМИЗАЦИЯ НЕ ТРЕБУЕТСЯ' in report
     t_dividends = 0.613956329529872
-    t_return = 2.16179212543025
+    t_return = 0.472858179816854
     assert f'Прирост дивидендов - {t_dividends:.2f} СКО' in report
     assert f'Прирост просадки - {t_return:.2f} СКО' in report
 
 
-def test_str_t_score(opt):
+def test_str_t_score(opt, monkeypatch):
+    monkeypatch.setattr(optimizer, 'T_SCORE', 0.4)
     report = str(opt)
     assert 'ОПТИМИЗАЦИЯ ТРЕБУЕТСЯ' in report
     t_dividends = 0.613956329529872
-    t_return = 2.16179212543025
+    t_return = 0.472858179816854
     assert f'Прирост дивидендов - {t_dividends:.2f} СКО' in report
     assert f'Прирост просадки - {t_return:.2f} СКО' in report

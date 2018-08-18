@@ -183,7 +183,7 @@ class Optimizer:
         Портфель и кэш исключаются из расчетов
         """
         weighted_growth = (self.portfolio.weight * self.drawdown_gradient_growth)[:-2].sum()
-        return weighted_growth / self.returns_metrics.std[PORTFOLIO]
+        return weighted_growth / self.returns_metrics.std_at_draw_down
 
     @property
     def dominated(self):
@@ -227,5 +227,5 @@ if __name__ == '__main__':
            optimizer.portfolio.weight,
            optimizer.portfolio.volume_factor]
     print(optimizer.dividends_metrics.std[PORTFOLIO])
-    print(optimizer.returns_metrics.std[PORTFOLIO])
+    print(optimizer.returns_metrics.std_at_draw_down)
     # pd.concat(dfs, axis='columns').to_excel('data.xlsx')
