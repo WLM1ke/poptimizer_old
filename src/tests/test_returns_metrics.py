@@ -78,3 +78,11 @@ def test_str(returns):
     assert 'BETA' in text
     assert 'DRAW_DOWN' in text
     assert 'GRADIENT' in text
+
+
+def test_time_to_draw_down(returns):
+    assert returns.time_to_draw_down == pytest.approx(3.67737965394373)
+
+
+def test_std_at_draw_down(returns):
+    assert returns.std_at_draw_down == pytest.approx(0.0814183042618772)

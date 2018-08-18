@@ -38,6 +38,8 @@ class ReturnsMetrics:
                 f'\n'
                 f'\nНачальная дата для расчета сглаживания - {self.returns.index[self._llh_start()].date()}'
                 f'\nКонстанта сглаживания - {self._decay:.4f}'
+                f'\nВремя до максимальной просадки - {self.time_to_draw_down:.1f}'
+                f'\nСКО стоимости портфеля около максимума просадки - {self.std_at_draw_down:.4f}'
                 f'\n'
                 f'\n{df}')
 
@@ -187,6 +189,22 @@ class ReturnsMetrics:
         mean_p = mean[PORTFOLIO]
         beta = self.beta
         return (T_SCORE / 2) ** 2 * (std_p / mean_p) ** 2 * (mean - mean_p - 2 * mean_p * (beta - 1))
+
+    @property
+    def time_to_draw_down(self):
+        """Время до ожидаемого максимального падения
+
+        t = ((t_score * s) / (2 * m)) ** 2
+        """
+        return (self.std[PORTFOLIO] * T_SCORE / 2 / self.mean[PORTFOLIO]) ** 2
+
+    @property
+    def std_at_draw_down(self):
+        """СКО стоимости портфеля в момент наибольшей просадки
+
+        S = s * (t ** 0.5) = s * ((t_score * s) / (2 * m)) = (t_score / 2) * (s ** 2 / m)
+        """
+        return (T_SCORE / 2) * (self.std[PORTFOLIO] ** 2 / self.mean[PORTFOLIO])
 
 
 if __name__ == '__main__':
