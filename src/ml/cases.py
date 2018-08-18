@@ -124,7 +124,8 @@ if __name__ == '__main__':
                      VSMO=102,
                      PRTK=0,
                      MVID=0,
-                     ALRS=0)
+                     IRKT=0,
+                     TATNP=0)
 
-    manager = CasesDataManager(tuple(key for key in POSITIONS), pd.Timestamp('2018-08-13'))
+    manager = CasesDataManager(tuple(key for key in POSITIONS), pd.Timestamp('2018-08-17'))
     print(manager.value)

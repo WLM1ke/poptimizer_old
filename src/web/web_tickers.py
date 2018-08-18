@@ -17,7 +17,7 @@ def get_json(reg_number: str):
             data = json.load(response)
     except URLError as error:
         if isinstance(error.args[0], TimeoutError):
-            print(f'Время ожидания загрузки данных по тикеру {reg_number} превышено')
+            print(f'Время ожидания загрузки данных для регистрационного номера {reg_number} превышено')
             print(f'Новая попытка через {TIMEOUT} секунд')
             time.sleep(TIMEOUT)
             data = get_json(reg_number)
