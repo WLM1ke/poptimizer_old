@@ -9,7 +9,7 @@ from sklearn.model_selection import cross_val_predict, learning_curve, validatio
 
 from ml.cases_non_overlapping import cases_non_overlapping, Data
 
-FIG_SIZE = 8
+FIG_SIZE = 4
 SHUFFLE = True
 SEED = 284704
 
@@ -92,7 +92,7 @@ def draw_cross_val_analysis(regressions: list, data: Data):
         Список регрессий для анализа
     """
     rows = len(regressions)
-    fig, ax_list = plt.subplots(rows, 3, figsize=(FIG_SIZE * rows, FIG_SIZE), squeeze=False)
+    fig, ax_list = plt.subplots(rows, 3, figsize=(FIG_SIZE * 3, FIG_SIZE * rows), squeeze=False)
     fig.tight_layout(pad=3, h_pad=5)
     cv = KFold(n_splits=len(set(data.groups.values)), shuffle=SHUFFLE, random_state=SEED)
     for row, regression in enumerate(regressions):
