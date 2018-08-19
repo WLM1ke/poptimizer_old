@@ -1,4 +1,6 @@
 """Генерация кейсов для обучения и валидации моделей - результаты кейсов для одной бумаги не пересекаются во времени """
+from collections import namedtuple
+
 import pandas as pd
 
 import local
@@ -60,6 +62,9 @@ def yield_cases(tickers, last_date, lags):
         yield ticker_cases(dividends, price, lags)
 
 
+Data = namedtuple('Data', 'x y groups')
+
+
 def cases_non_overlapping(tickers: tuple, last_date: pd.Timestamp, lags=5):
     """Возвращает DataFrame с кейсами для обучения
 
@@ -83,13 +88,31 @@ def cases_non_overlapping(tickers: tuple, last_date: pd.Timestamp, lags=5):
         В строках - отдельные кейсы
         В столбцах - Timestamp и тикер кейса + значение реальных годовых дивидендов с заданным числом лагов
     """
-    return pd.concat(yield_cases(tickers, last_date, lags), axis='index', ignore_index=True)
+    df = pd.concat(yield_cases(tickers, last_date, lags), axis='index', ignore_index=True)
+    return Data(df.iloc[:, 3:], df.iloc[:, 2], df.iloc[:, 1])
 
 
 if __name__ == '__main__':
-    POSITIONS = dict(GMKN=146,
+    POSITIONS = dict(AKRN=563,
+                     BANEP=488,
+                     CHMF=234,
+                     GMKN=146,
+                     LKOH=340,
+                     LSNGP=18,
                      LSRG=2346,
-                     MSTT=1823)
+                     MSRS=128,
+                     MSTT=1823,
+                     MTSS=1383,
+                     PMSBP=2873,
+                     RTKMP=1726,
+                     SNGSP=318,
+                     TTLK=234,
+                     UPRO=986,
+                     VSMO=102,
+                     PRTK=0,
+                     MVID=0,
+                     IRKT=0,
+                     TATNP=0)
     lags_ = 5
     cc = cases_non_overlapping(tuple(key for key in POSITIONS), pd.Timestamp('2018-08-13'), lags=lags_)
-    print(cc)
+    print(cc.groups.describe())
