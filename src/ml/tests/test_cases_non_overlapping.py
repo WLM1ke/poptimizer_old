@@ -4,10 +4,9 @@ import pytest
 import local
 from dividends_metrics import DividendsMetrics
 from local.local_dividends import STATISTICS_START
-from ml.cases_non_overlapping import cases_non_overlapping
+from ml.cases_non_overlapping import cases_non_overlapping, Data
 from ml.cases_non_overlapping import real_after_tax_yearly_dividends, real_yearly_price, real_prices_and_dividends
 from portfolio import Portfolio
-from web.labels import TICKER, DATE
 
 TICKERS = tuple(['GMKN', 'LSRG', 'MSTT'])
 LAST_DATE = pd.Timestamp('2017-05-21')
@@ -55,21 +54,20 @@ def test_real_prices_and_dividends():
 
 
 def test_cases_non_overlapping():
-    df = cases_non_overlapping(TICKERS, LAST_DATE)
-    assert isinstance(df, pd.DataFrame)
-    assert df.shape == (6, 8)
-    assert df.loc[4, TICKER] == 'MSTT'
-    assert df.loc[4, DATE] == pd.Timestamp('2015-05-21')
-    assert df.loc[4, 'lag - 0'] == pytest.approx(0.0652182463488862)
-    assert df.loc[4, 'lag - 1'] == pytest.approx(0.0748216152993375)
-    assert df.loc[4, 'lag - 2'] == pytest.approx(0.0)
-    assert df.loc[0, TICKER] == 'GMKN'
-    assert df.loc[1, DATE] == pd.Timestamp('2016-05-21')
-    assert df.loc[0, 'lag - 3'] == pytest.approx(0.06468912781277)
-    assert df.loc[2, TICKER] == 'LSRG'
-    assert df.loc[2, DATE] == pd.Timestamp('2015-05-21')
-    assert df.loc[3, 'lag - 4'] == pytest.approx(0.0365196778541529)
-    assert df.loc[4, 'lag - 5'] == pytest.approx(0.0834746226712652)
+    result = cases_non_overlapping(TICKERS, LAST_DATE)
+    assert isinstance(result, Data)
+    assert result.x.shape == (6, 5)
+    assert result.y.shape == (6,)
+    assert result.groups.shape == (6,)
+    assert result.groups[4] == 'MSTT'
+    assert result.y.loc[4] == pytest.approx(0.0652182463488862)
+    assert result.x.loc[4, 'lag - 1'] == pytest.approx(0.0748216152993375)
+    assert result.x.loc[4, 'lag - 2'] == pytest.approx(0.0)
+    assert result.groups[0] == 'GMKN'
+    assert result.x.loc[0, 'lag - 3'] == pytest.approx(0.06468912781277)
+    assert result.groups[2] == 'LSRG'
+    assert result.x.loc[3, 'lag - 4'] == pytest.approx(0.0365196778541529)
+    assert result.x.loc[4, 'lag - 5'] == pytest.approx(0.0834746226712652)
 
 
 def test_vs_dividends_metrics():
@@ -82,9 +80,9 @@ def test_vs_dividends_metrics():
     metrics_yields = DividendsMetrics(port).yields
     tickers = tuple(key for key in positions)
     cases = cases_non_overlapping(tickers, pd.Timestamp('2018-07-31'))
-    assert metrics_yields.loc['2017-07-31', 'AKRN'] == pytest.approx(cases.loc[2, 'lag - 1'])
-    assert metrics_yields.loc['2013-07-31', 'PMSBP'] == pytest.approx(cases.loc[5, 'lag - 5'])
-    assert metrics_yields.loc['2014-07-31', 'UPRO'] == pytest.approx(cases.loc[8, 'lag - 4'])
-    assert metrics_yields.loc['2015-07-31', 'AKRN'] == pytest.approx(cases.loc[2, 'lag - 3'])
-    assert metrics_yields.loc['2016-07-31', 'PMSBP'] == pytest.approx(cases.loc[5, 'lag - 2'])
-    assert metrics_yields.loc['2017-07-31', 'UPRO'] == pytest.approx(cases.loc[8, 'lag - 1'])
+    assert metrics_yields.loc['2017-07-31', 'AKRN'] == pytest.approx(cases.x.loc[2, 'lag - 1'])
+    assert metrics_yields.loc['2013-07-31', 'PMSBP'] == pytest.approx(cases.x.loc[5, 'lag - 5'])
+    assert metrics_yields.loc['2014-07-31', 'UPRO'] == pytest.approx(cases.x.loc[8, 'lag - 4'])
+    assert metrics_yields.loc['2015-07-31', 'AKRN'] == pytest.approx(cases.x.loc[2, 'lag - 3'])
+    assert metrics_yields.loc['2016-07-31', 'PMSBP'] == pytest.approx(cases.x.loc[5, 'lag - 2'])
+    assert metrics_yields.loc['2017-07-31', 'UPRO'] == pytest.approx(cases.x.loc[8, 'lag - 1'])
