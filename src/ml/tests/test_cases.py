@@ -68,6 +68,7 @@ def get_params():
     tickers = tuple(set(df.index.levels[0]))
     date = df.index[-1][1] + pd.DateOffset(years=1)
     lags = df.shape[1] - 1
+    all_cases(tickers, date, lags)
     return tickers, date, lags
 
 
@@ -103,6 +104,5 @@ def test_download_all(params):
 
 
 def test_download_update(params):
-    manager = CasesDataManager(*params)
     with pytest.raises(NotImplementedError):
         CasesDataManager(*params).download_update()

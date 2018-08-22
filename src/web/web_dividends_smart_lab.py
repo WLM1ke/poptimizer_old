@@ -1,4 +1,5 @@
 """Загружает данные по предстоящим дивидендам с https://www.smart-lab.ru"""
+import re
 
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -16,6 +17,7 @@ TH_VALUE = 'дивиденд,руб'
 TICKER_COLUMN = 1
 DATE_COLUMN = 4
 VALUE_COLUMN = 7
+DATE_PATTERN = '\d\d\.\d\d\.\d\d\d\d'
 
 
 class RowParserSmartLab(RowParserDohod):
@@ -57,7 +59,7 @@ def parse_table_rows(table: BeautifulSoup):
         if 'dividend_approved' in row['class']:
             cells = RowParserSmartLab(row)
             yield (cells.ticker,
-                   pd.to_datetime(cells.date, dayfirst=True),
+                   pd.to_datetime(re.search(DATE_PATTERN, cells.date).group(0), dayfirst=True),
                    pd.to_numeric(cells.value.replace(',', '.')))
         else:
             # Если появятся ячейки без класса утвержденных дивидендов, то надо разобраться с обработкой
@@ -82,4 +84,5 @@ def dividends_smart_lab():
 
 
 if __name__ == '__main__':
+    # print(get_html_table(URL, TABLE_INDEX))
     print(dividends_smart_lab())
