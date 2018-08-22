@@ -17,7 +17,7 @@ TH_VALUE = 'дивиденд,руб'
 TICKER_COLUMN = 1
 DATE_COLUMN = 4
 VALUE_COLUMN = 7
-DATE_PATTERN = '\d\d\.\d\d\.\d\d\d\d'
+DATE_PATTERN = '\d{2}\.\d{2}\.\d{4}'
 
 
 class RowParserSmartLab(RowParserDohod):
@@ -84,5 +84,4 @@ def dividends_smart_lab():
 
 
 if __name__ == '__main__':
-    # print(get_html_table(URL, TABLE_INDEX))
     print(dividends_smart_lab())
