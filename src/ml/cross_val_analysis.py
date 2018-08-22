@@ -1,4 +1,4 @@
-"""Функции дл] проведения графического анализа кросс-валидации"""
+"""Функции для проведения графического анализа кросс-валидации"""
 from collections import namedtuple
 
 import matplotlib.pyplot as plt
@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from sklearn.dummy import DummyRegressor
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, explained_variance_score
 from sklearn.model_selection import cross_val_predict, learning_curve, validation_curve, KFold
 
 from ml.cases_non_overlapping import cases_non_overlapping, Data
@@ -21,8 +21,9 @@ def draw_cross_val_predict(ax, regression, data, cv):
     """График прогнозируемого с помощью кросс-валидации значения против фактического значения"""
     predicted = cross_val_predict(regression.estimator, data.x, data.y, groups=data.groups, cv=cv)
     mse = mean_squared_error(data.y, predicted)
+    ev = explained_variance_score(data.y, predicted)
     ax.set_title(f'{regression.estimator.__class__.__name__}'
-                 f'\nMSE^0,5 = {mse ** 0.5:0.2%}')
+                 f'\nMSE^0,5 = {mse ** 0.5:0.2%} / EV = {ev:0.2%}')
     ax.scatter(data.y, predicted, edgecolors=(0, 0, 0))
     ax.plot([data.y.min(), data.y.max()], [data.y.min(), data.y.max()], 'k--', lw=1)
     ax.set_xlabel('Measured')
