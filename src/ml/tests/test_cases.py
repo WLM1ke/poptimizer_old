@@ -1,16 +1,14 @@
 import collections
 import numpy as np
 import pandas as pd
-import pytest
 
 from dividends_metrics import DividendsMetrics
-from ml.cases import CasesIterator, all_cases, CasesDataManager
+from ml.cases import RawCasesIterator, all_cases, Freq, Cases
 from portfolio import Portfolio
-from utils.data_file import DataFile
 
 
 def test_iterable():
-    iterable = CasesIterator(tuple(['GMKN', 'LSRG', 'MSTT']), pd.Timestamp('2018-05-21'))
+    iterable = RawCasesIterator(tuple(['GMKN', 'LSRG', 'MSTT']), pd.Timestamp('2018-05-21'), Freq.quarterly)
     assert isinstance(iterable, collections.Iterable)
     assert isinstance(iter(iterable), collections.Iterator)
 
@@ -24,8 +22,9 @@ def test_yields_vs_dividends_metrics():
                      positions=positions)
     metrics_yields = DividendsMetrics(port).yields
     tickers = tuple(key for key in sorted(positions))
-    df = CasesIterator(tickers, pd.Timestamp('2018-07-31'))._real_dividends_yields(pd.Timestamp('2018-07-31'))
-    assert np.allclose(metrics_yields.iloc[:, :-2], df.iloc[:-1, :])
+    df = RawCasesIterator(tickers, pd.Timestamp('2018-07-31'), Freq.yearly)._real_dividends_yields(
+        pd.Timestamp('2018-07-31'))
+    assert np.allclose(metrics_yields.iloc[:, :-2], df.iloc[:, :-1].T)
 
 
 def test_cases_vs_dividends_metrics():
@@ -37,7 +36,7 @@ def test_cases_vs_dividends_metrics():
                      positions=positions)
     metrics_yields = DividendsMetrics(port).yields
     tickers = tuple(key for key in sorted(positions))
-    df = CasesIterator(tickers, pd.Timestamp('2018-07-31')).cases(pd.Timestamp('2018-06-28'))
+    df = RawCasesIterator(tickers, pd.Timestamp('2018-07-31'), Freq.yearly).raw_cases(pd.Timestamp('2018-06-28'))
     assert len(df) == 3
     assert df.index[0] == ('ALRS', pd.Timestamp('2017-06-28'))
     assert df.index[1] == ('MSTT', pd.Timestamp('2017-06-28'))
@@ -46,53 +45,12 @@ def test_cases_vs_dividends_metrics():
 
 
 def test_iter():
-    iterator = CasesIterator(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-01-05'))
+    iterator = RawCasesIterator(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-01-05'), Freq.yearly)
     df = next(iter(iterator))
     assert len(df) == 3
-    assert df.index[0] == ('AKRN', pd.Timestamp('2015-01-04'))
-    assert df.index[1] == ('MTSS', pd.Timestamp('2015-01-04'))
-    assert df.index[2] == ('PMSBP', pd.Timestamp('2015-01-04'))
-    positions = dict(AKRN=128,
-                     PMSBP=0,
-                     MTSS=0)
-    port = Portfolio(date='2015-01-04',
-                     cash=7_764,
-                     positions=positions)
-    metrics_yields = DividendsMetrics(port).yields
-    assert np.allclose(metrics_yields.iloc[:, :-2].T, df.iloc[:, :-1])
-
-
-@pytest.fixture(name='params')
-def get_params():
-    df = DataFile(None, 'cases').value
-    tickers = tuple(set(df.index.levels[0]))
-    date = df.index[-1][1] + pd.DateOffset(years=1)
-    lags = df.shape[1] - 1
-    all_cases(tickers, date, lags)
-    return tickers, date, lags
-
-
-def test_errors(params):
-    tickers, date, lags = params
-    with pytest.raises(ValueError) as info:
-        all_cases(tickers, date, lags + 1)
-    assert 'лагов' in str(info.value)
-    with pytest.raises(ValueError) as info:
-        all_cases(tickers, date + pd.DateOffset(months=-1), lags)
-    assert 'даты' in str(info.value)
-    with pytest.raises(ValueError) as info:
-        all_cases(tickers[:-1], date, lags)
-    assert 'тикеров' in str(info.value)
-
-
-def test_download_all(params):
-    manager = CasesDataManager(*params)
-    manager._params = (tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-01-05'), 5)
-    df = manager.download_all()
-    assert len(df) == 6
-    assert df.index[0] == ('AKRN', pd.Timestamp('2015-01-04'))
-    assert df.index[2] == ('PMSBP', pd.Timestamp('2015-01-04'))
-    assert df.index[4] == ('MTSS', pd.Timestamp('2015-01-05'))
+    assert df.index[0] == ('AKRN', pd.Timestamp('2015-01-05'))
+    assert df.index[1] == ('MTSS', pd.Timestamp('2015-01-05'))
+    assert df.index[2] == ('PMSBP', pd.Timestamp('2015-01-05'))
     positions = dict(AKRN=128,
                      PMSBP=0,
                      MTSS=0)
@@ -100,9 +58,47 @@ def test_download_all(params):
                      cash=7_764,
                      positions=positions)
     metrics_yields = DividendsMetrics(port).yields
-    assert np.allclose(metrics_yields.iloc[:, :-2].T, df.iloc[3:, :-1])
+    assert np.allclose(metrics_yields.iloc[:, :-2].T, df.iloc[:, :-1])
 
 
-def test_download_update(params):
-    with pytest.raises(NotImplementedError):
-        CasesDataManager(*params).download_update()
+def test_monthly_quarterly_yearly():
+    monthly_data = all_cases(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.monthly)
+    quarterly_data = all_cases(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.quarterly)
+    yearly_data = all_cases(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.yearly)
+
+    assert isinstance(monthly_data, Cases)
+    assert isinstance(quarterly_data, Cases)
+    assert isinstance(yearly_data, Cases)
+
+    assert monthly_data.groups is None
+    assert quarterly_data.groups is None
+    assert yearly_data.groups is None
+
+    assert isinstance(monthly_data.y, pd.Series)
+    assert isinstance(quarterly_data.y, pd.Series)
+    assert isinstance(yearly_data.y, pd.Series)
+
+    assert isinstance(monthly_data.x, pd.DataFrame)
+    assert isinstance(quarterly_data.x, pd.DataFrame)
+    assert isinstance(yearly_data.x, pd.DataFrame)
+
+    assert len(monthly_data.y) == 15
+    assert len(quarterly_data.y) == 6
+    assert len(yearly_data.y) == 3
+
+    assert monthly_data.y.index[0] == ('AKRN', pd.Timestamp('2015-01-18'))
+    assert quarterly_data.y.index[0] == ('AKRN', pd.Timestamp('2015-02-18'))
+    assert yearly_data.y.index[0] == ('AKRN', pd.Timestamp('2015-05-18'))
+
+    assert monthly_data.y.index[-1] == ('PMSBP', pd.Timestamp('2015-05-18'))
+    assert quarterly_data.y.index[-1] == ('PMSBP', pd.Timestamp('2015-05-18'))
+    assert yearly_data.y.index[-1] == ('PMSBP', pd.Timestamp('2015-05-18'))
+
+    assert monthly_data.y.iloc[-3:].equals(quarterly_data.y.iloc[-3:])
+    assert quarterly_data.y.iloc[-3:].equals(yearly_data.y.iloc[-3:])
+
+    assert monthly_data.x.iloc[-3:, :3].equals(quarterly_data.x.iloc[-3:, :3])
+    assert quarterly_data.x.iloc[-3:, :3].equals(yearly_data.x.iloc[-3:, :3])
+
+    assert np.allclose(monthly_data.x.iloc[-3:, 3:15].sum(axis='columns'), yearly_data.x.iloc[-3:, 3])
+    assert np.allclose(quarterly_data.x.iloc[-3:, 7:11].sum(axis='columns'), yearly_data.x.iloc[-3:, 4])

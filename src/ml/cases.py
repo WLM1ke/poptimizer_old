@@ -35,10 +35,7 @@ class Freq(Enum):
         return self._times_in_year
 
 
-Data = namedtuple('Data', 'x y groups')
-
-
-class CasesIterator:
+class RawCasesIterator:
     """Итератор кейсов для обучения
 
     Кейсы состоят из значений дивидендной доходности за последние years лет с частотой freq за период с начала данных до
@@ -50,14 +47,15 @@ class CasesIterator:
         self._last_date = last_date
         self._freq = freq
         self._years = years
-        self._prices = local.prices(tickers).fillna('ffill')
+        self._prices = local.prices(tickers).fillna(method='ffill', axis='index')
+
 
     def __iter__(self):
         date = pd.Timestamp(STATISTICS_START) + pd.DateOffset(years=self._years + 1)
         end_of_period_offset = self._freq.aggregation_func(self._last_date)
         date = end_of_period_offset(date)
         while date <= self._last_date:
-            yield self.cases(date)
+            yield self.raw_cases(date)
             date = end_of_period_offset(date + pd.DateOffset(days=1))
 
     def _real_dividends_yields(self, date: pd.Timestamp):
@@ -81,8 +79,7 @@ class CasesIterator:
         yields.set_index(DATE, append=True, inplace=True)
         return yields.dropna()
 
-
-    def cases(self, date: pd.Timestamp):
+    def raw_cases(self, date: pd.Timestamp):
         """Возвращает кейсы для заданной даты и частоты в формате Data"""
         yields = self._real_dividends_yields(date)
         if len(yields) != len(self._tickers):
@@ -94,7 +91,10 @@ class CasesIterator:
         return yields
 
 
-def cases(tickers: tuple, last_date: pd.Timestamp, freq: Freq, lags: int = 5):
+Cases = namedtuple('Cases', 'x y groups')
+
+
+def all_cases(tickers: tuple, last_date: pd.Timestamp, freq: Freq, lags: int = 5):
     """Возвращает обучающие кейсы до указанной даты включительно
 
     Кейсы состоят из значений дивидендной доходности за последние years лет с частотой freq за период с начала данных до
@@ -116,16 +116,16 @@ def cases(tickers: tuple, last_date: pd.Timestamp, freq: Freq, lags: int = 5):
     Data
         Кейсы для обучения
     """
-    data = pd.concat(CasesIterator(tickers, last_date, freq, lags))
+    data = pd.concat(RawCasesIterator(tickers, last_date, freq, lags))
     index = data.index
     one_hot = OneHotEncoder(sparse=False).fit_transform(index.labels[0].reshape(-1, 1))
     one_hot = pd.DataFrame(data=one_hot, index=index, columns=index.levels[0])
     data = pd.concat([one_hot, data], axis='columns')
-    return Data(x=data.iloc[:, 0:-1], y=data.iloc[:, -1], groups=None)
+    return Cases(x=data.iloc[:, 0:-1], y=data.iloc[:, -1], groups=None)
 
 if __name__ == '__main__':
     POSITIONS = dict(AKRN=563,
                      BANEP=488,
                      CHMF=234)
-    it = cases(tuple(key for key in POSITIONS), pd.Timestamp('2018-08-17'), Freq.yearly)
-    print(it.y)
+    it = RawCasesIterator(tuple(key for key in POSITIONS), pd.Timestamp('2018-08-17'), Freq.yearly)
+    print(it.raw_cases(pd.Timestamp('2018-08-17')))
