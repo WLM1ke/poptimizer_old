@@ -56,11 +56,14 @@ def parse_table_rows(table: BeautifulSoup):
     validate_table_header(rows[0])
     validate_table_footer(rows[-1])
     for row in rows[1:-1]:
-        if 'dividend_approved' in row['class']:
+        if 'class' in row.attrs and 'dividend_approved' in row['class']:
             cells = RowParserSmartLab(row)
             yield (cells.ticker,
                    pd.to_datetime(re.search(DATE_PATTERN, cells.date).group(0), dayfirst=True),
                    pd.to_numeric(cells.value.replace(',', '.')))
+        elif 'class' not in row.attrs and re.search(DATE_PATTERN, RowParserSmartLab(row).date) is None:
+            # Пропускаются строки без даты отсечки и атрибута класса
+            pass
         else:
             # Если появятся ячейки без класса утвержденных дивидендов, то надо разобраться с обработкой
             raise ValueError('Не утвержденные дивиденды')
