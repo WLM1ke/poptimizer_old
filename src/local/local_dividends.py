@@ -8,7 +8,7 @@ from pandas.io.sql import DatabaseError
 from settings import DATA_PATH
 from utils.aggregation import monthly_aggregation_func
 from utils.data_manager import AbstractDataManager
-from web.labels import DATE
+from web.labels import DATE, TICKER
 
 DIVIDENDS_CATEGORY = 'dividends'
 STATISTICS_START = '2010-01-01'
@@ -52,6 +52,7 @@ def tickers_dividends(tickers: tuple):
     """Сводная информация по дивидендам для заданных тикеров"""
     frames = (DividendsDataManager(ticker).value for ticker in tickers)
     df = pd.concat(frames, axis='columns')
+    df.columns.name = TICKER
     return df
 
 
@@ -84,12 +85,5 @@ def monthly_dividends(tickers: tuple, last_date: pd.Timestamp):
 
 
 if __name__ == '__main__':
-    import cProfile
-    import pstats
-
-    pr = cProfile.Profile()
-    pr.enable()
-    print(tickers_dividends(tuple(['PIKK', 'AKRN', 'CHMF', 'GMKN'])))
-    pr.disable()
-    ps = pstats.Stats(pr).sort_stats('cumulative')
-    ps.print_stats()
+    df_ = monthly_dividends(tuple(['PIKK', 'AKRN', 'CHMF', 'GMKN']), pd.Timestamp('2018-08-20'))
+    print(df_.columns.name)

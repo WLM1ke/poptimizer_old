@@ -1,92 +1,104 @@
 """Генерация кейсов для обучения и валидации моделей"""
+from collections import namedtuple
+from enum import Enum
+
 import pandas as pd
+from sklearn.preprocessing import OneHotEncoder
 
 import local
 from local.local_dividends import STATISTICS_START
 from settings import AFTER_TAX
-from utils.aggregation import yearly_aggregation_func
-from utils.data_manager import AbstractDataManager
-from web.labels import TICKER, DATE
-
-CASES_NAME = 'cases'
+from utils.aggregation import yearly_aggregation_func, quarterly_aggregation_func, monthly_aggregation_func
+from web.labels import DATE
 
 MONTH_IN_YEAR = 12
 
 
-class CasesIterator:
-    """Итератор кейсов для обучения"""
+class Freq(Enum):
+    """Различные периоды агригации данных для построения обучающих кейсов"""
+    monthly = (monthly_aggregation_func, 12)
+    quarterly = (quarterly_aggregation_func, 4)
+    yearly = (yearly_aggregation_func, 1)
 
-    def __init__(self, tickers: tuple, last_date: pd.Timestamp, lags: int = 5):
+    def __init__(self, aggregation_func, times_in_year):
+        self._aggregation_func = aggregation_func
+        self._times_in_year = times_in_year
+
+    @property
+    def aggregation_func(self):
+        """Функция агригации"""
+        return self._aggregation_func
+
+    @property
+    def times_in_year(self):
+        """Количество периодов в году"""
+        return self._times_in_year
+
+
+Data = namedtuple('Data', 'x y groups')
+
+
+class CasesIterator:
+    """Итератор кейсов для обучения
+
+    Кейсы состоят из значений дивидендной доходности за последние years лет с частотой freq за период с начала данных до
+    last_date
+    """
+
+    def __init__(self, tickers: tuple, last_date: pd.Timestamp, freq: Freq, years: int = 5):
         self._tickers = tickers
         self._last_date = last_date
-        self._lags = lags
+        self._freq = freq
+        self._years = years
+        self._prices = local.prices(tickers).fillna('ffill')
 
     def __iter__(self):
-        start_date = pd.Timestamp(STATISTICS_START) + pd.DateOffset(years=self._lags + 1)
-        index = local.prices(self._tickers).index
-        for date in index:
-            if start_date <= date <= self._last_date:
-                yield self.cases(date)
+        date = pd.Timestamp(STATISTICS_START) + pd.DateOffset(years=self._years + 1)
+        end_of_period_offset = self._freq.aggregation_func(self._last_date)
+        date = end_of_period_offset(date)
+        while date <= self._last_date:
+            yield self.cases(date)
+            date = end_of_period_offset(date + pd.DateOffset(days=1))
 
     def _real_dividends_yields(self, date: pd.Timestamp):
-        """Возвращает годовые посленалоговые дивидендные доходности в постоянных ценах для заданной даты
+        """Возвращает посленалоговые дивидендные доходности в постоянных ценах для заданной даты
 
-        Информация за lags + 1 лет, базисом для постоянных цен и доходности является предпоследний год
+        Информация за lags + 1 лет с частотой freq, базисом для постоянных цен и доходности является предпоследний год
         """
         tickers = self._tickers
-        months = MONTH_IN_YEAR * (self._lags + 1)
-        cum_cpi = local.monthly_cpi(date).iloc[-months:].cumprod()
-        cpi_index = cum_cpi.iat[-MONTH_IN_YEAR - 1] / cum_cpi
-        dividends = local.monthly_dividends(tickers, date).iloc[-months:, :]
+        months_in_period = MONTH_IN_YEAR * (self._years + 1)
+        cum_cpi = local.monthly_cpi(date).iloc[-months_in_period:].cumprod()
+        base_date = cum_cpi.index[-MONTH_IN_YEAR - 1]
+        cpi_index = cum_cpi.at[base_date] / cum_cpi
+        dividends = local.monthly_dividends(tickers, date).iloc[-months_in_period:, :]
         after_tax_dividends = dividends * AFTER_TAX
         real_after_tax_dividends = after_tax_dividends.mul(cpi_index, axis='index')
-        yearly_dividends = real_after_tax_dividends.groupby(by=yearly_aggregation_func(end_of_year=date)).sum()
-        prices = local.prices(tickers)
-        price = prices.reindex(cum_cpi.index[-MONTH_IN_YEAR - 1:-MONTH_IN_YEAR], method='ffill').iloc[0]
-        return yearly_dividends.div(price.values, axis='columns')
+        agg_dividends = real_after_tax_dividends.groupby(by=self._freq.aggregation_func(date)).sum()
+        price = self._prices.reindex(cum_cpi.index[-MONTH_IN_YEAR - 1:-MONTH_IN_YEAR], method='ffill').iloc[0]
+        yields = agg_dividends.div(price, axis='columns')
+        yields = yields.T
+        yields[DATE] = base_date
+        yields.set_index(DATE, append=True, inplace=True)
+        return yields.dropna()
+
 
     def cases(self, date: pd.Timestamp):
-        """Возвращает кейсы для заданной даты"""
-        dividends_yield = self._real_dividends_yields(date)
-        date = dividends_yield.index[-2]
-        dividends_yield = dividends_yield.T
-        dividends_yield.index.name = TICKER
-        dividends_yield[DATE] = date
-        dividends_yield.set_index(DATE, append=True, inplace=True)
-        dividends_yield.columns = (f'lag - {i}' for i in range(self._lags, -1, -1))
-        return dividends_yield.dropna()
+        """Возвращает кейсы для заданной даты и частоты в формате Data"""
+        yields = self._real_dividends_yields(date)
+        if len(yields) != len(self._tickers):
+            raise ValueError(f'Количество тикеров не равно количеству кейсов для {date}')
+        y = yields.iloc[:, -self._freq.times_in_year:].sum(axis='columns')
+        yields.drop(columns=yields.columns[-self._freq.times_in_year:], inplace=True)
+        yields.columns = [f'lag - {i}' for i in range(self._years * self._freq.times_in_year, 0, -1)]
+        yields['y'] = y
+        return yields
 
 
-class CasesDataManager(AbstractDataManager):
-    """Сохраняет кейсы и обновляет раз в день с нуля"""
-    update_from_scratch = True
-    is_monotonic = False
+def cases(tickers: tuple, last_date: pd.Timestamp, freq: Freq, lags: int = 5):
+    """Возвращает обучающие кейсы до указанной даты включительно
 
-    def __init__(self, tickers: tuple, last_date: pd.Timestamp, lags: int = 5):
-        self._params = (tickers, last_date, lags)
-        super().__init__(None, CASES_NAME)
-        if self.value.shape[1] != lags + 1:
-            raise ValueError(f'Локальная версия для {self.value.shape[1] - 1} лагов'
-                             f'\nДолжна быть для {lags}')
-        if self.value.index[-1][1] != last_date + pd.DateOffset(years=-1):
-            raise ValueError(f'Локальная версия для {self.value.index[-1][1]} даты'
-                             f'\nДолжна быть для {last_date + pd.DateOffset(years=-1)}')
-        if set(tickers) != set(self.value.index.levels[0]):
-            raise ValueError(f'Локальная версия для {sorted(set(tickers))} тикеров'
-                             f'\nДолжна быть для {sorted(set(self.value.index.levels[0]))}')
-
-    def download_all(self):
-        return pd.concat(CasesIterator(*self._params))
-
-    def download_update(self):
-        super().download_update()
-
-
-def all_cases(tickers: tuple, last_date: pd.Timestamp, lags: int = 5):
-    """Возвращает обучающую выборку до указанной даты включительно
-
-    Для каждого тикера и Timestamp начала нулевого периода значение реальной годовой дивидендной доходности с
-    несколькими лагами. Дивидендная доходность пересчитывается в постоянные цены на начало нулевого периода
+    Кейсы состоят из значений дивидендной доходности за последние years лет с частотой freq за период с начала данных до
+    last_date и OneHot кодировки тикеров
 
     Parameters
     ----------
@@ -94,38 +106,26 @@ def all_cases(tickers: tuple, last_date: pd.Timestamp, lags: int = 5):
         Кортеж тикеров
     last_date
         Последняя дата, на которую нужно подготовить кейсы
+    freq
+        Частота агрегации данных по дивидендам
     lags
-        Количество лагов для данных по дивидендам
+        Количество лет данных по дивидендам
 
     Returns
     -------
-    DataFrame
-        Мультииндекс - тикер, дата нулевого периода
-        Столбцы - лаговые значения дивидендов, а в последнем столбце значение без лага
+    Data
+        Кейсы для обучения
     """
-    return CasesDataManager(tickers, last_date, lags).value
+    data = pd.concat(CasesIterator(tickers, last_date, freq, lags))
+    index = data.index
+    one_hot = OneHotEncoder(sparse=False).fit_transform(index.labels[0].reshape(-1, 1))
+    one_hot = pd.DataFrame(data=one_hot, index=index, columns=index.levels[0])
+    data = pd.concat([one_hot, data], axis='columns')
+    return Data(x=data.iloc[:, 0:-1], y=data.iloc[:, -1], groups=None)
 
 if __name__ == '__main__':
     POSITIONS = dict(AKRN=563,
                      BANEP=488,
-                     CHMF=234,
-                     GMKN=146,
-                     LKOH=340,
-                     LSNGP=18,
-                     LSRG=2346,
-                     MSRS=128,
-                     MSTT=1823,
-                     MTSS=1383,
-                     PMSBP=2873,
-                     RTKMP=1726,
-                     SNGSP=318,
-                     TTLK=234,
-                     UPRO=986,
-                     VSMO=102,
-                     PRTK=0,
-                     MVID=0,
-                     IRKT=0,
-                     TATNP=0)
-
-    manager = CasesDataManager(tuple(key for key in POSITIONS), pd.Timestamp('2018-08-17'))
-    print(manager.value)
+                     CHMF=234)
+    it = cases(tuple(key for key in POSITIONS), pd.Timestamp('2018-08-17'), Freq.yearly)
+    print(it.y)
