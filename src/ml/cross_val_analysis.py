@@ -9,23 +9,22 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, explained_variance_score
 from sklearn.model_selection import cross_val_predict, learning_curve, validation_curve, KFold
 
-from ml.cases_non_overlapping import cases_non_overlapping, Data
-from ml.current_predictor import AverageRegressor
+from ml.cases import Freq, all_cases, Cases
 
 FIG_SIZE = 4
 SHUFFLE = True
 SEED = 284704
 
 
-def draw_cross_val_predict(ax, regression, data, cv):
+def draw_cross_val_predict(ax, regression, cases, cv):
     """График прогнозируемого с помощью кросс-валидации значения против фактического значения"""
-    predicted = cross_val_predict(regression.estimator, data.x, data.y, groups=data.groups, cv=cv)
-    mse = mean_squared_error(data.y, predicted)
-    ev = explained_variance_score(data.y, predicted)
+    predicted = cross_val_predict(regression.estimator, cases.x, cases.y, groups=cases.groups, cv=cv)
+    mse = mean_squared_error(cases.y, predicted)
+    ev = explained_variance_score(cases.y, predicted)
     ax.set_title(f'{regression.estimator.__class__.__name__}'
                  f'\nMSE^0,5 = {mse ** 0.5:0.2%} / EV = {ev:0.2%}')
-    ax.scatter(data.y, predicted, edgecolors=(0, 0, 0))
-    ax.plot([data.y.min(), data.y.max()], [data.y.min(), data.y.max()], 'k--', lw=1)
+    ax.scatter(cases.y, predicted, edgecolors=(0, 0, 0))
+    ax.plot([cases.y.min(), cases.y.max()], [cases.y.min(), cases.y.max()], 'k--', lw=1)
     ax.set_xlabel('Measured')
     ax.set_ylabel('Predicted')
 
@@ -52,14 +51,14 @@ def draw_learning_curve(ax, regression, data, cv):
     ax.legend(loc="best")
 
 
-def draw_validation_curve(ax, regression, data, cv):
+def draw_validation_curve(ax, regression, cases, cv):
     """График кросс-валидации в зависимости от значения параметров модели"""
     train_scores, test_scores = validation_curve(regression.estimator,
-                                                 data.x,
-                                                 data.y,
+                                                 cases.x,
+                                                 cases.y,
                                                  regression.param_name,
                                                  regression.param_range,
-                                                 data.groups,
+                                                 cases.groups,
                                                  cv,
                                                  'neg_mean_squared_error')
     train_scores_mean = (-np.mean(train_scores, axis=1)) ** 0.5
@@ -81,7 +80,7 @@ def draw_validation_curve(ax, regression, data, cv):
 RegressionCase = namedtuple('RegressionCase', 'estimator param_name param_range')
 
 
-def draw_cross_val_analysis(regressions: list, data: Data):
+def draw_cross_val_analysis(regressions: list, cases: Cases):
     """Рисует графики для анализа кросс-валидации KFold для регрессий из списка
 
     Для каждой регрессии графики расположены в ряд. В каждом ряду как минимум два графика: прогнозируемого против
@@ -90,7 +89,7 @@ def draw_cross_val_analysis(regressions: list, data: Data):
 
     Parameters
     ----------
-    data
+    cases
         Данные для анализа
     regressions
         Список регрессий для анализа
@@ -98,12 +97,12 @@ def draw_cross_val_analysis(regressions: list, data: Data):
     rows = len(regressions)
     fig, ax_list = plt.subplots(rows, 3, figsize=(FIG_SIZE * 3, FIG_SIZE * rows), squeeze=False)
     fig.tight_layout(pad=3, h_pad=5)
-    cv = KFold(n_splits=len(set(data.groups.values)), shuffle=SHUFFLE, random_state=SEED)
+    cv = KFold(n_splits=len(set(cases.y.index.levels[0])), shuffle=SHUFFLE, random_state=SEED)
     for row, regression in enumerate(regressions):
-        draw_cross_val_predict(ax_list[row, 0], regression, data, cv)
-        draw_learning_curve(ax_list[row, 1], regression, data, cv)
+        draw_cross_val_predict(ax_list[row, 0], regression, cases, cv)
+        draw_learning_curve(ax_list[row, 1], regression, cases, cv)
         if regression.param_name:
-            draw_validation_curve(ax_list[row, 2], regression, data, cv)
+            draw_validation_curve(ax_list[row, 2], regression, cases, cv)
     plt.show()
 
 
@@ -128,13 +127,13 @@ if __name__ == '__main__':
                      MVID=0,
                      IRKT=0,
                      TATNP=0)
-    DATE = '2018-08-17'
-    data_ = cases_non_overlapping(tuple(key for key in POSITIONS), pd.Timestamp(DATE), 5)
+    DATE = '2018-08-23'
+    data_ = all_cases(tuple(key for key in POSITIONS), pd.Timestamp(DATE), Freq.monthly, 5)
 
     regressions_ = [RegressionCase(DummyRegressor(),
                                    None,
                                    None),
-                    RegressionCase(AverageRegressor(),
+                    RegressionCase(LinearRegression(),
                                    None,
                                    None),
                     RegressionCase(LinearRegression(),
