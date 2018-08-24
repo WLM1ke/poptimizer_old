@@ -38,8 +38,8 @@ class Freq(Enum):
 class RawCasesIterator:
     """Итератор кейсов для обучения
 
-    Кейсы состоят из значений дивидендной доходности за последние years лет с частотой freq за период с начала данных до
-    last_date
+    Кейсы состоят из значений дивидендной доходности за последние years лет с частотой freq и следующих годовых
+    дивидендов за период с начала данных до last_date
     """
 
     def __init__(self, tickers: tuple, last_date: pd.Timestamp, freq: Freq, years: int = 5):
@@ -47,6 +47,7 @@ class RawCasesIterator:
         self._last_date = last_date
         self._freq = freq
         self._years = years
+        # Дорогая операция - вызывается один раз при создании итератора для ускорения
         self._prices = local.prices(tickers).fillna(method='ffill', axis='index')
 
 
@@ -61,7 +62,8 @@ class RawCasesIterator:
     def _real_dividends_yields(self, date: pd.Timestamp):
         """Возвращает посленалоговые дивидендные доходности в постоянных ценах для заданной даты
 
-        Информация за lags + 1 лет с частотой freq, базисом для постоянных цен и доходности является предпоследний год
+        Информация за lags + 1 лет с частотой freq. Базисом для постоянных цен и доходности является конец
+        предпоследнего года
         """
         tickers = self._tickers
         months_in_period = MONTH_IN_YEAR * (self._years + 1)
@@ -72,7 +74,7 @@ class RawCasesIterator:
         after_tax_dividends = dividends * AFTER_TAX
         real_after_tax_dividends = after_tax_dividends.mul(cpi_index, axis='index')
         agg_dividends = real_after_tax_dividends.groupby(by=self._freq.aggregation_func(date)).sum()
-        price = self._prices.reindex(cum_cpi.index[-MONTH_IN_YEAR - 1:-MONTH_IN_YEAR], method='ffill').iloc[0]
+        price = self._prices.reindex(index=[base_date], method='ffill').iloc[0]
         yields = agg_dividends.div(price, axis='columns')
         yields = yields.T
         yields[DATE] = base_date
@@ -127,5 +129,5 @@ if __name__ == '__main__':
     POSITIONS = dict(AKRN=563,
                      BANEP=488,
                      CHMF=234)
-    it = RawCasesIterator(tuple(key for key in POSITIONS), pd.Timestamp('2018-08-17'), Freq.yearly)
-    print(it.raw_cases(pd.Timestamp('2018-08-17')))
+    it = all_cases(tuple(key for key in POSITIONS), pd.Timestamp('2018-08-17'), Freq.yearly, 2)
+    print(it.x)
