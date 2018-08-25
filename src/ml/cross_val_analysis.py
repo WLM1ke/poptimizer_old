@@ -128,7 +128,7 @@ if __name__ == '__main__':
                      IRKT=0,
                      TATNP=0)
     DATE = '2018-08-23'
-    data_ = all_cases(tuple(key for key in POSITIONS), pd.Timestamp(DATE), Freq.monthly, 5)
+    data_ = all_cases(tuple(key for key in POSITIONS), pd.Timestamp(DATE), Freq.quarterly, 5)
 
     regressions_ = [RegressionCase(DummyRegressor(),
                                    None,
