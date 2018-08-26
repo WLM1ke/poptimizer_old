@@ -24,7 +24,7 @@ def test_yields_vs_dividends_metrics():
     tickers = tuple(key for key in sorted(positions))
     df = RawCasesIterator(tickers, pd.Timestamp('2018-07-31'), Freq.yearly)._real_dividends_yields(
         pd.Timestamp('2018-07-31'))
-    assert np.allclose(metrics_yields.iloc[:, :-2], df.iloc[:, :-1].T)
+    assert np.allclose(metrics_yields, df.iloc[:, :-1].T)
 
 
 def test_cases_vs_dividends_metrics():
@@ -41,7 +41,7 @@ def test_cases_vs_dividends_metrics():
     assert df.index[0] == ('ALRS', pd.Timestamp('2017-06-28'))
     assert df.index[1] == ('MSTT', pd.Timestamp('2017-06-28'))
     assert df.index[2] == ('MVID', pd.Timestamp('2017-06-28'))
-    assert np.allclose(metrics_yields.iloc[:, :-2].T, df.iloc[:, :-1])
+    assert np.allclose(metrics_yields.T, df.iloc[:, :-1])
 
 
 def test_iter():
@@ -58,7 +58,7 @@ def test_iter():
                      cash=7_764,
                      positions=positions)
     metrics_yields = BaseDividendsMetrics(port).yields
-    assert np.allclose(metrics_yields.iloc[:, :-2].T, df.iloc[:, :-1])
+    assert np.allclose(metrics_yields.T, df.iloc[:, :-1])
 
 
 def test_monthly_quarterly_yearly():
