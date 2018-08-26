@@ -4,10 +4,11 @@ from collections import namedtuple
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.dummy import DummyRegressor
-from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_squared_error, explained_variance_score
 from sklearn.model_selection import cross_val_predict, learning_curve, validation_curve, KFold
+from sklearn.svm import LinearSVR
 
 from ml.cases import Freq, all_cases, Cases
 
@@ -129,16 +130,27 @@ if __name__ == '__main__':
                      IRKT=0,
                      TATNP=0,
                      TATN=0)
-    DATE = '2018-08-23'
-    data_ = all_cases(tuple(key for key in POSITIONS), pd.Timestamp(DATE), Freq.quarterly, 5)
+    DATE = '2018-08-24'
+    data_ = all_cases(tuple(key for key in POSITIONS), pd.Timestamp(DATE), Freq.monthly, 5)
 
-    regressions_ = [RegressionCase(DummyRegressor(),
-                                   None,
-                                   None),
-                    RegressionCase(LinearRegression(),
-                                   None,
-                                   None),
-                    RegressionCase(LinearRegression(),
-                                   None,
-                                   None)]
+    regressions_ = [RegressionCase(Ridge(alpha=0.01,
+                                         random_state=SEED, max_iter=10000),
+                                   'alpha',
+                                   [10 ** (i - 4) for i in range(5)]),
+                    RegressionCase(LinearSVR(epsilon=0.025, C=10,
+                                             random_state=SEED, verbose=True, max_iter=10000),
+                                   'C',
+                                   [10 ** (i - 1) for i in range(5)]),
+                    RegressionCase(GradientBoostingRegressor(n_estimators=100, subsample=0.99, max_depth=1,
+                                                             learning_rate=0.08,
+                                                             random_state=SEED, verbose=True),
+                                   'learning_rate',
+                                   [0.08 + (0.01 * (i - 2)) for i in range(5)])]
+
+    clf = GradientBoostingRegressor(n_estimators=100, subsample=0.99, max_depth=1, learning_rate=0.08,
+                                    random_state=SEED, verbose=True)
+    clf.fit(data_.x, data_.y)
+    print(clf.feature_importances_[:len(POSITIONS)])
+    print(clf.feature_importances_[len(POSITIONS):])
+
     draw_cross_val_analysis(regressions_, data_)

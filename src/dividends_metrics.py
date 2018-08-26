@@ -11,7 +11,7 @@ DIVIDENDS_MONTHS = DIVIDENDS_YEARS * 12
 
 
 class AbstractDividendsMetrics(ABC):
-    """Реализует основные метрики дивидендного потока для портфеля в реальном после налоговом исчислении"""
+    """Реализует основные метрики дивидендного потока для портфеля в реальном посленалоговом исчислении"""
 
     def __init__(self, portfolio: Portfolio):
         self._portfolio = portfolio
@@ -34,7 +34,7 @@ class AbstractDividendsMetrics(ABC):
     @property
     @abstractmethod
     def _tickers_real_after_tax_mean(self):
-        """Series матожидание реальной после налоговой дивидендной доходности только для тикеров без CASH и PORTFOLIO"""
+        """Series матожидание реальной посленалоговой дивидендной доходности только для тикеров без CASH и PORTFOLIO"""
         raise NotImplementedError
 
     @property
@@ -49,7 +49,7 @@ class AbstractDividendsMetrics(ABC):
     @property
     @abstractmethod
     def _tickers_real_after_tax_std(self):
-        """Series СКО реальной после налоговой дивидендной доходности только для тикеров без CASH и PORTFOLIO"""
+        """Series СКО реальной посленалоговой дивидендной доходности только для тикеров без CASH и PORTFOLIO"""
         raise NotImplementedError
 
     @property

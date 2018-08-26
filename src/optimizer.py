@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from dividends_metrics_classic import ClassicDividendsMetrics
+from dividends_metrics_base import BaseDividendsMetrics
 from portfolio import Portfolio, CASH, PORTFOLIO
 from returns_metrics import ReturnsMetrics
 from settings import T_SCORE, MAX_TRADE
@@ -22,7 +22,7 @@ class Optimizer:
 
     def __init__(self, portfolio: Portfolio):
         self._portfolio = portfolio
-        self._dividends_metrics = ClassicDividendsMetrics(portfolio)
+        self._dividends_metrics = BaseDividendsMetrics(portfolio)
         self._returns_metrics = ReturnsMetrics(portfolio)
 
     def __str__(self):
