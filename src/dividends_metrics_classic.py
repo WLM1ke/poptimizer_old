@@ -1,17 +1,24 @@
-"""Реализация основных метрик дивидендного потока"""
-from abc import ABC, abstractmethod
+"""Реализация основных метрик дивидендного потока классической схеме"""
+
+from functools import lru_cache
 
 import pandas as pd
 
+import local
 from portfolio import Portfolio, CASH, PORTFOLIO
-from settings import T_SCORE
+from settings import AFTER_TAX, T_SCORE
+# Период, который является источником для статистики
+from utils.aggregation import yearly_aggregation_func
 
 DIVIDENDS_YEARS = 5
 DIVIDENDS_MONTHS = DIVIDENDS_YEARS * 12
 
 
-class AbstractDividendsMetrics(ABC):
-    """Реализует основные метрики дивидендного потока для портфеля в реальном после налоговом исчислении"""
+class ClassicDividendsMetrics:
+    """Реализует основные метрики дивидендного потока для портфеля по классической схеме
+
+    За основу берутся данные из базы данных по дивидендам, которые переводятся в реальные посленалоговые величины
+    """
 
     def __init__(self, portfolio: Portfolio):
         self._portfolio = portfolio
@@ -32,37 +39,64 @@ class AbstractDividendsMetrics(ABC):
                 f'\n{df}')
 
     @property
-    @abstractmethod
-    def _tickers_real_after_tax_mean(self):
-        """Series матожидание реальной после налоговой дивидендной доходности только для тикеров без CASH и PORTFOLIO"""
-        raise NotImplementedError
+    def nominal_pretax_monthly(self):
+        """Дивиденды в номинальном выражении по месяцам"""
+        positions = self._portfolio.positions
+        df = local.monthly_dividends(positions[:-2], self._portfolio.date)
+        df = df.iloc[-DIVIDENDS_MONTHS:]
+        df.reindex(index=positions)
+        df[CASH] = 0
+        df[PORTFOLIO] = df.multiply(self._portfolio.shares, axis='columns').sum(axis=1)
+        return df
+
+    @property
+    def real_after_tax_monthly(self):
+        """Дивиденды после уплаты налогов в реальном выражении по месяцам (в ценах последнего месяца)
+
+        Все метрики опираются именно на реальные посленалоговые выплаты
+        1 - ставка налога = AFTER_TAX указывается в модуле настроек
+        """
+        nominal_pretax_dividends = self.nominal_pretax_monthly
+        cpi = local.monthly_cpi(self._portfolio.date)
+        cum_cpi = cpi.iloc[-DIVIDENDS_MONTHS:].cumprod()
+        real_index = cum_cpi.iloc[-1] / cum_cpi
+        real_pretax_dividends = nominal_pretax_dividends.multiply(real_index, axis='index')
+        return real_pretax_dividends * AFTER_TAX
+
+    @property
+    def real_after_tax(self):
+        """Дивиденды после уплаты налогов в реальном выражении по годам (в ценах последнего месяца)
+
+        Все метрики опираются именно на реальные посленалоговые выплаты
+        1 - ставка налога = AFTER_TAX указывается в модуле настроек
+        """
+        real_after_tax = self.real_after_tax_monthly
+        return real_after_tax.groupby(by=yearly_aggregation_func(self._portfolio.date)).sum()
+
+    @property
+    @lru_cache(maxsize=1)
+    def yields(self):
+        """Дивидендная доходность"""
+        dividends = self.real_after_tax
+        inverse_prices = 1 / self._portfolio.price
+        return dividends.multiply(inverse_prices, axis='columns')
 
     @property
     def mean(self):
-        """Матожидание дивидендной доходности по всем позициям портфеля"""
-        mean = self._tickers_real_after_tax_mean
-        mean[CASH] = 0
-        weighted_mean = mean * self._portfolio.weight[mean.index]
-        mean[PORTFOLIO] = weighted_mean.sum(axis='index')
-        return mean
-
-    @property
-    @abstractmethod
-    def _tickers_real_after_tax_std(self):
-        """Series СКО реальной после налоговой дивидендной доходности только для тикеров без CASH и PORTFOLIO"""
-        raise NotImplementedError
+        """Матожидание дивидендной доходности"""
+        return self.yields.mean(axis='index', skipna=False)
 
     @property
     def std(self):
-        """СКО дивидендной доходности по всем позициям портфеля
+        """СКО дивидендной доходности
 
         СКО портфеля рассчитывается из допущения нулевой корреляции между дивидендами отдельных позиций. Допущение о
         нулевой корреляции необходимо в качестве простого приема регуляризации, так как число лет существенно меньше
         количества позиций. Данное допущение используется во всех дальнейших расчетах
         """
-        std = self._tickers_real_after_tax_std
-        std[CASH] = 0
-        weighted_std = std * self._portfolio.weight[std.index]
+        std = self.yields.std(axis='index', ddof=1, skipna=False)
+        tickers = std.index[:-2]
+        weighted_std = std[tickers] * self._portfolio.weight[tickers]
         std[PORTFOLIO] = (weighted_std ** 2).sum(axis='index') ** 0.5
         return std
 
@@ -118,3 +152,27 @@ class AbstractDividendsMetrics(ABC):
     def minimal_dividends(self):
         """Ожидаемые дивиденды по портфелю в рублевом выражении по нижней границе доверительного интервала"""
         return self.lower_bound[PORTFOLIO] * self._portfolio.value[PORTFOLIO]
+
+
+if __name__ == '__main__':
+    pos = dict(AKRN=676,
+               BANEP=392,
+               CHMF=173,
+               GMKN=139,
+               LKOH=183,
+               LSNGP=596,
+               LSRG=2346,
+               MSRS=128,
+               MSTT=1823,
+               MTSS=1348,
+               MVID=141,
+               PMSBP=2715,
+               RTKMP=1674,
+               SNGSP=263,
+               TTLK=234,
+               UPRO=1272,
+               VSMO=101)
+    port = Portfolio(date='2018-07-27',
+                     cash=2_482 + 7_764 + 3_416,
+                     positions=pos)
+    print(ClassicDividendsMetrics(port).yields)

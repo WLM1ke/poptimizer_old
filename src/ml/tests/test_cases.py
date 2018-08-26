@@ -2,7 +2,7 @@ import collections
 import numpy as np
 import pandas as pd
 
-from dividends_metrics import DividendsMetrics
+from dividends_metrics_classic import ClassicDividendsMetrics
 from ml.cases import RawCasesIterator, all_cases, Freq, Cases
 from portfolio import Portfolio
 
@@ -20,7 +20,7 @@ def test_yields_vs_dividends_metrics():
     port = Portfolio(date='2017-07-31',
                      cash=7_764,
                      positions=positions)
-    metrics_yields = DividendsMetrics(port).yields
+    metrics_yields = ClassicDividendsMetrics(port).yields
     tickers = tuple(key for key in sorted(positions))
     df = RawCasesIterator(tickers, pd.Timestamp('2018-07-31'), Freq.yearly)._real_dividends_yields(
         pd.Timestamp('2018-07-31'))
@@ -34,7 +34,7 @@ def test_cases_vs_dividends_metrics():
     port = Portfolio(date='2017-06-28',
                      cash=7_764,
                      positions=positions)
-    metrics_yields = DividendsMetrics(port).yields
+    metrics_yields = ClassicDividendsMetrics(port).yields
     tickers = tuple(key for key in sorted(positions))
     df = RawCasesIterator(tickers, pd.Timestamp('2018-07-31'), Freq.yearly).raw_cases(pd.Timestamp('2018-06-28'))
     assert len(df) == 3
@@ -57,7 +57,7 @@ def test_iter():
     port = Portfolio(date='2015-01-05',
                      cash=7_764,
                      positions=positions)
-    metrics_yields = DividendsMetrics(port).yields
+    metrics_yields = ClassicDividendsMetrics(port).yields
     assert np.allclose(metrics_yields.iloc[:, :-2].T, df.iloc[:, :-1])
 
 

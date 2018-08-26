@@ -1,6 +1,6 @@
 import pytest
 
-from dividends_metrics import DividendsMetrics
+from dividends_metrics_classic import ClassicDividendsMetrics
 from portfolio import CASH, PORTFOLIO, Portfolio
 from settings import AFTER_TAX
 
@@ -15,7 +15,7 @@ def case_metrics():
     port = Portfolio(date='2018-05-11',
                      cash=311_587,
                      positions=positions)
-    return DividendsMetrics(port)
+    return ClassicDividendsMetrics(port)
 
 
 def test_mean(div):
@@ -72,4 +72,4 @@ def test_end_of_month_shape():
     port = Portfolio(date='2018-07-30',
                      cash=311_587,
                      positions=positions)
-    return DividendsMetrics(port).real_after_tax.shape == (5, 7)
+    return ClassicDividendsMetrics(port).real_after_tax.shape == (5, 7)

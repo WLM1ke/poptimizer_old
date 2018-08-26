@@ -26,7 +26,7 @@ def draw_cross_val_predict(ax, regression, cases, cv):
     ax.scatter(cases.y, predicted, edgecolors=(0, 0, 0))
     ax.plot([cases.y.min(), cases.y.max()], [cases.y.min(), cases.y.max()], 'k--', lw=1)
     ax.set_xlabel('Measured')
-    ax.set_ylabel('Predicted')
+    ax.set_ylabel('Cross-Validated Prediction')
 
 
 def draw_learning_curve(ax, regression, data, cv):
@@ -66,10 +66,10 @@ def draw_validation_curve(ax, regression, cases, cv):
     min_val = test_scores_mean.argmin()
     ax.grid()
     ax.set_title(f'Validation curve'
-                 f'\nBest: {regression.param_name} - {regression.param_range[min_val]} = {test_scores_mean.min():0.2%}')
+                 f'\nBest: {regression.param_name} - {regression.param_range[min_val]:0.2f} = {test_scores_mean.min():0.2%}')
     ax.set_xlabel(f'{regression.param_name}')
     lw = 2
-    param_range = [str(i) for i in regression.param_range]
+    param_range = [f'{i:0.2f}' for i in regression.param_range]
     ax.plot(param_range, train_scores_mean, label="Training score",
             color="r", lw=lw)
     ax.plot(param_range, test_scores_mean, label="Cross-validation score",
@@ -97,7 +97,8 @@ def draw_cross_val_analysis(regressions: list, cases: Cases):
     rows = len(regressions)
     fig, ax_list = plt.subplots(rows, 3, figsize=(FIG_SIZE * 3, FIG_SIZE * rows), squeeze=False)
     fig.tight_layout(pad=3, h_pad=5)
-    cv = KFold(n_splits=len(set(cases.y.index.levels[0])), shuffle=SHUFFLE, random_state=SEED)
+    n_splits = len(set(cases.y.index.levels[0]))
+    cv = KFold(n_splits=n_splits, shuffle=SHUFFLE, random_state=SEED)
     for row, regression in enumerate(regressions):
         draw_cross_val_predict(ax_list[row, 0], regression, cases, cv)
         draw_learning_curve(ax_list[row, 1], regression, cases, cv)
@@ -126,7 +127,8 @@ if __name__ == '__main__':
                      PRTK=0,
                      MVID=0,
                      IRKT=0,
-                     TATNP=0)
+                     TATNP=0,
+                     TATN=0)
     DATE = '2018-08-23'
     data_ = all_cases(tuple(key for key in POSITIONS), pd.Timestamp(DATE), Freq.quarterly, 5)
 
