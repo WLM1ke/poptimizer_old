@@ -1,9 +1,9 @@
 import pytest
 
 import optimizer
-import portfolio
+from metrics import portfolio
+from metrics.portfolio import Portfolio
 from optimizer import Optimizer
-from portfolio import Portfolio
 from settings import AFTER_TAX
 
 

@@ -2,10 +2,10 @@ import pandas as pd
 import pytest
 
 import momentum_tickers
+from metrics.portfolio import CASH, Portfolio
 from momentum_tickers import all_securities, all_securities_with_reg_number
 from momentum_tickers import non_portfolio_securities, make_new_portfolio, valid_volume
 from momentum_tickers import valid_return_gradient
-from portfolio import CASH, Portfolio
 from web.labels import REG_NUMBER
 
 

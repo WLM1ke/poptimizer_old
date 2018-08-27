@@ -2,9 +2,9 @@
 
 import pandas as pd
 
-from dividends_metrics_base import BaseDividendsMetrics
-from portfolio import Portfolio, CASH, PORTFOLIO
-from returns_metrics import ReturnsMetrics
+from metrics.dividends_metrics_base import BaseDividendsMetrics
+from metrics.portfolio import Portfolio, CASH, PORTFOLIO
+from metrics.returns_metrics import ReturnsMetrics
 from settings import T_SCORE, MAX_TRADE
 
 

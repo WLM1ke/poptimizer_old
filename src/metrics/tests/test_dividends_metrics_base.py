@@ -1,7 +1,7 @@
 import pytest
 
-from dividends_metrics_base import BaseDividendsMetrics
-from portfolio import CASH, PORTFOLIO, Portfolio
+from metrics.dividends_metrics_base import BaseDividendsMetrics
+from metrics.portfolio import CASH, PORTFOLIO, Portfolio
 from settings import AFTER_TAX
 
 

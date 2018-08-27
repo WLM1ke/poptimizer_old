@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 import pandas as pd
 
-from portfolio import Portfolio, CASH, PORTFOLIO
+from metrics.portfolio import Portfolio, CASH, PORTFOLIO
 from settings import T_SCORE
 
 DIVIDENDS_YEARS = 5

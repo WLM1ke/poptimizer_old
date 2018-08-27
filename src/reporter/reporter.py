@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 
-from portfolio import PORTFOLIO, Portfolio
+from metrics.portfolio import PORTFOLIO, Portfolio
 from reporter.flow_and_dividends import flow_and_dividends_block
 from reporter.pdf_style import blank_width, make_section_delimiter, make_header, BlockPosition
 from reporter.pdf_style import make_blank_report, left_margin, bottom_margin, blank_height

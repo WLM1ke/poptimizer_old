@@ -3,8 +3,8 @@
 import random
 
 import web
-from portfolio import CASH, Portfolio
-from returns_metrics import ReturnsMetrics
+from metrics.portfolio import CASH, Portfolio
+from metrics.returns_metrics import ReturnsMetrics
 from web.labels import REG_NUMBER
 
 # Позиция в строке, в которой отображаются результаты проверки бумаг

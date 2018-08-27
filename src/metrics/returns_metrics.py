@@ -7,7 +7,7 @@ import pandas as pd
 from scipy import optimize, stats
 
 import local
-from portfolio import Portfolio, CASH, PORTFOLIO
+from metrics.portfolio import Portfolio, CASH, PORTFOLIO
 from settings import T_SCORE
 
 # Интервал поиска константы сглаживания

@@ -2,9 +2,9 @@ import collections
 import numpy as np
 import pandas as pd
 
-from dividends_metrics_base import BaseDividendsMetrics
+from metrics.dividends_metrics_base import BaseDividendsMetrics
+from metrics.portfolio import Portfolio
 from ml.cases import RawCasesIterator, all_cases, Freq, Cases
-from portfolio import Portfolio
 
 
 def test_iterable():

@@ -1,8 +1,7 @@
 import pytest
 
-import portfolio
-import returns_metrics
-from portfolio import CASH, PORTFOLIO
+from metrics import portfolio, returns_metrics
+from metrics.portfolio import CASH, PORTFOLIO
 
 
 @pytest.fixture(scope='module', name='returns')

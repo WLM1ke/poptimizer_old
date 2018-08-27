@@ -3,8 +3,8 @@
 from functools import lru_cache
 
 import local
-from dividends_metrics import AbstractDividendsMetrics
-from portfolio import Portfolio
+from metrics.dividends_metrics import AbstractDividendsMetrics
+from metrics.portfolio import Portfolio
 from settings import AFTER_TAX
 # Период, который является источником для статистики
 from utils.aggregation import yearly_aggregation_func

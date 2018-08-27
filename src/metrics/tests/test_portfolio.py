@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from portfolio import Portfolio, PORTFOLIO
+from metrics.portfolio import Portfolio, PORTFOLIO
 
 
 def test_portfolio():

@@ -3,8 +3,8 @@
 import cProfile
 import pstats
 
+from metrics.portfolio import Portfolio
 from optimizer import Optimizer
-from portfolio import Portfolio
 
 POSITIONS = dict(BANEP=200,
                  MFON=55,

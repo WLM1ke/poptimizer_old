@@ -4,7 +4,7 @@ from shutil import copyfile
 import pandas as pd
 import pytest
 
-from portfolio import Portfolio
+from metrics.portfolio import Portfolio
 from reporter import reporter
 
 POSITIONS = dict(MSTT=44,

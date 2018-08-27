@@ -1,6 +1,6 @@
 import pytest
 
-from portfolio import PORTFOLIO, Portfolio
+from metrics.portfolio import PORTFOLIO, Portfolio
 from reporter.portfolio_structure import drop_small_positions, MAX_TABLE_ROWS, OTHER, make_list_of_lists_table
 
 POSITIONS = dict(BANEP=200,

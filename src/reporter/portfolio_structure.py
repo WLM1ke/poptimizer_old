@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from reportlab.lib.units import inch
 from reportlab.platypus import Table, TableStyle, Image, Paragraph, Frame
 
-from portfolio import PORTFOLIO, Portfolio
+from metrics.portfolio import PORTFOLIO, Portfolio
 from reporter.pdf_style import BLOCK_HEADER_STYLE, LINE_COLOR, LINE_WIDTH, BOLD_FONT, BlockPosition
 
 # Количество строк в таблице, которое влезает в блок и нормально выглядит на диаграмме
