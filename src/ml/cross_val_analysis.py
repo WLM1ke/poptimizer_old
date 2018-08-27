@@ -67,10 +67,11 @@ def draw_validation_curve(ax, regression, cases, cv):
     min_val = test_scores_mean.argmin()
     ax.grid()
     ax.set_title(f'Validation curve'
-                 f'\nBest: {regression.param_name} - {regression.param_range[min_val]:0.2f} = {test_scores_mean.min():0.2%}')
+                 f'\nBest: {regression.param_name} - {regression.param_range[min_val]:0.2f} = '
+                 f'{test_scores_mean.min():0.2%}')
     ax.set_xlabel(f'{regression.param_name}')
     lw = 2
-    param_range = [f'{i:0.2f}' for i in regression.param_range]
+    param_range = [str(i) for i in regression.param_range]
     ax.plot(param_range, train_scores_mean, label="Training score",
             color="r", lw=lw)
     ax.plot(param_range, test_scores_mean, label="Cross-validation score",
