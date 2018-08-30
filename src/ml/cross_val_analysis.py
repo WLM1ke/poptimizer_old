@@ -1,16 +1,15 @@
 """Функции для проведения графического анализа кросс-валидации"""
 from collections import namedtuple
 
+import catboost
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.linear_model import Ridge
+from catboost import CatBoostRegressor
 from sklearn.metrics import mean_squared_error, explained_variance_score
 from sklearn.model_selection import cross_val_predict, learning_curve, validation_curve, KFold
-from sklearn.svm import LinearSVR
 
-from ml.cases import Freq, all_cases, Cases
+from ml.cases import Freq, learn_predict_pools
 
 FIG_SIZE = 4
 SHUFFLE = True
@@ -82,7 +81,7 @@ def draw_validation_curve(ax, regression, cases, cv):
 RegressionCase = namedtuple('RegressionCase', 'estimator param_name param_range')
 
 
-def draw_cross_val_analysis(regressions: list, cases: Cases):
+def draw_cross_val_analysis(regressions: list, cases):
     """Рисует графики для анализа кросс-валидации KFold для регрессий из списка
 
     Для каждой регрессии графики расположены в ряд. В каждом ряду как минимум два графика: прогнозируемого против
@@ -131,27 +130,63 @@ if __name__ == '__main__':
                      IRKT=0,
                      TATNP=0,
                      TATN=0)
-    DATE = '2018-08-24'
-    data_ = all_cases(tuple(key for key in POSITIONS), pd.Timestamp(DATE), Freq.monthly, 5)
+    DATE = '2018-08-28'
 
-    regressions_ = [RegressionCase(Ridge(alpha=0.01,
-                                         random_state=SEED, max_iter=10000),
-                                   'alpha',
-                                   [10 ** (i - 4) for i in range(5)]),
-                    RegressionCase(LinearSVR(epsilon=0.025, C=10,
-                                             random_state=SEED, verbose=True, max_iter=10000),
-                                   'C',
-                                   [10 ** (i - 1) for i in range(5)]),
-                    RegressionCase(GradientBoostingRegressor(n_estimators=100, subsample=0.99, max_depth=1,
-                                                             learning_rate=0.08,
-                                                             random_state=SEED, verbose=True),
-                                   'learning_rate',
-                                   [0.08 + (0.01 * (i - 2)) for i in range(5)])]
+    min_std = None
+    saved = None
+    pos = tuple(key for key in POSITIONS)
+    for lag in range(1, 4):
+        for freq in Freq:
+            data, _ = learn_predict_pools(pos, pd.Timestamp(DATE), freq, lag)
+            g_std = pd.Series(data.get_label()).std()
+            for depth in range(1, 9):
+                params = dict(depth=depth,
+                              random_state=SEED,
+                              learning_rate=0.1,
+                              verbose=False,
+                              allow_writing_files=False,
+                              od_type='Iter',
+                              use_best_model=True)
+                scores = catboost.cv(pool=data,
+                                     params=params,
+                                     fold_count=20)
+                index = scores.iloc[:, 0].idxmin()
+                score = scores.iloc[index, 0]
+                score_std = scores.iloc[index, 1]
+                ev = 1 - (score / g_std) ** 2
+                if min_std is None or score < min_std:
+                    min_std = score
+                    saved = freq, lag, depth, index
+                    print(
+                        f'{lag} {str(freq).ljust(14)} {depth} {str(index + 1).ljust(3)} '
+                        f'{score:0.4%} {score_std:0.4%} {ev:0.2%}')
 
-    clf = GradientBoostingRegressor(n_estimators=100, subsample=0.99, max_depth=1, learning_rate=0.08,
-                                    random_state=SEED, verbose=True)
-    clf.fit(data_.x, data_.y)
-    print(clf.feature_importances_[:len(POSITIONS)])
-    print(clf.feature_importances_[len(POSITIONS):])
+    data, pred = learn_predict_pools(pos, pd.Timestamp(DATE), saved[0], saved[1])
+    params = dict(depth=saved[2],
+                  iterations=saved[3],
+                  random_state=SEED,
+                  learning_rate=0.1,
+                  verbose=False,
+                  od_type='Iter',
+                  allow_writing_files=False)
+    clf = CatBoostRegressor(**params)
+    clf.fit(data)
+    print(pd.Series(clf.predict(pred), list(pos)))
+    print(clf.feature_importances_)
 
-    draw_cross_val_analysis(regressions_, data_)
+    """
+    2018-08-28
+    1 Freq.monthly     1 81  4.8574% 0.7620% 9.75%
+    1 Freq.monthly     2 107 4.8448% 0.7684% 10.22%
+    1 Freq.monthly     3 91  4.8403% 0.7666% 10.39%
+    1 Freq.monthly     4 68  4.8359% 0.7619% 10.55%
+    1 Freq.quarterly   1 82  4.6148% 0.7407% 7.51%
+    1 Freq.quarterly   2 65  4.6031% 0.7444% 7.98%
+    1 Freq.quarterly   3 56  4.5958% 0.7413% 8.28%
+    1 Freq.yearly      1 26  4.5788% 1.9822% 14.95%
+    1 Freq.yearly      2 27  4.5673% 2.0363% 15.38%
+    1 Freq.yearly      3 86  4.5070% 1.9533% 17.60%
+    1 Freq.yearly      4 85  4.4990% 1.9496% 17.89%
+    1 Freq.yearly      5 56  4.4577% 1.9550% 19.39%
+    1 Freq.yearly      6 70  4.4190% 1.9700% 20.79%
+    """
