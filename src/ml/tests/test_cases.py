@@ -4,7 +4,7 @@ import pandas as pd
 
 from metrics.dividends_metrics_base import BaseDividendsMetrics
 from metrics.portfolio import Portfolio
-from ml.cases import RawCasesIterator, all_cases, Freq, Cases
+from ml.cases import RawCasesIterator, learn_predict_pools, Freq, Cases
 
 
 def test_iterable():
@@ -36,7 +36,7 @@ def test_cases_vs_dividends_metrics():
                      positions=positions)
     metrics_yields = BaseDividendsMetrics(port).yields
     tickers = tuple(key for key in sorted(positions))
-    df = RawCasesIterator(tickers, pd.Timestamp('2018-07-31'), Freq.yearly).raw_cases(pd.Timestamp('2018-06-28'))
+    df = RawCasesIterator(tickers, pd.Timestamp('2018-07-31'), Freq.yearly).cases(pd.Timestamp('2018-06-28'))
     assert len(df) == 3
     assert df.index[0] == ('ALRS', pd.Timestamp('2017-06-28'))
     assert df.index[1] == ('MSTT', pd.Timestamp('2017-06-28'))
@@ -62,9 +62,9 @@ def test_iter():
 
 
 def test_monthly_quarterly_yearly():
-    monthly_data = all_cases(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.monthly)
-    quarterly_data = all_cases(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.quarterly)
-    yearly_data = all_cases(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.yearly)
+    monthly_data = learn_predict_pools(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.monthly)
+    quarterly_data = learn_predict_pools(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.quarterly)
+    yearly_data = learn_predict_pools(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.yearly)
 
     assert isinstance(monthly_data, Cases)
     assert isinstance(quarterly_data, Cases)

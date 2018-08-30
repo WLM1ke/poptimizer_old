@@ -12,7 +12,7 @@ from web.labels import DATE, TICKER
 
 DIVIDENDS_CATEGORY = 'dividends'
 STATISTICS_START = '2010-01-01'
-DATABASE = DATA_PATH / 'dividends.db'
+DATABASE = str(DATA_PATH / 'dividends.db')
 
 
 class DividendsDataManager(AbstractDataManager):
@@ -85,5 +85,5 @@ def monthly_dividends(tickers: tuple, last_date: pd.Timestamp):
 
 
 if __name__ == '__main__':
-    df_ = monthly_dividends(tuple(['PIKK', 'AKRN', 'CHMF', 'GMKN']), pd.Timestamp('2018-08-20'))
+    df_ = monthly_dividends(tuple(['AKRN']), pd.Timestamp('2018-08-20'))
     print(df_.columns.name)
