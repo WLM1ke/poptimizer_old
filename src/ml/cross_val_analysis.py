@@ -130,7 +130,9 @@ if __name__ == '__main__':
                      IRKT=0,
                      TATNP=0,
                      TATN=0)
-    DATE = '2018-08-28'
+    DATE = '2018-08-30'
+    print(DATE)
+    print('')
 
     min_std = None
     saved = None
@@ -139,7 +141,7 @@ if __name__ == '__main__':
         for freq in Freq:
             data, _ = learn_predict_pools(pos, pd.Timestamp(DATE), freq, lag)
             g_std = pd.Series(data.get_label()).std()
-            for depth in range(1, 9):
+            for depth in range(1, 11):
                 params = dict(depth=depth,
                               random_state=SEED,
                               learning_rate=0.1,
@@ -171,7 +173,9 @@ if __name__ == '__main__':
                   allow_writing_files=False)
     clf = CatBoostRegressor(**params)
     clf.fit(data)
+    print('')
     print(pd.Series(clf.predict(pred), list(pos)))
+    print('')
     print(clf.feature_importances_)
 
     """
