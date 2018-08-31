@@ -140,7 +140,7 @@ if __name__ == '__main__':
         for freq in Freq:
             data, _ = learn_predict_pools(pos, pd.Timestamp(DATE), freq, lag)
             g_std = pd.Series(data.get_label()).std()
-            for depth in range(1, 14):
+            for depth in range(1, 13):
                 params = dict(depth=depth,
                               random_state=SEED,
                               learning_rate=0.1,

@@ -157,4 +157,4 @@ if __name__ == '__main__':
                      BANEP=488,
                      CHMF=234)
     it = learn_predict_pools(tuple(key for key in POSITIONS), pd.Timestamp('2018-08-17'), Freq.yearly, 4)
-    print(it[0].shape)
+    print(it[1].get_label())
