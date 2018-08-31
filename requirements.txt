@@ -9,3 +9,4 @@ reportlab
 matplotlib
 openpyxl
 sklearn
+catboost
