@@ -128,8 +128,7 @@ if __name__ == '__main__':
                      PRTK=0,
                      MVID=0,
                      IRKT=0,
-                     TATNP=0,
-                     TATN=0)
+                     TATNP=0)
     DATE = '2018-08-30'
     print(DATE)
     print('')
@@ -141,7 +140,7 @@ if __name__ == '__main__':
         for freq in Freq:
             data, _ = learn_predict_pools(pos, pd.Timestamp(DATE), freq, lag)
             g_std = pd.Series(data.get_label()).std()
-            for depth in range(1, 11):
+            for depth in range(1, 14):
                 params = dict(depth=depth,
                               random_state=SEED,
                               learning_rate=0.1,
@@ -179,18 +178,20 @@ if __name__ == '__main__':
     print(clf.feature_importances_)
 
     """
-    2018-08-28
-    1 Freq.monthly     1 81  4.8574% 0.7620% 9.75%
-    1 Freq.monthly     2 107 4.8448% 0.7684% 10.22%
-    1 Freq.monthly     3 91  4.8403% 0.7666% 10.39%
-    1 Freq.monthly     4 68  4.8359% 0.7619% 10.55%
-    1 Freq.quarterly   1 82  4.6148% 0.7407% 7.51%
-    1 Freq.quarterly   2 65  4.6031% 0.7444% 7.98%
-    1 Freq.quarterly   3 56  4.5958% 0.7413% 8.28%
-    1 Freq.yearly      1 26  4.5788% 1.9822% 14.95%
-    1 Freq.yearly      2 27  4.5673% 2.0363% 15.38%
-    1 Freq.yearly      3 86  4.5070% 1.9533% 17.60%
-    1 Freq.yearly      4 85  4.4990% 1.9496% 17.89%
-    1 Freq.yearly      5 56  4.4577% 1.9550% 19.39%
-    1 Freq.yearly      6 70  4.4190% 1.9700% 20.79%
+    2018-08-30
+    
+    1 Freq.monthly   1 92  4.8538% 0.7589% 10.45%
+    1 Freq.monthly   2 92  4.8390% 0.7634% 11.00%
+    1 Freq.monthly   3 84  4.8351% 0.7631% 11.14%
+    1 Freq.quarterly 1 82  4.6371% 0.7658% 7.22%
+    1 Freq.quarterly 2 51  4.6239% 0.7647% 7.75%
+    1 Freq.yearly    1 26  4.5470% 1.9827% 15.31%
+    1 Freq.yearly    2 31  4.5299% 1.9828% 15.95%
+    1 Freq.yearly    4 34  4.4821% 1.9649% 17.72%
+    1 Freq.yearly    6 31  4.4749% 1.9811% 17.98%
+    1 Freq.yearly    7 42  4.4706% 1.9717% 18.14%
+    1 Freq.yearly    8 47  4.4365% 1.9545% 19.38%
+    1 Freq.yearly    9 62  4.4268% 1.9866% 19.73%
+    1 Freq.yearly    12 59  4.4174% 1.9669% 20.07%
+    2 Freq.yearly    11 24  4.4093% 2.6129% 22.55%
     """
