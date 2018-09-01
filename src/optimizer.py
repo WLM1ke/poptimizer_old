@@ -7,6 +7,9 @@ from metrics.portfolio import Portfolio, CASH, PORTFOLIO
 from metrics.returns_metrics import ReturnsMetrics
 from settings import T_SCORE, MAX_TRADE
 
+# На сколько сделок разбивается операция по покупке/продаже акций
+TRADES = 5
+
 
 class Optimizer:
     """Принимает портфель и выбирает наиболее оптимальное направление его улучшения
@@ -74,13 +77,15 @@ class Optimizer:
         best_sell = self.dividends_gradient_growth.iloc[:-2].idxmax()
         sell_weight = max(0, min(portfolio.weight[best_sell], MAX_TRADE - portfolio.weight[CASH]))
         sell_value = sell_weight * portfolio.value[PORTFOLIO]
-        sell_5_lots = max(1, int(sell_value / portfolio.lot_size[best_sell] / portfolio.price[best_sell] / 5 + 0.5))
+        sell_lot_value = portfolio.lot_size[best_sell] * portfolio.price[best_sell]
+        sell_5_lots = max(1, int(sell_value / sell_lot_value / TRADES + 0.5))
         best_buy = self.dominated[best_sell]
         buy_value = min(portfolio.value[CASH], MAX_TRADE * portfolio.value[PORTFOLIO])
-        buy_5_lots = max(1, int(buy_value / portfolio.lot_size[best_buy] / portfolio.price[best_buy] / 5))
+        buy_lot_value = portfolio.lot_size[best_buy] * portfolio.price[best_buy]
+        buy_5_lots = max(1, int(buy_value / buy_lot_value / TRADES))
         return (f'РЕКОМЕНДУЕТСЯ'
-                f'\nПродать {best_sell} - 5 сделок по {sell_5_lots} лотов'
-                f'\nКупить {best_buy} - 5 сделок по {buy_5_lots} лотов')
+                f'\nПродать {best_sell} - {TRADES} сделок по {sell_5_lots} лотов'
+                f'\nКупить {best_buy} - {TRADES} сделок по {buy_5_lots} лотов')
 
     def _str_pareto_metrics(self):
         """Сводная информация об оптимальности по Парето"""
@@ -197,6 +202,26 @@ class Optimizer:
                           axis='columns')
         df[-2:] = ""
         return df
+
+    @property
+    def cash_out(self):
+        """Рекомендация по выводу средств
+
+        Доминируемая акция с минимальной дивидендной доходностью
+        """
+        frames = [self.dividends_metrics.gradient,
+                  self.dominated,
+                  self.portfolio.weight]
+        df = pd.concat(frames, axis=1)
+        df.sort_values(0, ascending=False, inplace=True)
+        df = df[df[1] != ""]
+        ticker = df.index[-1]
+        weight = min(df.iloc[-1, 2], MAX_TRADE)
+        portfolio = self.portfolio
+        sell_value = portfolio.value[PORTFOLIO] * weight
+        one_lot_value = portfolio.lot_size[ticker] * portfolio.price[ticker]
+        amount = int(sell_value / TRADES / one_lot_value) + 1
+        return f'Для вывода средств продать {ticker} - {TRADES} сделок по {amount} лотов'
 
 
 if __name__ == '__main__':

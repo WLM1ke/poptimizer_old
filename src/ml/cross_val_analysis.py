@@ -129,7 +129,7 @@ if __name__ == '__main__':
                      MVID=0,
                      IRKT=0,
                      TATNP=0)
-    DATE = '2018-08-30'
+    DATE = '2018-08-31'
     print(DATE)
     print('')
 
@@ -139,8 +139,7 @@ if __name__ == '__main__':
     for lag in range(1, 4):
         for freq in Freq:
             data, _ = learn_predict_pools(pos, pd.Timestamp(DATE), freq, lag)
-            g_std = pd.Series(data.get_label()).std()
-            for depth in range(1, 13):
+            for depth in range(1, 12):
                 params = dict(depth=depth,
                               random_state=SEED,
                               learning_rate=0.1,
@@ -154,13 +153,12 @@ if __name__ == '__main__':
                 index = scores.iloc[:, 0].idxmin()
                 score = scores.iloc[index, 0]
                 score_std = scores.iloc[index, 1]
-                ev = 1 - (score / g_std) ** 2
                 if min_std is None or score < min_std:
                     min_std = score
                     saved = freq, lag, depth, index
                     print(
                         f'{lag} {str(freq).ljust(14)} {depth} {str(index + 1).ljust(3)} '
-                        f'{score:0.4%} {score_std:0.4%} {ev:0.2%}')
+                        f'{score:0.4%} {score_std:0.4%}')
 
     data, pred = learn_predict_pools(pos, pd.Timestamp(DATE), saved[0], saved[1])
     params = dict(depth=saved[2],
@@ -178,20 +176,16 @@ if __name__ == '__main__':
     print(clf.feature_importances_)
 
     """
-    2018-08-30
+    2018-08-31
     
-    1 Freq.monthly   1 92  4.8538% 0.7589% 10.45%
-    1 Freq.monthly   2 92  4.8390% 0.7634% 11.00%
-    1 Freq.monthly   3 84  4.8351% 0.7631% 11.14%
-    1 Freq.quarterly 1 82  4.6371% 0.7658% 7.22%
-    1 Freq.quarterly 2 51  4.6239% 0.7647% 7.75%
-    1 Freq.yearly    1 26  4.5470% 1.9827% 15.31%
-    1 Freq.yearly    2 31  4.5299% 1.9828% 15.95%
-    1 Freq.yearly    4 34  4.4821% 1.9649% 17.72%
-    1 Freq.yearly    6 31  4.4749% 1.9811% 17.98%
-    1 Freq.yearly    7 42  4.4706% 1.9717% 18.14%
-    1 Freq.yearly    8 47  4.4365% 1.9545% 19.38%
-    1 Freq.yearly    9 62  4.4268% 1.9866% 19.73%
-    1 Freq.yearly    12 59  4.4174% 1.9669% 20.07%
-    2 Freq.yearly    11 24  4.4093% 2.6129% 22.55%
+    1 Freq.monthly   1 86  4.9647% 0.5780%
+    1 Freq.monthly   2 68  4.9550% 0.5829%
+    1 Freq.quarterly 1 90  4.6627% 1.0223%
+    1 Freq.quarterly 2 56  4.6480% 1.0320%
+    1 Freq.quarterly 3 70  4.6468% 1.0259%
+    1 Freq.quarterly 8 62  4.6456% 1.0550%
+    1 Freq.yearly    1 42  4.5854% 2.0081%
+    1 Freq.yearly    2 53  4.5796% 1.9546%
+    1 Freq.yearly    3 40  4.4914% 1.9026%
+    2 Freq.yearly    7 57  4.4434% 2.5668%
     """
