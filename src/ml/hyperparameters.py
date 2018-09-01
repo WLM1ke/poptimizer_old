@@ -20,9 +20,9 @@ BASE_PARAMS = dict(iterations=MAX_ITERATIONS,
                    allow_writing_files=False)
 
 # Лаги
-MAX_LAG = 2
+MAX_LAG = 3
 # Рекомендации Яндекс - https://tech.yandex.com/catboost/doc/dg/concepts/parameter-tuning-docpage/
-# OneHot кодировка
+# OneHot кодировка - учитывая количество акций в портфеле используется cat-кодировка или OneHot-кодировка
 ONE_HOT_SIZE = [2, 100]
 # Скорость обучения
 MEAN_LEARNING_RATE = 0.1
@@ -30,20 +30,20 @@ RANGE_LEARNING_RATE = 0.1
 MIN_LEARNING_RATE = np.log(MEAN_LEARNING_RATE) - np.log1p(RANGE_LEARNING_RATE)
 MAX_LEARNING_RATE = np.log(MEAN_LEARNING_RATE) + np.log1p(RANGE_LEARNING_RATE)
 # Глубина деревьев
-MAX_DEPTH = 2
+MAX_DEPTH = 8
 # L2-регуляризация
-MEAN_L2 = 3
-RANGE_L2 = 0.1
+MEAN_L2 = 2.7
+RANGE_L2 = 0.2
 MIN_L2 = np.log(MEAN_L2) - np.log1p(RANGE_L2)
 MAX_L2 = np.log(MEAN_L2) + np.log1p(RANGE_L2)
 # Случайность разбиений
-MEAN_RAND_STRENGTH = 1
-RANGE_RAND_STRENGTH = 0.1
+MEAN_RAND_STRENGTH = 1.1
+RANGE_RAND_STRENGTH = 0.2
 MIN_RAND_STRENGTH = np.log(MEAN_RAND_STRENGTH) - np.log1p(RANGE_RAND_STRENGTH)
 MAX_RAND_STRENGTH = np.log(MEAN_RAND_STRENGTH) + np.log1p(RANGE_RAND_STRENGTH)
 # Интенсивность бегинга
-MEAN_BAGGING = 1
-RANGE_BAGGING = 0.1
+MEAN_BAGGING = 0.9
+RANGE_BAGGING = 0.2
 MIN_BAGGING = np.log(MEAN_BAGGING) - np.log1p(RANGE_BAGGING)
 MAX_BAGGING = np.log(MEAN_BAGGING) + np.log1p(RANGE_BAGGING)
 
@@ -81,35 +81,34 @@ def check_space_bounds(space: dict):
         print(f'\nНеобходимо увеличить MAX_LAG до {MAX_LAG + 1}')
 
     if abs(np.log(space['model']['learning_rate']) - np.log(MEAN_LEARNING_RATE)) / np.log1p(RANGE_LEARNING_RATE) > 0.9:
-        print(f"\nНеобходимо изменить MEAN_LEARNING_RATE на {space['model']['learning_rate']}")
-        print(f'Необходимо увеличить RANGE_LEARNING_RATE до {RANGE_LEARNING_RATE + 0.1}')
+        print(f"\nНеобходимо изменить MEAN_LEARNING_RATE на {space['model']['learning_rate']:0.2f}")
+        print(f'Необходимо увеличить RANGE_LEARNING_RATE до {RANGE_LEARNING_RATE + 0.1:0.1f}')
 
-    if space['model']['depth'] == MAX_LAG:
-        print(f'\nНеобходимо увеличить MAX_LAG до {MAX_DEPTH + 1}')
+    if space['model']['depth'] == MAX_DEPTH:
+        print(f'\nНеобходимо увеличить MAX_DEPTH до {MAX_DEPTH + 1}')
 
     if abs(np.log(space['model']['l2_leaf_reg']) - np.log(MEAN_L2)) / np.log1p(RANGE_L2) > 0.9:
-        print(f"\nНеобходимо изменить MEAN_L2 на {space['model']['l2_leaf_reg']}")
-        print(f'Необходимо увеличить RANGE_L2 до {RANGE_L2 + 0.1}')
+        print(f"\nНеобходимо изменить MEAN_L2 на {space['model']['l2_leaf_reg']:0.1f}")
+        print(f'Необходимо увеличить RANGE_L2 до {RANGE_L2 + 0.1:0.1f}')
 
     if abs(np.log(space['model']['random_strength']) - np.log(MEAN_RAND_STRENGTH)) / np.log1p(
             RANGE_RAND_STRENGTH) > 0.9:
-        print(f"\nНеобходимо изменить MEAN_RAND_STRENGTH на {space['model']['random_strength']}")
-        print(f'Необходимо увеличить RANGE_RAND_STRENGTH до {RANGE_RAND_STRENGTH + 0.1}')
+        print(f"\nНеобходимо изменить MEAN_RAND_STRENGTH на {space['model']['random_strength']:0.1f}")
+        print(f'Необходимо увеличить RANGE_RAND_STRENGTH до {RANGE_RAND_STRENGTH + 0.1:0.1f}')
 
     if abs(np.log(space['model']['bagging_temperature']) - np.log(MEAN_BAGGING)) / np.log1p(RANGE_BAGGING) > 0.9:
-        print(f"\nНеобходимо изменить MEAN_BAGGING на {space['model']['bagging_temperature']}")
-        print(f'Необходимо увеличить RANGE_BAGGING до {RANGE_BAGGING + 0.1}')
+        print(f"\nНеобходимо изменить MEAN_BAGGING на {space['model']['bagging_temperature']:0.1f}")
+        print(f'Необходимо увеличить RANGE_BAGGING до {RANGE_BAGGING + 0.1:0.1f}')
 
 
-def optimize_hyperparameters(positions: tuple, date: pd.Timestamp):
+def optimize_hyper(positions: tuple, date: pd.Timestamp):
     """Ищет лучший набор гиперпараметров"""
     objective = functools.partial(min_mse, positions=positions, date=date)
     best = hyperopt.fmin(objective,
                          space=PARAM_SPACE,
                          algo=hyperopt.tpe.suggest,
                          max_evals=MAX_SEARCHES,
-                         rstate=np.random.RandomState(SEED),
-                         verbose=True)
+                         rstate=np.random.RandomState(SEED))
     best_space = hyperopt.space_eval(PARAM_SPACE, best)
     check_space_bounds(best_space)
     return objective(best_space), best_space
@@ -117,20 +116,20 @@ def optimize_hyperparameters(positions: tuple, date: pd.Timestamp):
 
 if __name__ == '__main__':
     POSITIONS = dict(AKRN=563,
-                     BANEP=488 + 19,
-                     CHMF=234 + 28 + 8,
-                     GMKN=146 + 29,
-                     LKOH=340 + 18,
+                     BANEP=488,
+                     CHMF=234,
+                     GMKN=146,
+                     LKOH=340,
                      LSNGP=18,
-                     LSRG=2346 + 64 + 80,
-                     MSRS=128 + 117,
+                     LSRG=2346,
+                     MSRS=128,
                      MSTT=1823,
-                     MTSS=1383 + 36,
-                     PMSBP=2873 + 418 + 336,
-                     RTKMP=1726 + 382 + 99,
+                     MTSS=1383,
+                     PMSBP=2873,
+                     RTKMP=1726,
                      SNGSP=318,
                      TTLK=234,
-                     UPRO=986 + 0 + 9,
+                     UPRO=986,
                      VSMO=102,
                      PRTK=0,
                      MVID=0,
@@ -138,5 +137,6 @@ if __name__ == '__main__':
                      TATNP=0)
     DATE = '2018-08-31'
     pos = tuple(key for key in POSITIONS)
-    result = optimize_hyperparameters(pos, pd.Timestamp(DATE))
-    print(result)
+    result = optimize_hyper(pos, pd.Timestamp(DATE))
+    print(result[0])
+    print(result[1])
