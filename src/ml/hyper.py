@@ -125,8 +125,8 @@ def cv_model(params: dict, positions: tuple, date: pd.Timestamp):
     data_params = params['data']
     data, _ = learn_predict_pools(positions, date, **data_params)
     model_params = {}
-    model_params.update(BASE_PARAMS)
     model_params.update(params['model'])
+    model_params.update(BASE_PARAMS)
     scores = catboost.cv(pool=data,
                          params=model_params,
                          fold_count=FOLDS_COUNT)
@@ -205,8 +205,7 @@ if __name__ == '__main__':
     base_model_ = {
         'data': {'freq': Freq.yearly,
                  'lags': 2},
-        'model': {'iterations': 57,
-                  'depth': 7,
+        'model': {'depth': 7,
                   'one_hot_max_size': 2,
                   'learning_rate': 0.1,
                   'l2_leaf_reg': 3,
