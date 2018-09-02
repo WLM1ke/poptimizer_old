@@ -10,44 +10,55 @@ from hyperopt import hp
 
 from ml.cases import Freq, learn_predict_pools
 
+# Настройки catboost
 MAX_ITERATIONS = 1000
 SEED = 284704
 FOLDS_COUNT = 20
-MAX_SEARCHES = 100
 BASE_PARAMS = dict(iterations=MAX_ITERATIONS,
                    random_state=SEED,
                    od_type='Iter',
                    verbose=False,
                    allow_writing_files=False)
 
-# Лаги
+# Настройки hyperopt
+MAX_SEARCHES = 100
+
+# Количество лагов в данных
 MAX_LAG = 3
+
 # Рекомендации Яндекс - https://tech.yandex.com/catboost/doc/dg/concepts/parameter-tuning-docpage/
+
 # OneHot кодировка - учитывая количество акций в портфеле используется cat-кодировка или OneHot-кодировка
 ONE_HOT_SIZE = [2, 100]
+
 # Скорость обучения
 MEAN_LEARNING_RATE = 0.1
 RANGE_LEARNING_RATE = 0.1
 MIN_LEARNING_RATE = np.log(MEAN_LEARNING_RATE) - np.log1p(RANGE_LEARNING_RATE)
 MAX_LEARNING_RATE = np.log(MEAN_LEARNING_RATE) + np.log1p(RANGE_LEARNING_RATE)
+
 # Глубина деревьев
 MAX_DEPTH = 8
+
 # L2-регуляризация
 MEAN_L2 = 2.7
 RANGE_L2 = 0.2
 MIN_L2 = np.log(MEAN_L2) - np.log1p(RANGE_L2)
 MAX_L2 = np.log(MEAN_L2) + np.log1p(RANGE_L2)
+
 # Случайность разбиений
 MEAN_RAND_STRENGTH = 1.1
 RANGE_RAND_STRENGTH = 0.2
 MIN_RAND_STRENGTH = np.log(MEAN_RAND_STRENGTH) - np.log1p(RANGE_RAND_STRENGTH)
 MAX_RAND_STRENGTH = np.log(MEAN_RAND_STRENGTH) + np.log1p(RANGE_RAND_STRENGTH)
+
 # Интенсивность бегинга
 MEAN_BAGGING = 0.9
 RANGE_BAGGING = 0.2
 MIN_BAGGING = np.log(MEAN_BAGGING) - np.log1p(RANGE_BAGGING)
 MAX_BAGGING = np.log(MEAN_BAGGING) + np.log1p(RANGE_BAGGING)
 
+# Описание пространства поиска параметров
 PARAM_SPACE = {
     'data': {'freq': hp.choice('freq', [freq for freq in Freq]),
              'lags': hp.choice('lags', list(range(1, MAX_LAG + 1)))},
@@ -57,6 +68,37 @@ PARAM_SPACE = {
               'l2_leaf_reg': hyperopt.hp.loguniform('l2_leaf_reg', MIN_L2, MAX_L2),
               'random_strength': hyperopt.hp.loguniform('rand_strength', MIN_RAND_STRENGTH, MAX_RAND_STRENGTH),
               'bagging_temperature': hyperopt.hp.loguniform('bagging_temperature', MIN_BAGGING, MAX_BAGGING)}}
+
+
+def check_space_bounds(space: dict):
+    """Проверяет и дает рекомендации о расширении границ пространства поиска параметров
+
+    Для целочисленных параметров - предупреждение выдается на границе диапазона и рекомендуется увеличить диапазон на 1.
+    Для реальных параметров - предупреждение выдается в 10% от границе. Рекомендуется сместить центр поиска к текущему
+    значению и расширить границы поиска на 10%
+    """
+    if space['data']['lags'] == MAX_LAG:
+        print(f'\nНеобходимо увеличить MAX_LAG до {MAX_LAG + 1}')
+
+    if abs(np.log(space['model']['learning_rate']) - np.log(MEAN_LEARNING_RATE)) / np.log1p(RANGE_LEARNING_RATE) > 0.9:
+        print(f"\nНеобходимо изменить MEAN_LEARNING_RATE на {space['model']['learning_rate']:0.2f}")
+        print(f'Необходимо увеличить RANGE_LEARNING_RATE до {RANGE_LEARNING_RATE + 0.1:0.1f}')
+
+    if space['model']['depth'] == MAX_DEPTH:
+        print(f'\nНеобходимо увеличить MAX_DEPTH до {MAX_DEPTH + 1}')
+
+    if abs(np.log(space['model']['l2_leaf_reg']) - np.log(MEAN_L2)) / np.log1p(RANGE_L2) > 0.9:
+        print(f"\nНеобходимо изменить MEAN_L2 на {space['model']['l2_leaf_reg']:0.1f}")
+        print(f'Необходимо увеличить RANGE_L2 до {RANGE_L2 + 0.1:0.1f}')
+
+    if abs(np.log(space['model']['random_strength']) - np.log(MEAN_RAND_STRENGTH)) / np.log1p(
+            RANGE_RAND_STRENGTH) > 0.9:
+        print(f"\nНеобходимо изменить MEAN_RAND_STRENGTH на {space['model']['random_strength']:0.1f}")
+        print(f'Необходимо увеличить RANGE_RAND_STRENGTH до {RANGE_RAND_STRENGTH + 0.1:0.1f}')
+
+    if abs(np.log(space['model']['bagging_temperature']) - np.log(MEAN_BAGGING)) / np.log1p(RANGE_BAGGING) > 0.9:
+        print(f"\nНеобходимо изменить MEAN_BAGGING на {space['model']['bagging_temperature']:0.1f}")
+        print(f'Необходимо увеличить RANGE_BAGGING до {RANGE_BAGGING + 0.1:0.1f}')
 
 
 def cv_model(params: dict, positions: tuple, date: pd.Timestamp):
@@ -96,37 +138,6 @@ def cv_model(params: dict, positions: tuple, date: pd.Timestamp):
                 status=hyperopt.STATUS_OK,
                 data=data_params,
                 model=model_params)
-
-
-def check_space_bounds(space: dict):
-    """Проверяет и дает рекомендации о расширении границ поиска
-
-    Для целочисленных параметров - предупреждение выдается на границе диапазона и рекомендуется увеличить диапазон на 1.
-    Для реальных параметров - предупреждение выдается в 10% от границе. Рекомендуется сместить центр поиска к текущему
-    значению и расширить границы поиска на 10%
-    """
-    if space['data']['lags'] == MAX_LAG:
-        print(f'\nНеобходимо увеличить MAX_LAG до {MAX_LAG + 1}')
-
-    if abs(np.log(space['model']['learning_rate']) - np.log(MEAN_LEARNING_RATE)) / np.log1p(RANGE_LEARNING_RATE) > 0.9:
-        print(f"\nНеобходимо изменить MEAN_LEARNING_RATE на {space['model']['learning_rate']:0.2f}")
-        print(f'Необходимо увеличить RANGE_LEARNING_RATE до {RANGE_LEARNING_RATE + 0.1:0.1f}')
-
-    if space['model']['depth'] == MAX_DEPTH:
-        print(f'\nНеобходимо увеличить MAX_DEPTH до {MAX_DEPTH + 1}')
-
-    if abs(np.log(space['model']['l2_leaf_reg']) - np.log(MEAN_L2)) / np.log1p(RANGE_L2) > 0.9:
-        print(f"\nНеобходимо изменить MEAN_L2 на {space['model']['l2_leaf_reg']:0.1f}")
-        print(f'Необходимо увеличить RANGE_L2 до {RANGE_L2 + 0.1:0.1f}')
-
-    if abs(np.log(space['model']['random_strength']) - np.log(MEAN_RAND_STRENGTH)) / np.log1p(
-            RANGE_RAND_STRENGTH) > 0.9:
-        print(f"\nНеобходимо изменить MEAN_RAND_STRENGTH на {space['model']['random_strength']:0.1f}")
-        print(f'Необходимо увеличить RANGE_RAND_STRENGTH до {RANGE_RAND_STRENGTH + 0.1:0.1f}')
-
-    if abs(np.log(space['model']['bagging_temperature']) - np.log(MEAN_BAGGING)) / np.log1p(RANGE_BAGGING) > 0.9:
-        print(f"\nНеобходимо изменить MEAN_BAGGING на {space['model']['bagging_temperature']:0.1f}")
-        print(f'Необходимо увеличить RANGE_BAGGING до {RANGE_BAGGING + 0.1:0.1f}')
 
 
 def optimize_hyper(positions: tuple, date: pd.Timestamp):
