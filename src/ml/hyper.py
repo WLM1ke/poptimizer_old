@@ -1,5 +1,6 @@
 """Оптимизация гиперпараметров ML-модели дивидендов"""
 import functools
+import pprint
 
 import catboost
 import hyperopt
@@ -58,25 +59,52 @@ PARAM_SPACE = {
               'bagging_temperature': hyperopt.hp.loguniform('bagging_temperature', MIN_BAGGING, MAX_BAGGING)}}
 
 
-def min_mse(params_sample: dict, positions: tuple, date: pd.Timestamp):
-    """Целевая функция для выбора параметров ML-модели - минимум MSE среди итераций
+def cv_model(params: dict, positions: tuple, date: pd.Timestamp):
+    """Кросс-валидирует модель по RMSE
 
-    Осуществляется проверка, что не достигнут максимум итераций
+    Осуществляется проверка, что не достигнут максимум итераций, возвращается RMSE и параметры модели с оптимальным
+    количеством итераций в формате целевой функции hyperopt
+
+    Parameters
+    ----------
+    params
+        Словарь с параметрами модели: ключ 'data' - параметры данных, ключ 'model' - параметры модели
+    positions
+        Кортеж тикеров, для которых необходимо осуществить кросс-валидацию
+    date
+        Дата, для которой необходимо осуществить кросс-валидацию
+    Returns
+    -------
+    dict
+        Словарь с результатом в формате hyperopt: ключ 'loss' - RMSE на кросс-валидации, 'status' - успешного
+        прохождения оценки RMSE, ключ 'data' - параметры данных, ключ 'model' - параметры модели, в которые добавлено
+        оптимальное количество итераций градиентного бустинга на кросс-валидации
     """
-    data, _ = learn_predict_pools(positions, date, **params_sample['data'])
-    params = {}
-    params.update(BASE_PARAMS)
-    params.update(params_sample['model'])
+    data_params = params['data']
+    data, _ = learn_predict_pools(positions, date, **data_params)
+    model_params = {}
+    model_params.update(BASE_PARAMS)
+    model_params.update(params['model'])
     scores = catboost.cv(pool=data,
-                         params=params,
+                         params=model_params,
                          fold_count=FOLDS_COUNT)
     if len(scores) == MAX_ITERATIONS:
         raise ValueError(f'Необходимо увеличить MAX_ITERATIONS = {MAX_ITERATIONS}')
-    return np.min(scores['test-RMSE-mean'])
+    index = scores['test-RMSE-mean'].idxmin()
+    model_params['iterations'] = index + 1
+    return dict(loss=scores.loc[index, 'test-RMSE-mean'],
+                status=hyperopt.STATUS_OK,
+                data=data_params,
+                model=model_params)
 
 
 def check_space_bounds(space: dict):
-    """Проверяет и дает рекомендации о расширении границ поиска"""
+    """Проверяет и дает рекомендации о расширении границ поиска
+
+    Для целочисленных параметров - предупреждение выдается на границе диапазона и рекомендуется увеличить диапазон на 1.
+    Для реальных параметров - предупреждение выдается в 10% от границе. Рекомендуется сместить центр поиска к текущему
+    значению и расширить границы поиска на 10%
+    """
     if space['data']['lags'] == MAX_LAG:
         print(f'\nНеобходимо увеличить MAX_LAG до {MAX_LAG + 1}')
 
@@ -102,8 +130,8 @@ def check_space_bounds(space: dict):
 
 
 def optimize_hyper(positions: tuple, date: pd.Timestamp):
-    """Ищет лучший набор гиперпараметров"""
-    objective = functools.partial(min_mse, positions=positions, date=date)
+    """Ищет и  возвращает лучший набор гиперпараметров"""
+    objective = functools.partial(cv_model, positions=positions, date=date)
     best = hyperopt.fmin(objective,
                          space=PARAM_SPACE,
                          algo=hyperopt.tpe.suggest,
@@ -111,7 +139,33 @@ def optimize_hyper(positions: tuple, date: pd.Timestamp):
                          rstate=np.random.RandomState(SEED))
     best_space = hyperopt.space_eval(PARAM_SPACE, best)
     check_space_bounds(best_space)
-    return objective(best_space), best_space
+    return objective(best_space)
+
+
+def find_better_model(base_model: dict, positions: tuple, date: pd.Timestamp):
+    """Ищет оптимальную модель и сравнивает с базовой - результаты сравнения распечатываются
+
+    Parameters
+    ----------
+    base_model
+        Словарь описывающий параметры базовой модели
+    positions
+        Кортеж тикеров, для которых необходимо осуществить сравнение
+    date
+        Дата, для которой необходимо осуществить сравнение
+    """
+    best = optimize_hyper(positions, date)
+    base = cv_model(base_model, positions, date)
+    if base['loss'] < best['loss']:
+        print('\nЛУЧШАЯ МОДЕЛЬ - Базовая модель')
+        pprint.pprint(base, indent=1)
+        print('\nНайденная модель')
+        pprint.pprint(best, indent=1)
+    else:
+        print('\nЛУЧШАЯ МОДЕЛЬ - Найденная модель')
+        pprint.pprint(best, indent=1)
+        print('\nБазовая модель')
+        pprint.pprint(base, indent=1)
 
 
 if __name__ == '__main__':
@@ -137,6 +191,18 @@ if __name__ == '__main__':
                      TATNP=0)
     DATE = '2018-08-31'
     pos = tuple(key for key in POSITIONS)
-    result = optimize_hyper(pos, pd.Timestamp(DATE))
-    print(result[0])
-    print(result[1])
+    base_model_ = {
+        'data': {'freq': Freq.yearly,
+                 'lags': 2},
+        'model': {'iterations': 57,
+                  'depth': 7,
+                  'one_hot_max_size': 2,
+                  'learning_rate': 0.1,
+                  'l2_leaf_reg': 3,
+                  'random_strength': 1,
+                  'bagging_temperature': 1,
+                  'allow_writing_files': False,
+                  'od_type': 'Iter',
+                  'random_state': 284704,
+                  'verbose': False}}
+    find_better_model(base_model_, pos, pd.Timestamp(DATE))
