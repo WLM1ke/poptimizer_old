@@ -5,7 +5,7 @@ import pandas as pd
 
 from metrics.dividends_metrics_base import BaseDividendsMetrics
 from metrics.portfolio import Portfolio
-from ml.cases import RawCasesIterator, learn_predict_pools, Freq
+from ml.cases import RawCasesIterator, learn_pool, Freq
 
 
 def test_iterable():
@@ -96,9 +96,9 @@ def test_iter():
 
 
 def test_monthly_quarterly_yearly():
-    monthly_data = learn_predict_pools(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.monthly)
-    quarterly_data = learn_predict_pools(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.quarterly)
-    yearly_data = learn_predict_pools(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.yearly)
+    monthly_data = learn_pool(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.monthly)
+    quarterly_data = learn_pool(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.quarterly)
+    yearly_data = learn_pool(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.yearly)
 
     assert isinstance(monthly_data, tuple)
     assert isinstance(quarterly_data, tuple)

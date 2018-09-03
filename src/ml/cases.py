@@ -116,8 +116,8 @@ class RawCasesIterator:
         return cases
 
 
-def learn_predict_pools(tickers: tuple, last_date: pd.Timestamp, freq: Freq, lags: int = 5):
-    """Возвращает обучающие кейсы до указанной даты включительно и данные для прогнозирования в формате Pool
+def learn_pool(tickers: tuple, last_date: pd.Timestamp, freq: Freq, lags: int = 5):
+    """Возвращает обучающие кейсы до указанной даты включительно в формате Pool
 
     Кейсы состоят из значений дивидендной доходности за последние years лет с частотой freq за период с начала данных до
     last_date
@@ -135,26 +135,50 @@ def learn_predict_pools(tickers: tuple, last_date: pd.Timestamp, freq: Freq, lag
 
     Returns
     -------
-    tuple
-        Первый элемент кортежа кейсы для обучения в формате Pool
-        Второй элемент кортежа кейсы для прогнозирования в формате Pool
+    catboost.Pool
+        Кейсы для обучения
     """
     learn_cases = pd.concat(RawCasesIterator(tickers, last_date, freq, lags))
     learn = catboost.Pool(data=learn_cases.iloc[:, :-1],
                           label=learn_cases.iloc[:, -1],
                           cat_features=[0],
                           feature_names=learn_cases.columns[:-1])
+    return learn
+
+
+def predict_pool(freq, lags, last_date, tickers):
+    """Возвращает кейсы предсказания до указанной даты включительно в формате Pool
+
+        Кейсы состоят из значений дивидендной доходности за последние years лет с частотой freq за период с начала данных до
+        last_date
+
+        Parameters
+        ----------
+        tickers
+            Кортеж тикеров
+        last_date
+            Последняя дата, на которую нужно подготовить кейсы
+        freq
+            Частота агрегации данных по дивидендам
+        lags
+            Количество лет данных по дивидендам
+
+        Returns
+        -------
+        catboost.Pool
+            Кейсы для предсказания
+    """
     predict_cases = RawCasesIterator(tickers, last_date, freq, lags).cases(last_date, predicted=False)
     predict = catboost.Pool(data=predict_cases.iloc[:, :-1],
                             label=None,
                             cat_features=[0],
                             feature_names=predict_cases.columns[:-1])
-    return learn, predict
+    return predict
 
 
 if __name__ == '__main__':
     POSITIONS = dict(AKRN=563,
                      BANEP=488,
                      CHMF=234)
-    it = learn_predict_pools(tuple(key for key in POSITIONS), pd.Timestamp('2018-08-17'), Freq.yearly, 4)
+    it = learn_pool(tuple(key for key in POSITIONS), pd.Timestamp('2018-08-17'), Freq.yearly, 4)
     print(it[1].get_label())
