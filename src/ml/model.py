@@ -5,17 +5,14 @@ import pandas as pd
 from ml import hyper, cases
 from ml.cases import Freq
 
-PARAMS = {
-    'data': {
-        'freq': Freq.yearly,
-        'lags': 1},
-    'model': {
-        'bagging_temperature': 0.9454005819315636,
-        'depth': 5,
-        'l2_leaf_reg': 2.8075275542881504,
-        'learning_rate': 0.10459411428591535,
-        'one_hot_max_size': 2,
-        'random_strength': 1.221250477305272}}
+PARAMS = {'data': {'freq': Freq.yearly,
+                   'lags': 1},
+          'model': {'bagging_temperature': 1.144054861943697,
+                    'depth': 3,
+                    'l2_leaf_reg': 2.4086502911254124,
+                    'learning_rate': 0.09433970863684023,
+                    'one_hot_max_size': 2,
+                    'random_strength': 1.161299612971216}}
 
 
 class DividendsML:
