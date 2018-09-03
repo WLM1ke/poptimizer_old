@@ -1,6 +1,5 @@
 """Оптимизация гиперпараметров ML-модели дивидендов"""
 import functools
-import pprint
 
 import catboost
 import hyperopt
@@ -8,9 +7,9 @@ import numpy as np
 import pandas as pd
 from hyperopt import hp
 
-from ml.cases import Freq, learn_predict_pools
+from ml.cases import Freq, learn_pool
 
-# Настройки catboost
+# Базовые настройки catboost
 MAX_ITERATIONS = 1000
 SEED = 284704
 FOLDS_COUNT = 20
@@ -101,6 +100,13 @@ def check_space_bounds(space: dict):
         print(f'Необходимо увеличить RANGE_BAGGING до {RANGE_BAGGING + 0.1:0.1f}')
 
 
+def validate_model_params(model_params: dict):
+    """Проверяет наличие верных ключей в словаре, описывающем модель"""
+    for key in model_params:
+        if set(model_params[key]) != set(PARAM_SPACE[key]):
+            raise ValueError(f'Неверный перечень ключей в разделе {key}')
+
+
 def cv_model(params: dict, positions: tuple, date: pd.Timestamp):
     """Кросс-валидирует модель по RMSE
 
@@ -120,13 +126,14 @@ def cv_model(params: dict, positions: tuple, date: pd.Timestamp):
     dict
         Словарь с результатом в формате hyperopt: ключ 'loss' - RMSE на кросс-валидации, 'status' - успешного
         прохождения оценки RMSE, ключ 'data' - параметры данных, ключ 'model' - параметры модели, в которые добавлено
-        оптимальное количество итераций градиентного бустинга на кросс-валидации
+        оптимальное количество итераций градиентного бустинга на кросс-валидации и вспомогательные настройки
     """
+    validate_model_params(params)
     data_params = params['data']
-    data, _ = learn_predict_pools(positions, date, **data_params)
+    data = learn_pool(positions, date, **data_params)
     model_params = {}
-    model_params.update(params['model'])
     model_params.update(BASE_PARAMS)
+    model_params.update(params['model'])
     scores = catboost.cv(pool=data,
                          params=model_params,
                          fold_count=FOLDS_COUNT)
@@ -141,7 +148,7 @@ def cv_model(params: dict, positions: tuple, date: pd.Timestamp):
 
 
 def optimize_hyper(positions: tuple, date: pd.Timestamp):
-    """Ищет и  возвращает лучший набор гиперпараметров"""
+    """Ищет и  возвращает лучший набор гиперпараметров без количества итераций"""
     objective = functools.partial(cv_model, positions=positions, date=date)
     best = hyperopt.fmin(objective,
                          space=PARAM_SPACE,
@@ -150,33 +157,7 @@ def optimize_hyper(positions: tuple, date: pd.Timestamp):
                          rstate=np.random.RandomState(SEED))
     best_space = hyperopt.space_eval(PARAM_SPACE, best)
     check_space_bounds(best_space)
-    return objective(best_space)
-
-
-def find_better_model(base_model: dict, positions: tuple, date: pd.Timestamp):
-    """Ищет оптимальную модель и сравнивает с базовой - результаты сравнения распечатываются
-
-    Parameters
-    ----------
-    base_model
-        Словарь описывающий параметры базовой модели
-    positions
-        Кортеж тикеров, для которых необходимо осуществить сравнение
-    date
-        Дата, для которой необходимо осуществить сравнение
-    """
-    best = optimize_hyper(positions, date)
-    base = cv_model(base_model, positions, date)
-    if base['loss'] < best['loss']:
-        print('\nЛУЧШАЯ МОДЕЛЬ - Базовая модель')
-        pprint.pprint(base, indent=1)
-        print('\nНайденная модель')
-        pprint.pprint(best, indent=1)
-    else:
-        print('\nЛУЧШАЯ МОДЕЛЬ - Найденная модель')
-        pprint.pprint(best, indent=1)
-        print('\nБазовая модель')
-        pprint.pprint(base, indent=1)
+    return best_space
 
 
 if __name__ == '__main__':
@@ -202,17 +183,4 @@ if __name__ == '__main__':
                      TATNP=0)
     DATE = '2018-08-31'
     pos = tuple(key for key in POSITIONS)
-    base_model_ = {
-        'data': {'freq': Freq.yearly,
-                 'lags': 2},
-        'model': {'depth': 7,
-                  'one_hot_max_size': 2,
-                  'learning_rate': 0.1,
-                  'l2_leaf_reg': 3,
-                  'random_strength': 1,
-                  'bagging_temperature': 1,
-                  'allow_writing_files': False,
-                  'od_type': 'Iter',
-                  'random_state': 284704,
-                  'verbose': False}}
-    find_better_model(base_model_, pos, pd.Timestamp(DATE))
+    print(optimize_hyper(pos, pd.Timestamp(DATE)))

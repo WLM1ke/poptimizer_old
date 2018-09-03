@@ -9,7 +9,7 @@ from catboost import CatBoostRegressor
 from sklearn.metrics import mean_squared_error, explained_variance_score
 from sklearn.model_selection import cross_val_predict, learning_curve, validation_curve, KFold
 
-from ml.cases import Freq, learn_predict_pools
+from ml.cases import Freq, learn_pool
 
 FIG_SIZE = 4
 SHUFFLE = True
@@ -138,7 +138,7 @@ if __name__ == '__main__':
     pos = tuple(key for key in POSITIONS)
     for lag in range(1, 4):
         for freq in Freq:
-            data, _ = learn_predict_pools(pos, pd.Timestamp(DATE), freq, lag)
+            data, _ = learn_pool(pos, pd.Timestamp(DATE), freq, lag)
             for depth in range(1, 12):
                 params = dict(depth=depth,
                               random_state=SEED,
@@ -160,7 +160,7 @@ if __name__ == '__main__':
                         f'{lag} {str(freq).ljust(14)} {depth} {str(index + 1).ljust(3)} '
                         f'{score:0.4%} {score_std:0.4%}')
 
-    data, pred = learn_predict_pools(pos, pd.Timestamp(DATE), saved[0], saved[1])
+    data, pred = learn_pool(pos, pd.Timestamp(DATE), saved[0], saved[1])
     params = dict(depth=saved[2],
                   iterations=saved[3],
                   random_state=SEED,
