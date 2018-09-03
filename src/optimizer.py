@@ -216,8 +216,10 @@ class Optimizer:
         df.sort_values(0, ascending=False, inplace=True)
         df = df[df[1] != ""]
         ticker = df.index[-1]
-        weight = min(df.iloc[-1, 2], MAX_TRADE)
         portfolio = self.portfolio
+        weight = min(df.iloc[-1, 2], MAX_TRADE - portfolio.weight[CASH])
+        if weight < 0:
+            return 'Средств достаточно для вывода'
         sell_value = portfolio.value[PORTFOLIO] * weight
         one_lot_value = portfolio.lot_size[ticker] * portfolio.price[ticker]
         amount = int(sell_value / TRADES / one_lot_value) + 1
