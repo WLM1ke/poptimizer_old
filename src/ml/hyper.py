@@ -63,13 +63,23 @@ def make_log_space(space_name, mean_, percent_range):
     return hp.loguniform(space_name, _min, _max)
 
 
+def make_choice_space(space_name, choice):
+    """Создает вероятностное пространство для выбора из нескольких вариантов
+
+    Работает напрямую для iterable, а для int формирует выбор из range(1, choice + 1)
+    """
+    if isinstance(choice, int):
+        choice = range(1, choice + 1)
+    return hp.choice(space_name, list(choice))
+
+
 # Описание пространства поиска параметров
 PARAM_SPACE = {
-    'data': {'freq': hp.choice('freq', [freq for freq in Freq]),
-             'lags': hp.choice('lags', list(range(1, MAX_LAG + 1)))},
-    'model': {'one_hot_max_size': hp.choice('one_hot_max_size', ONE_HOT_SIZE),
+    'data': {'freq': make_choice_space('freq', Freq),
+             'lags': make_choice_space('lags', MAX_LAG)},
+    'model': {'one_hot_max_size': make_choice_space('one_hot_max_size', ONE_HOT_SIZE),
               'learning_rate': make_log_space('learning_rate', MEAN_LEARNING_RATE, RANGE_LEARNING_RATE),
-              'depth': hp.choice('depth', list(range(1, MAX_DEPTH + 1))),
+              'depth': make_choice_space('depth', MAX_DEPTH),
               'l2_leaf_reg': make_log_space('l2_leaf_reg', MEAN_L2, RANGE_L2),
               'random_strength': make_log_space('rand_strength', MEAN_RAND_STRENGTH, RANGE_RAND_STRENGTH),
               'bagging_temperature': make_log_space('bagging_temperature', MEAN_BAGGING, RANGE_BAGGING)}}
