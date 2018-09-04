@@ -2,10 +2,10 @@
 
 import pandas as pd
 
-from metrics.dividends_metrics_base import BaseDividendsMetrics
-from metrics.portfolio import Portfolio, CASH, PORTFOLIO
-from metrics.returns_metrics import ReturnsMetrics
-from settings import T_SCORE, MAX_TRADE
+import metrics
+from metrics import Portfolio, CASH, PORTFOLIO
+from metrics import ReturnsMetrics
+from settings import T_SCORE, MAX_TRADE, DIVIDENDS_METRICS
 
 # На сколько сделок разбивается операция по покупке/продаже акций
 TRADES = 5
@@ -25,7 +25,8 @@ class Optimizer:
 
     def __init__(self, portfolio: Portfolio):
         self._portfolio = portfolio
-        self._dividends_metrics = BaseDividendsMetrics(portfolio)
+        dividends_metrics = getattr(metrics, DIVIDENDS_METRICS)
+        self._dividends_metrics = dividends_metrics(portfolio)
         self._returns_metrics = ReturnsMetrics(portfolio)
 
     def __str__(self):
