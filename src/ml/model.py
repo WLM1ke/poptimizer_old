@@ -38,8 +38,8 @@ class DividendsML:
 
     def __str__(self):
         return (f'СКО - {self.std:0.4%}'
-                f'\n\n{self.div_prediction}'
-                f'\n\n{self.model_params}')
+                f'\n\nПрогноз:\n{self.div_prediction}'
+                f'\n\nМодель:\n{self.model_params}')
 
     @property
     def std(self):

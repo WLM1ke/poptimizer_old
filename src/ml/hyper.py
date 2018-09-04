@@ -59,8 +59,8 @@ def log_limits(mean_, percent_range):
 
 def make_log_space(space_name, mean_, percent_range):
     """Создает логарифмическое вероятностное пространство"""
-    _min, _max = log_limits(mean_, percent_range)
-    return hp.loguniform(space_name, _min, _max)
+    min_, max_ = log_limits(mean_, percent_range)
+    return hp.loguniform(space_name, min_, max_)
 
 
 def make_choice_space(space_name, choice):
