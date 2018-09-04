@@ -7,12 +7,12 @@ from ml.cases import Freq
 
 PARAMS = {'data': {'freq': Freq.yearly,
                    'lags': 1},
-          'model': {'bagging_temperature': 1.144054861943697,
-                    'depth': 3,
-                    'l2_leaf_reg': 2.4086502911254124,
-                    'learning_rate': 0.09433970863684023,
+          'model': {'bagging_temperature': 1.3903075723869767,
+                    'depth': 6,
+                    'l2_leaf_reg': 2.39410372138012,
+                    'learning_rate': 0.09938121413558951,
                     'one_hot_max_size': 2,
-                    'random_strength': 1.161299612971216}}
+                    'random_strength': 1.1973699985671262}}
 
 
 class DividendsML:
@@ -31,9 +31,9 @@ class DividendsML:
         self._date = date
         self._cv_result = hyper.cv_model(PARAMS, positions, date)
         clf = catboost.CatBoostRegressor(**self._cv_result['model'])
-        learn_data = cases.learn_pool(last_date=date, tickers=positions, **self._cv_result['data'])
+        learn_data = cases.learn_pool(tickers=positions, last_date=date, **self._cv_result['data'])
         clf.fit(learn_data)
-        pred_data = cases.predict_pool(last_date=date, tickers=positions, **self._cv_result['data'])
+        pred_data = cases.predict_pool(tickers=positions, last_date=date, **self._cv_result['data'])
         self._prediction = pd.Series(clf.predict(pred_data), list(positions))
 
     def __str__(self):
@@ -87,8 +87,10 @@ if __name__ == '__main__':
     pos = tuple(sorted(['AKRN', 'BANEP', 'CHMF', 'GMKN', 'LKOH', 'LSNGP', 'LSRG', 'MSRS', 'MSTT', 'MTSS', 'PMSBP',
                         'RTKMP', 'SNGSP', 'TTLK', 'UPRO', 'VSMO',
                         'PRTK', 'MVID', 'IRKT', 'TATNP']))
-    DATE = '2018-08-31'
+    DATE = '2018-09-03'
     pred = DividendsML(pos, pd.Timestamp(DATE))
     print(pred)
     # hyper.MAX_SEARCHES = 2
     pred.find_better_model()
+
+    # СКО - 4.2784%

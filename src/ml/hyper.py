@@ -52,8 +52,8 @@ MIN_RAND_STRENGTH = np.log(MEAN_RAND_STRENGTH) - np.log1p(RANGE_RAND_STRENGTH)
 MAX_RAND_STRENGTH = np.log(MEAN_RAND_STRENGTH) + np.log1p(RANGE_RAND_STRENGTH)
 
 # Интенсивность бегинга
-MEAN_BAGGING = 1.1
-RANGE_BAGGING = 0.3
+MEAN_BAGGING = 1.4
+RANGE_BAGGING = 0.4
 MIN_BAGGING = np.log(MEAN_BAGGING) - np.log1p(RANGE_BAGGING)
 MAX_BAGGING = np.log(MEAN_BAGGING) + np.log1p(RANGE_BAGGING)
 
@@ -79,23 +79,22 @@ def check_space_bounds(space: dict):
     if space['data']['lags'] == MAX_LAG:
         print(f'\nНеобходимо увеличить MAX_LAG до {MAX_LAG + 1}')
 
-    if abs(np.log(space['model']['learning_rate']) - np.log(MEAN_LEARNING_RATE)) / np.log1p(RANGE_LEARNING_RATE) > 0.9:
+    if abs(np.log(space['model']['learning_rate'] / MEAN_LEARNING_RATE)) / np.log1p(RANGE_LEARNING_RATE) > 0.9:
         print(f"\nНеобходимо изменить MEAN_LEARNING_RATE на {space['model']['learning_rate']:0.2f}")
         print(f'Необходимо увеличить RANGE_LEARNING_RATE до {RANGE_LEARNING_RATE + 0.1:0.1f}')
 
     if space['model']['depth'] == MAX_DEPTH:
         print(f'\nНеобходимо увеличить MAX_DEPTH до {MAX_DEPTH + 1}')
 
-    if abs(np.log(space['model']['l2_leaf_reg']) - np.log(MEAN_L2)) / np.log1p(RANGE_L2) > 0.9:
+    if abs(np.log(space['model']['l2_leaf_reg'] / MEAN_L2)) / np.log1p(RANGE_L2) > 0.9:
         print(f"\nНеобходимо изменить MEAN_L2 на {space['model']['l2_leaf_reg']:0.1f}")
         print(f'Необходимо увеличить RANGE_L2 до {RANGE_L2 + 0.1:0.1f}')
 
-    if abs(np.log(space['model']['random_strength']) - np.log(MEAN_RAND_STRENGTH)) / np.log1p(
-            RANGE_RAND_STRENGTH) > 0.9:
+    if abs(np.log(space['model']['random_strength'] / MEAN_RAND_STRENGTH)) / np.log1p(RANGE_RAND_STRENGTH) > 0.9:
         print(f"\nНеобходимо изменить MEAN_RAND_STRENGTH на {space['model']['random_strength']:0.1f}")
         print(f'Необходимо увеличить RANGE_RAND_STRENGTH до {RANGE_RAND_STRENGTH + 0.1:0.1f}')
 
-    if abs(np.log(space['model']['bagging_temperature']) - np.log(MEAN_BAGGING)) / np.log1p(RANGE_BAGGING) > 0.9:
+    if abs(np.log(space['model']['bagging_temperature'] / MEAN_BAGGING)) / np.log1p(RANGE_BAGGING) > 0.9:
         print(f"\nНеобходимо изменить MEAN_BAGGING на {space['model']['bagging_temperature']:0.1f}")
         print(f'Необходимо увеличить RANGE_BAGGING до {RANGE_BAGGING + 0.1:0.1f}')
 
@@ -181,6 +180,16 @@ if __name__ == '__main__':
                      MVID=0,
                      IRKT=0,
                      TATNP=0)
-    DATE = '2018-08-31'
+    DATE = '2018-09-03'
     pos = tuple(key for key in POSITIONS)
+    pos = ('SNGSP', 'MVID', 'LSRG', 'VSMO', 'AKRN')
+    param_ = {'data': {'freq': Freq.yearly,
+                       'lags': 1},
+              'model': {'bagging_temperature': 1.3903075723869767,
+                        'depth': 6,
+                        'l2_leaf_reg': 2.39410372138012,
+                        'learning_rate': 0.09938121413558951,
+                        'one_hot_max_size': 2,
+                        'random_strength': 1.1973699985671262}}
+    MAX_SEARCHES = 2
     print(optimize_hyper(pos, pd.Timestamp(DATE)))
