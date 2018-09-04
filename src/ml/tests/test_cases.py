@@ -5,7 +5,7 @@ import pandas as pd
 
 from metrics.dividends_metrics_base import BaseDividendsMetrics
 from metrics.portfolio import Portfolio
-from ml.cases import RawCasesIterator, learn_pool, Freq
+from ml.cases import RawCasesIterator, learn_pool, Freq, predict_pool
 
 
 def test_iterable():
@@ -96,13 +96,17 @@ def test_iter():
 
 
 def test_monthly_quarterly_yearly():
-    monthly_data = learn_pool(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.monthly)
-    quarterly_data = learn_pool(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.quarterly)
-    yearly_data = learn_pool(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.yearly)
+    monthly_data = []
+    quarterly_data = []
+    yearly_data = []
 
-    assert isinstance(monthly_data, tuple)
-    assert isinstance(quarterly_data, tuple)
-    assert isinstance(yearly_data, tuple)
+    monthly_data.append(learn_pool(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.monthly))
+    quarterly_data.append(learn_pool(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.quarterly))
+    yearly_data.append(learn_pool(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.yearly))
+
+    monthly_data.append(predict_pool(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.monthly))
+    quarterly_data.append(predict_pool(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.quarterly))
+    yearly_data.append(predict_pool(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-05-18'), Freq.yearly))
 
     for i in range(2):
         assert isinstance(monthly_data[i], catboost.Pool)
