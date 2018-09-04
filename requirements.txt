@@ -7,7 +7,7 @@ numpy
 scipy
 reportlab
 matplotlib
-openpyxl
+openpyxl != 2.5.6
 sklearn
 catboost
 hyperopt
