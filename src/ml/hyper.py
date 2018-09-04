@@ -10,7 +10,7 @@ from hyperopt import hp
 from ml.cases import Freq, learn_pool
 
 # Базовые настройки catboost
-MAX_ITERATIONS = 200
+MAX_ITERATIONS = 300
 SEED = 284704
 FOLDS_COUNT = 20
 BASE_PARAMS = dict(iterations=MAX_ITERATIONS,

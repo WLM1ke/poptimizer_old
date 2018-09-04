@@ -95,13 +95,13 @@ class AbstractDataManager(ABC):
         """
         print(f'Создание локальных данных с нуля {self._data.data_category} -> {self._data.data_name}')
         df = self.download_all()
-        self._validate_index(df.index)
+        self._validate_index(df)
         self._data.value = df
 
-    def _validate_index(self, index):
-        if self.is_unique and not index.is_unique:
+    def _validate_index(self, df):
+        if self.is_unique and not df.index.is_unique:
             raise ValueError(f'У новых данных индекс не уникальный')
-        if self.is_monotonic and not index.is_monotonic_increasing:
+        if self.is_monotonic and not df.index.is_monotonic_increasing:
             raise ValueError(f'У новых данных индекс не возрастает монотонно')
 
     def update(self):
@@ -124,7 +124,7 @@ class AbstractDataManager(ABC):
         self._validate_new(df_old, df_new)
         old_elements = df_old.index.difference(df_new.index)
         df = df_old.loc[old_elements].append(df_new)
-        self._validate_index(df.index)
+        self._validate_index(df)
         self._data.value = df
 
     def _validate_new(self, df_old, df_new):

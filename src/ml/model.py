@@ -4,6 +4,7 @@ import pandas as pd
 
 from ml import hyper, cases
 from ml.cases import Freq
+from utils.data_manager import AbstractDataManager
 
 PARAMS = {'data': {'freq': Freq.yearly,
                    'lags': 1},
@@ -13,6 +14,8 @@ PARAMS = {'data': {'freq': Freq.yearly,
                     'learning_rate': 0.09938121413558951,
                     'one_hot_max_size': 2,
                     'random_strength': 1.1973699985671262}}
+
+ML_NAME = 'dividends_ml'
 
 
 class DividendsML:
@@ -40,6 +43,14 @@ class DividendsML:
         return (f'СКО - {self.std:0.4%}'
                 f'\n\nПрогноз:\n{self.div_prediction}'
                 f'\n\nМодель:\n{self.model_params}')
+
+    @property
+    def positions(self):
+        return self._positions
+
+    @property
+    def date(self):
+        return self._date
 
     @property
     def std(self):
@@ -84,14 +95,51 @@ class DividendsML:
                   f"\n{PARAMS}")
 
 
+class DividendsMLDataManager(AbstractDataManager):
+    """Хранения данных по прогнозу дивидендов на основе ML
+
+    Данные обновляются по обычному расписанию AbstractDataManager + при изменение набора тикеров, даты или значений
+    параметров ML-модели
+
+    Parameters
+    ----------
+    positions
+        Кортеж тикеров, для которых необходимо составить прогноз
+    date
+        Дата, для которой необходимо составить прогноз
+    """
+    is_unique = False
+    is_monotonic = False
+    update_from_scratch = True
+
+    def __init__(self, positions: tuple, date: pd.Timestamp):
+        self._positions = positions
+        self._date = date
+        super().__init__(None, ML_NAME)
+        if positions != self.value.positions or date != self.value.date:
+            self.create()
+            return
+        for outer_key in PARAMS:
+            for inner_key in PARAMS[outer_key]:
+                if PARAMS[outer_key][inner_key] != self.value.model_params[outer_key][inner_key]:
+                    self.create()
+                    return
+
+    def download_all(self):
+        return DividendsML(self._positions, self._date)
+
+    def download_update(self):
+        super().download_update()
+
+
 if __name__ == '__main__':
     pos = tuple(sorted(['AKRN', 'BANEP', 'CHMF', 'GMKN', 'LKOH', 'LSNGP', 'LSRG', 'MSRS', 'MSTT', 'MTSS', 'PMSBP',
                         'RTKMP', 'SNGSP', 'TTLK', 'UPRO', 'VSMO',
                         'PRTK', 'MVID', 'IRKT', 'TATNP']))
     DATE = '2018-09-03'
-    pred = DividendsML(pos, pd.Timestamp(DATE))
+    pred = DividendsMLDataManager(pos, pd.Timestamp(DATE)).value
     print(pred)
     # hyper.MAX_SEARCHES = 2
-    pred.find_better_model()
+    # pred.find_better_model()
 
     # СКО - 4.2784%
