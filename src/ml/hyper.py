@@ -10,7 +10,7 @@ from hyperopt import hp
 from ml.cases import Freq, learn_pool
 
 # Базовые настройки catboost
-MAX_ITERATIONS = 1000
+MAX_ITERATIONS = 200
 SEED = 284704
 FOLDS_COUNT = 20
 BASE_PARAMS = dict(iterations=MAX_ITERATIONS,
@@ -33,8 +33,6 @@ ONE_HOT_SIZE = [2, 100]
 # Скорость обучения
 MEAN_LEARNING_RATE = 0.1
 RANGE_LEARNING_RATE = 0.1
-MIN_LEARNING_RATE = np.log(MEAN_LEARNING_RATE) - np.log1p(RANGE_LEARNING_RATE)
-MAX_LEARNING_RATE = np.log(MEAN_LEARNING_RATE) + np.log1p(RANGE_LEARNING_RATE)
 
 # Глубина деревьев
 MAX_DEPTH = 8
@@ -42,31 +40,39 @@ MAX_DEPTH = 8
 # L2-регуляризация
 MEAN_L2 = 2.7
 RANGE_L2 = 0.2
-MIN_L2 = np.log(MEAN_L2) - np.log1p(RANGE_L2)
-MAX_L2 = np.log(MEAN_L2) + np.log1p(RANGE_L2)
 
 # Случайность разбиений
 MEAN_RAND_STRENGTH = 1.3
 RANGE_RAND_STRENGTH = 0.3
-MIN_RAND_STRENGTH = np.log(MEAN_RAND_STRENGTH) - np.log1p(RANGE_RAND_STRENGTH)
-MAX_RAND_STRENGTH = np.log(MEAN_RAND_STRENGTH) + np.log1p(RANGE_RAND_STRENGTH)
 
 # Интенсивность бегинга
 MEAN_BAGGING = 1.4
 RANGE_BAGGING = 0.4
-MIN_BAGGING = np.log(MEAN_BAGGING) - np.log1p(RANGE_BAGGING)
-MAX_BAGGING = np.log(MEAN_BAGGING) + np.log1p(RANGE_BAGGING)
+
+
+def log_limits(mean_, percent_range):
+    """Логарифмический интервал"""
+    log_x = np.log(mean_)
+    log_delta = np.log1p(percent_range)
+    return log_x - log_delta, log_x + log_delta
+
+
+def make_log_space(space_name, mean_, percent_range):
+    """Создает логарифмическое вероятностное пространство"""
+    _min, _max = log_limits(mean_, percent_range)
+    return hp.loguniform(space_name, _min, _max)
+
 
 # Описание пространства поиска параметров
 PARAM_SPACE = {
     'data': {'freq': hp.choice('freq', [freq for freq in Freq]),
              'lags': hp.choice('lags', list(range(1, MAX_LAG + 1)))},
     'model': {'one_hot_max_size': hp.choice('one_hot_max_size', ONE_HOT_SIZE),
-              'learning_rate': hp.loguniform('learning_rate', MIN_LEARNING_RATE, MAX_LEARNING_RATE),
+              'learning_rate': make_log_space('learning_rate', MEAN_LEARNING_RATE, RANGE_LEARNING_RATE),
               'depth': hp.choice('depth', list(range(1, MAX_DEPTH + 1))),
-              'l2_leaf_reg': hyperopt.hp.loguniform('l2_leaf_reg', MIN_L2, MAX_L2),
-              'random_strength': hyperopt.hp.loguniform('rand_strength', MIN_RAND_STRENGTH, MAX_RAND_STRENGTH),
-              'bagging_temperature': hyperopt.hp.loguniform('bagging_temperature', MIN_BAGGING, MAX_BAGGING)}}
+              'l2_leaf_reg': make_log_space('l2_leaf_reg', MEAN_L2, RANGE_L2),
+              'random_strength': make_log_space('rand_strength', MEAN_RAND_STRENGTH, RANGE_RAND_STRENGTH),
+              'bagging_temperature': make_log_space('bagging_temperature', MEAN_BAGGING, RANGE_BAGGING)}}
 
 
 def check_space_bounds(space: dict):
