@@ -8,12 +8,12 @@ from utils.data_manager import AbstractDataManager
 
 PARAMS = {'data': {'freq': Freq.yearly,
                    'lags': 1},
-          'model': {'bagging_temperature': 1.3903075723869767,
-                    'depth': 6,
-                    'l2_leaf_reg': 2.39410372138012,
-                    'learning_rate': 0.09938121413558951,
+          'model': {'bagging_temperature': 1.3543429685644746,
+                    'depth': 3,
+                    'l2_leaf_reg': 2.4824258326685467,
+                    'learning_rate': 0.0992972754295861,
                     'one_hot_max_size': 2,
-                    'random_strength': 1.1973699985671262}}
+                    'random_strength': 1.1362349258520674}}
 
 ML_NAME = 'dividends_ml'
 
@@ -136,10 +136,9 @@ if __name__ == '__main__':
     pos = tuple(sorted(['AKRN', 'BANEP', 'CHMF', 'GMKN', 'LKOH', 'LSNGP', 'LSRG', 'MSRS', 'MSTT', 'MTSS', 'PMSBP',
                         'RTKMP', 'SNGSP', 'TTLK', 'UPRO', 'VSMO',
                         'PRTK', 'MVID', 'IRKT', 'TATNP']))
-    DATE = '2018-09-03'
+    DATE = '2018-09-04'
     pred = DividendsMLDataManager(pos, pd.Timestamp(DATE)).value
     print(pred)
-    # hyper.MAX_SEARCHES = 2
-    # pred.find_better_model()
+    pred.find_better_model()
 
-    # СКО - 4.2784%
+    # СКО - 4.3773%
