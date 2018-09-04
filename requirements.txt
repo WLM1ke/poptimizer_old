@@ -10,3 +10,4 @@ matplotlib
 openpyxl
 sklearn
 catboost
+hyperopt
