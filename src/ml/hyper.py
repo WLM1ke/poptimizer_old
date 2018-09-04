@@ -160,36 +160,7 @@ def optimize_hyper(positions: tuple, date: pd.Timestamp):
 
 
 if __name__ == '__main__':
-    POSITIONS = dict(AKRN=563,
-                     BANEP=488,
-                     CHMF=234,
-                     GMKN=146,
-                     LKOH=340,
-                     LSNGP=18,
-                     LSRG=2346,
-                     MSRS=128,
-                     MSTT=1823,
-                     MTSS=1383,
-                     PMSBP=2873,
-                     RTKMP=1726,
-                     SNGSP=318,
-                     TTLK=234,
-                     UPRO=986,
-                     VSMO=102,
-                     PRTK=0,
-                     MVID=0,
-                     IRKT=0,
-                     TATNP=0)
     DATE = '2018-09-03'
-    pos = tuple(key for key in POSITIONS)
     pos = ('SNGSP', 'MVID', 'LSRG', 'VSMO', 'AKRN')
-    param_ = {'data': {'freq': Freq.yearly,
-                       'lags': 1},
-              'model': {'bagging_temperature': 1.3903075723869767,
-                        'depth': 6,
-                        'l2_leaf_reg': 2.39410372138012,
-                        'learning_rate': 0.09938121413558951,
-                        'one_hot_max_size': 2,
-                        'random_strength': 1.1973699985671262}}
     MAX_SEARCHES = 2
     print(optimize_hyper(pos, pd.Timestamp(DATE)))

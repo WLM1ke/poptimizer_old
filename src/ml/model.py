@@ -48,6 +48,7 @@ class DividendsML:
 
     @property
     def div_prediction(self):
+        """pd.Series с прогнозом дивидендов"""
         return self._prediction
 
     @property

@@ -149,8 +149,8 @@ def learn_pool(tickers: tuple, last_date: pd.Timestamp, freq: Freq, lags: int = 
 def predict_pool(tickers: tuple, last_date: pd.Timestamp, freq: Freq, lags: int = 5):
     """Возвращает кейсы предсказания до указанной даты включительно в формате Pool
 
-        Кейсы состоят из значений дивидендной доходности за последние years лет с частотой freq за период с начала данных до
-        last_date
+        Кейсы состоят из значений дивидендной доходности за последние years лет с частотой freq за период с начала
+        данных до last_date
 
         Parameters
         ----------
