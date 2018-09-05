@@ -141,8 +141,25 @@ def test_cv_model():
     assert cv_result['model']['allow_writing_files'] is False
 
 
-def test_optimize_hyper():
-    hyper.MAX_SEARCHES = 2
+def test_optimize_hyper(monkeypatch):
+    monkeypatch.setattr(hyper, 'MAX_SEARCHES', 2)
+
+    monkeypatch.setattr(hyper, 'MAX_LAG', 3)
+
+    monkeypatch.setattr(hyper, 'MEAN_LEARNING_RATE', 0.1)
+    monkeypatch.setattr(hyper, 'RANGE_LEARNING_RATE', 0.1)
+
+    monkeypatch.setattr(hyper, 'MAX_DEPTH', 8)
+
+    monkeypatch.setattr(hyper, 'MEAN_L2', 2.3)
+    monkeypatch.setattr(hyper, 'RANGE_L2', 0.3)
+
+    monkeypatch.setattr(hyper, 'MEAN_RAND_STRENGTH', 1.3)
+    monkeypatch.setattr(hyper, 'RANGE_RAND_STRENGTH', 0.3)
+
+    monkeypatch.setattr(hyper, 'MEAN_BAGGING', 1.4)
+    monkeypatch.setattr(hyper, 'RANGE_BAGGING', 0.4)
+
     date = '2018-09-03'
     pos = ('CHMF', 'RTKMP', 'SNGSP', 'VSMO', 'LKOH')
     result = hyper.optimize_hyper(pos, pd.Timestamp(date))
@@ -151,7 +168,7 @@ def test_optimize_hyper():
     assert len(result['model']) == 6
     assert result['model']['bagging_temperature'] == pytest.approx(1.0557058439636)
     assert result['model']['depth'] == 1
-    assert result['model']['l2_leaf_reg'] == pytest.approx(2.7951209738402794)
+    assert result['model']['l2_leaf_reg'] == pytest.approx(2.417498137284288)
     assert result['model']['learning_rate'] == pytest.approx(0.10806709959509389)
     assert result['model']['one_hot_max_size'] == 100
     assert result['model']['random_strength'] == pytest.approx(1.0813796592585887)

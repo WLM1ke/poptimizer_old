@@ -181,6 +181,6 @@ def optimize_hyper(positions: tuple, date: pd.Timestamp):
 
 if __name__ == '__main__':
     DATE = '2018-09-03'
-    pos = ('SNGSP', 'MVID', 'LSRG', 'VSMO', 'AKRN')
+    pos = ('CHMF', 'RTKMP', 'SNGSP', 'VSMO', 'LKOH')
     MAX_SEARCHES = 2
     print(optimize_hyper(pos, pd.Timestamp(DATE)))
