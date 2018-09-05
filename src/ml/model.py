@@ -7,12 +7,12 @@ from ml.cases import Freq
 
 PARAMS = {'data': {'freq': Freq.yearly,
                    'lags': 1},
-          'model': {'bagging_temperature': 1.3543429685644746,
+          'model': {'bagging_temperature': 1.3463876077482095,
                     'depth': 3,
-                    'l2_leaf_reg': 2.4824258326685467,
-                    'learning_rate': 0.0992972754295861,
+                    'l2_leaf_reg': 1.8578444629373057,
+                    'learning_rate': 0.09300426944876264,
                     'one_hot_max_size': 2,
-                    'random_strength': 1.1362349258520674}}
+                    'random_strength': 1.0464151963029267}}
 
 
 class DividendsML:
@@ -95,10 +95,10 @@ class DividendsML:
 if __name__ == '__main__':
     pos = tuple(sorted(['AKRN', 'BANEP', 'CHMF', 'GMKN', 'LKOH', 'LSNGP', 'LSRG', 'MSRS', 'MSTT', 'MTSS', 'PMSBP',
                         'RTKMP', 'SNGSP', 'TTLK', 'UPRO', 'VSMO',
-                        'PRTK', 'MVID', 'IRKT', 'TATNP']))
+                        'PRTK', 'IRKT', 'TATNP', 'SBERP', 'NLMK']))
     DATE = '2018-09-04'
     pred = DividendsML(pos, pd.Timestamp(DATE))
     print(pred)
     pred.find_better_model()
 
-    # СКО - 4.3773%
+    # СКО - 3.9612%

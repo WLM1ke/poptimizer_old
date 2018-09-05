@@ -53,4 +53,3 @@ if __name__ == '__main__':
     print(pred)
     pred.find_better_model()
 
-    # СКО - 4.3773%

@@ -10,7 +10,7 @@ from hyperopt import hp
 from ml.cases import Freq, learn_pool
 
 # Базовые настройки catboost
-MAX_ITERATIONS = 300
+MAX_ITERATIONS = 400
 SEED = 284704
 FOLDS_COUNT = 20
 BASE_PARAMS = dict(iterations=MAX_ITERATIONS,
@@ -38,8 +38,8 @@ RANGE_LEARNING_RATE = 0.1
 MAX_DEPTH = 8
 
 # L2-регуляризация
-MEAN_L2 = 2.7
-RANGE_L2 = 0.2
+MEAN_L2 = 2.3
+RANGE_L2 = 0.3
 
 # Случайность разбиений
 MEAN_RAND_STRENGTH = 1.3
@@ -96,22 +96,26 @@ def check_space_bounds(space: dict):
         print(f'\nНеобходимо увеличить MAX_LAG до {MAX_LAG + 1}')
 
     if abs(np.log(space['model']['learning_rate'] / MEAN_LEARNING_RATE)) / np.log1p(RANGE_LEARNING_RATE) > 0.9:
-        print(f"\nНеобходимо изменить MEAN_LEARNING_RATE на {space['model']['learning_rate']:0.2f}")
+        new_mean = (MEAN_LEARNING_RATE + space['model']['learning_rate']) / 2
+        print(f"\nНеобходимо изменить MEAN_LEARNING_RATE на {new_mean:0.2f}")
         print(f'Необходимо увеличить RANGE_LEARNING_RATE до {RANGE_LEARNING_RATE + 0.1:0.1f}')
 
     if space['model']['depth'] == MAX_DEPTH:
         print(f'\nНеобходимо увеличить MAX_DEPTH до {MAX_DEPTH + 1}')
 
     if abs(np.log(space['model']['l2_leaf_reg'] / MEAN_L2)) / np.log1p(RANGE_L2) > 0.9:
-        print(f"\nНеобходимо изменить MEAN_L2 на {space['model']['l2_leaf_reg']:0.1f}")
+        new_mean = (MEAN_L2 + space['model']['l2_leaf_reg']) / 2
+        print(f"\nНеобходимо изменить MEAN_L2 на {new_mean:0.1f}")
         print(f'Необходимо увеличить RANGE_L2 до {RANGE_L2 + 0.1:0.1f}')
 
     if abs(np.log(space['model']['random_strength'] / MEAN_RAND_STRENGTH)) / np.log1p(RANGE_RAND_STRENGTH) > 0.9:
-        print(f"\nНеобходимо изменить MEAN_RAND_STRENGTH на {space['model']['random_strength']:0.1f}")
+        new_mean = (MEAN_RAND_STRENGTH + space['model']['random_strength']) / 2
+        print(f"\nНеобходимо изменить MEAN_RAND_STRENGTH на {new_mean:0.1f}")
         print(f'Необходимо увеличить RANGE_RAND_STRENGTH до {RANGE_RAND_STRENGTH + 0.1:0.1f}')
 
     if abs(np.log(space['model']['bagging_temperature'] / MEAN_BAGGING)) / np.log1p(RANGE_BAGGING) > 0.9:
-        print(f"\nНеобходимо изменить MEAN_BAGGING на {space['model']['bagging_temperature']:0.1f}")
+        new_mean = (MEAN_BAGGING + space['model']['bagging_temperature']) / 2
+        print(f"\nНеобходимо изменить MEAN_BAGGING на {new_mean:0.1f}")
         print(f'Необходимо увеличить RANGE_BAGGING до {RANGE_BAGGING + 0.1:0.1f}')
 
 
