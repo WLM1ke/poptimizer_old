@@ -30,11 +30,11 @@ class DividendsML:
         self._positions = positions
         self._date = date
         self._cv_result = hyper.cv_model(PARAMS, positions, date)
-        clf = catboost.CatBoostRegressor(**self._cv_result['model'])
+        self._clf = catboost.CatBoostRegressor(**self._cv_result['model'])
         learn_data = cases.learn_pool(tickers=positions, last_date=date, **self._cv_result['data'])
-        clf.fit(learn_data)
+        self._clf.fit(learn_data)
         pred_data = cases.predict_pool(tickers=positions, last_date=date, **self._cv_result['data'])
-        self._prediction = pd.Series(clf.predict(pred_data), list(positions))
+        self._prediction = pd.Series(self.predict(pred_data), list(self._positions))
 
     def __str__(self):
         return (f'СКО - {self.std:0.4%}'
@@ -65,6 +65,10 @@ class DividendsML:
         return dict(data=self._cv_result['data'],
                     model=self._cv_result['model'])
 
+    def predict(self, pred_data):
+        """Данные, по которым нужно построить прогноз - первая колонка с тикерами"""
+        return self._clf.predict(pred_data)
+
     def find_better_model(self):
         """Ищет оптимальную модель и сравнивает с базовой - результаты сравнения распечатываются"""
         positions = self._positions
@@ -93,9 +97,9 @@ class DividendsML:
 
 
 if __name__ == '__main__':
-    pos = tuple(sorted(['AKRN', 'BANEP', 'CHMF', 'GMKN', 'LKOH', 'LSNGP', 'LSRG', 'MSRS', 'MSTT', 'MTSS', 'PMSBP',
-                        'RTKMP', 'SNGSP', 'TTLK', 'UPRO', 'VSMO',
-                        'PRTK', 'IRKT', 'TATNP', 'SBERP', 'NLMK']))
+    pos = tuple(sorted(['AKRN', 'BANEP', 'CHMF', 'GMKN', 'LKOH', 'LSNGP', 'LSRG', 'MSRS', 'MSTT', 'MTSS', 'NLMK',
+                        'PMSBP', 'RTKMP', 'SNGSP', 'TTLK', 'UPRO', 'VSMO',
+                        'PRTK', 'IRKT', 'TATNP', 'SBERP']))
     DATE = '2018-09-05'
     pred = DividendsML(pos, pd.Timestamp(DATE))
     print(pred)
