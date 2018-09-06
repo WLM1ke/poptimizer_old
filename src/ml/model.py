@@ -96,7 +96,7 @@ if __name__ == '__main__':
     pos = tuple(sorted(['AKRN', 'BANEP', 'CHMF', 'GMKN', 'LKOH', 'LSNGP', 'LSRG', 'MSRS', 'MSTT', 'MTSS', 'PMSBP',
                         'RTKMP', 'SNGSP', 'TTLK', 'UPRO', 'VSMO',
                         'PRTK', 'IRKT', 'TATNP', 'SBERP', 'NLMK']))
-    DATE = '2018-09-04'
+    DATE = '2018-09-05'
     pred = DividendsML(pos, pd.Timestamp(DATE))
     print(pred)
     pred.find_better_model()
