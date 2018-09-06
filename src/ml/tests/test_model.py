@@ -80,26 +80,13 @@ def test_find_better_model(data, capsys):
 
 
 def test_find_better_model_fake_std(data, capsys, monkeypatch):
-    fake_result = {'loss': 0.0333,
-                   'status': 'ok',
-                   'data': {'freq': Freq.quarterly,
-                            'lags': 1},
-                   'model': {'iterations': 78,
-                             'random_state': 284704,
-                             'od_type': 'Iter',
-                             'verbose': False,
-                             'allow_writing_files': False,
-                             'bagging_temperature': 1.0557058439636,
-                             'depth': 1,
-                             'l2_leaf_reg': 2.417498137284288,
-                             'learning_rate': 0.10806709959509389,
-                             'one_hot_max_size': 100,
-                             'random_strength': 1.0813796592585887}}
-    base_result = hyper.cv_model(PARAMS, data.positions, data.date)
+    saved_method = hyper.cv_model
 
     def fake_cv_model(params, positions, date):
         if params['data']['freq'] == Freq.yearly:
-            return base_result
+            return saved_method(params, positions, date)
+        fake_result = saved_method(params, positions, date)
+        fake_result['loss'] = 0.0333
         return fake_result
 
     monkeypatch.setattr(hyper, 'cv_model', fake_cv_model)
