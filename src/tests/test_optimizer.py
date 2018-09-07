@@ -106,3 +106,12 @@ def test_str_t_score(opt, monkeypatch):
     t_return = 0.472858179816854
     assert f'Прирост дивидендов - {t_dividends:.2f} СКО' in report
     assert f'Прирост просадки - {t_return:.2f} СКО' in report
+
+
+def test_cash_out(opt):
+    assert 'Для вывода средств продать LSNGP - 5 сделок по 3 лотов' == opt.cash_out
+
+
+def test_cash_out_enough(opt, monkeypatch):
+    monkeypatch.setattr(optimizer, 'MAX_TRADE', 0.0)
+    assert 'Средств достаточно для вывода' == opt.cash_out

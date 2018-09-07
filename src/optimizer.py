@@ -228,25 +228,13 @@ class Optimizer:
 
 
 if __name__ == '__main__':
-    POSITIONS = dict(AKRN=679,
-                     BANEP=392,
-                     CHMF=173,
-                     GMKN=139,
-                     LKOH=123,
-                     LSNGP=59,
+    POSITIONS = dict(CHMF=173,
                      LSRG=1341,
-                     MSRS=38,
-                     MSTT=2181,
                      MTSS=1264,
                      MVID=141,
-                     PMSBP=2715,
-                     RTKMP=1674,
-                     SNGSP=263,
-                     TTLK=234,
-                     UPRO=1272,
-                     VSMO=101)
-    port = Portfolio(date='2018-07-24',
-                     cash=102_262,
+                     UPRO=1272)
+    port = Portfolio(date='2018-09-04',
+                     cash=2_262,
                      positions=POSITIONS)
     optimizer = Optimizer(port)
     print(optimizer)
