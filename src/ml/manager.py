@@ -1,7 +1,7 @@
 """Менеджер данных с обученной ML-моделью дивидендов"""
 import pandas as pd
 
-from ml.model import PARAMS, DividendsML
+from ml import model
 from utils.data_manager import AbstractDataManager
 
 ML_NAME = 'dividends_ml'
@@ -31,14 +31,14 @@ class DividendsMLDataManager(AbstractDataManager):
         if positions != self.value.positions or date != self.value.date:
             self.create()
             return
-        for outer_key in PARAMS:
-            for inner_key in PARAMS[outer_key]:
-                if PARAMS[outer_key][inner_key] != self.value.model_params[outer_key][inner_key]:
+        for outer_key in model.PARAMS:
+            for inner_key in model.PARAMS[outer_key]:
+                if model.PARAMS[outer_key][inner_key] != self.value.params[outer_key][inner_key]:
                     self.create()
                     return
 
     def download_all(self):
-        return DividendsML(self._positions, self._date)
+        return model.DividendsML(self._positions, self._date)
 
     def download_update(self):
         super().download_update()
@@ -52,4 +52,3 @@ if __name__ == '__main__':
     pred = DividendsMLDataManager(pos, pd.Timestamp(DATE)).value
     print(pred)
     pred.find_better_model()
-

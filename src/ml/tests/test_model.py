@@ -42,7 +42,7 @@ def test_std(data):
 
 
 def test_model_params(data):
-    assert data.model_params == {'data': {'freq': Freq.yearly,
+    assert data.params == {'data': {'freq': Freq.yearly,
                                           'lags': 1},
                                  'model': {'iterations': 45,
                                            'random_state': 284704,

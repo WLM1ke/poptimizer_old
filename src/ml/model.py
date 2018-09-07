@@ -39,7 +39,7 @@ class DividendsML:
     def __str__(self):
         return (f'СКО - {self.std:0.4%}'
                 f'\n\nПрогноз:\n{self.div_prediction}'
-                f'\n\nМодель:\n{self.model_params}')
+                f'\n\nМодель:\n{self.params}')
 
     @property
     def positions(self):
@@ -60,7 +60,7 @@ class DividendsML:
         return self._prediction
 
     @property
-    def model_params(self):
+    def params(self):
         """Ключевые параметры модели"""
         return dict(data=self._cv_result['data'],
                     model=self._cv_result['model'])
@@ -97,11 +97,13 @@ class DividendsML:
 
 
 if __name__ == '__main__':
-    pos = tuple(sorted(['AKRN', 'BANEP', 'CHMF', 'GMKN', 'LKOH', 'LSNGP', 'LSRG', 'MSRS', 'MSTT', 'MTSS', 'NLMK',
-                        'PMSBP', 'RTKMP', 'SNGSP', 'TTLK', 'UPRO', 'VSMO',
-                        'PRTK', 'IRKT', 'TATNP', 'SBERP']))
-    DATE = '2018-09-05'
-    pred = DividendsML(pos, pd.Timestamp(DATE))
+    try:
+        from trading import POSITIONS, DATE
+    except ModuleNotFoundError:
+        POSITIONS = ['AKRN']
+        DATE = '2018-09-06'
+
+    pred = DividendsML(tuple(sorted(POSITIONS)), pd.Timestamp(DATE))
     print(pred)
     pred.find_better_model()
 
