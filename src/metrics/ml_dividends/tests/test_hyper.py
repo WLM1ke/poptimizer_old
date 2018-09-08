@@ -2,8 +2,8 @@ import hyperopt
 import pandas as pd
 import pytest
 
-from ml import hyper
-from ml.cases import Freq
+from metrics.ml_dividends import hyper
+from metrics.ml_dividends.cases import Freq
 
 
 def test_check_space_bounds_no_checks(capsys):

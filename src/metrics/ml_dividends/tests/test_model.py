@@ -1,8 +1,8 @@
 import pandas as pd
 import pytest
 
-from ml import model, hyper
-from ml.cases import Freq
+from metrics.ml_dividends import hyper, model
+from metrics.ml_dividends.cases import Freq
 
 PARAMS = {'data': {'freq': Freq.yearly,
                    'lags': 1},

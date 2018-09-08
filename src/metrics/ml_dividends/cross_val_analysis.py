@@ -9,7 +9,7 @@ from catboost import CatBoostRegressor
 from sklearn.metrics import mean_squared_error, explained_variance_score
 from sklearn.model_selection import cross_val_predict, learning_curve, validation_curve, KFold
 
-from ml.cases import Freq, learn_pool
+from metrics.ml_dividends.cases import Freq, learn_pool
 
 FIG_SIZE = 4
 SHUFFLE = True

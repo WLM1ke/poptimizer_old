@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 import metrics
-from ml import model
+from metrics.ml_dividends import model
 
 
 def test_tickers_real_after_tax_mean():
