@@ -39,6 +39,7 @@ class DividendsML:
     def __str__(self):
         return (f'СКО - {self.std:0.4%}'
                 f'\n\nПрогноз:\n{self.div_prediction}'
+                f'\n\nВажность признаков: {self._clf.feature_importances_}'
                 f'\n\nМодель:\n{self.params}')
 
     @property
