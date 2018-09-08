@@ -6,13 +6,13 @@ from metrics.ml_dividends import hyper, cases
 from metrics.ml_dividends.cases import Freq
 
 PARAMS = {'data': {'freq': Freq.yearly,
-                   'lags': 1},
-          'model': {'bagging_temperature': 1.3463876077482095,
-                    'depth': 3,
-                    'l2_leaf_reg': 1.8578444629373057,
-                    'learning_rate': 0.09300426944876264,
+                   'lags': 2},
+          'model': {'bagging_temperature': 1.217738228287086,
+                    'depth': 1,
+                    'l2_leaf_reg': 2.5834560073789006,
+                    'learning_rate': 0.10486885445182988,
                     'one_hot_max_size': 2,
-                    'random_strength': 1.0464151963029267}}
+                    'random_strength': 1.4694474312746881}}
 
 
 class DividendsML:
