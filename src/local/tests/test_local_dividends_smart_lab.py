@@ -5,9 +5,9 @@ import pandas as pd
 import pytest
 
 import settings
-import web
 from local import local_dividends_smart_lab
 from local.local_dividends_smart_lab import SmartLabDataManager
+from web import dividends
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -21,7 +21,7 @@ def make_temp_dir(tmpdir_factory):
 
 def test_dividends_smart_lab():
     df = local_dividends_smart_lab.dividends_smart_lab()
-    assert df.equals(web.dividends_smart_lab())
+    assert df.equals(dividends.smart_lab())
 
 
 def test_update():

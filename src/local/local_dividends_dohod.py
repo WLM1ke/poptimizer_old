@@ -1,6 +1,6 @@
 """Реализация менеджера данных по дивидендам с dohod.ru"""
-import web
 from utils.data_manager import AbstractDataManager
+from web import dividends
 from web.labels import DATE
 
 DOHOD_CATEGORY = 'dohod.ru'
@@ -15,7 +15,7 @@ class DohodDataManager(AbstractDataManager):
         super().__init__(DOHOD_CATEGORY, ticker)
 
     def download_all(self):
-        return web.dividends_dohod(self.data_name).groupby(DATE).sum()
+        return dividends.dohod(self.data_name).groupby(DATE).sum()
 
     def download_update(self):
         super().download_update()

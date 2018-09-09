@@ -3,7 +3,7 @@ from collections import Iterable
 import pandas as pd
 
 from web.labels import CLOSE_PRICE, DATE, VOLUME
-from web.web_quotes import quotes, Quotes
+from web.moex.iss_quotes import quotes, Quotes
 
 
 def test_quotes_none_start_date():

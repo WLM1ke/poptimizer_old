@@ -1,8 +1,8 @@
 """Сохраняет, обновляет и загружает локальную версию информации об акциях"""
 from functools import lru_cache
 
-import web
 from utils.data_manager import AbstractDataManager
+from web import moex
 from web.labels import COMPANY_NAME, REG_NUMBER, LOT_SIZE
 
 SECURITIES_INFO_MANE = 'securities_info'
@@ -18,10 +18,11 @@ class SecuritiesInfoDataManager(AbstractDataManager):
         super().__init__(None, SECURITIES_INFO_MANE)
 
     def download_all(self):
-        return web.securities_info()[[COMPANY_NAME, REG_NUMBER, LOT_SIZE]]
+        return moex.securities_info()[[COMPANY_NAME, REG_NUMBER, LOT_SIZE]]
 
     def download_update(self):
         super().download_update()
+
 
 def securities_info(tickers: tuple):
     """Возвращает данные по тикерам из списка и при необходимости обновляет локальные данные
@@ -74,7 +75,7 @@ def aliases(ticker: str):
         Тикеры аналоги с таким же регистрационным номером
     """
     reg_number = securities_info((ticker,)).loc[ticker, REG_NUMBER]
-    return web.reg_number_tickers(reg_number)
+    return moex.reg_number_tickers(reg_number)
 
 
 if __name__ == '__main__':

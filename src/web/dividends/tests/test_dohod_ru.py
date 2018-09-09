@@ -3,7 +3,7 @@ import urllib.error
 
 import pytest
 
-from web.web_dividends_dohod import dividends_dohod, make_url
+from web.dividends.dohod_ru import dividends_dohod, make_url
 
 
 def test_url():

@@ -1,7 +1,6 @@
 """Сохраняет, обновляет и загружает локальную версию данных по индексу MOEX Russia Net Total Return (Resident)"""
-import web
 from utils.data_manager import AbstractDataManager
-
+from web import moex
 
 INDEX_NAME = 'MCFTRR'
 
@@ -12,11 +11,12 @@ class IndexDataManager(AbstractDataManager):
         super().__init__(None, INDEX_NAME)
 
     def download_all(self):
-        return web.index()
+        return moex.index()
 
     def download_update(self):
         last_date = self.value.index[-1]
-        return web.index(last_date)
+        return moex.index(last_date)
+
 
 def index():
     """

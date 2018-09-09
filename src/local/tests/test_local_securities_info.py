@@ -48,6 +48,7 @@ def test_all_tickers_are_new_security_info():
     assert df.loc['GAZP', REG_NUMBER] == '1-02-00028-A'
     assert df.loc['SNGSP', LOT_SIZE] == 100
 
+
 def test_aliases():
     assert aliases('UPRO') == ('UPRO', 'EONR', 'OGK4')
 

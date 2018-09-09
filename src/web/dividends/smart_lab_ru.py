@@ -4,8 +4,8 @@ import re
 import pandas as pd
 from bs4 import BeautifulSoup
 
+from web.dividends.dohod_ru import get_html_table, RowParserDohod
 from web.labels import TICKER, DATE, DIVIDENDS
-from web.web_dividends_dohod import get_html_table, RowParserDohod
 
 URL = 'https://smart-lab.ru/dividends/index/order_by_yield/desc/'
 # Номер таблицы с дивидендами в документе

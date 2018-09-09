@@ -1,7 +1,7 @@
 from urllib import request
 from urllib.error import URLError
 
-from ..web_tickers import reg_number_tickers
+from web.moex.iss_tickers import reg_number_tickers
 
 '''check_points = [('1-02-65104-D', ('UPRO', 'EONR', 'OGK4')),
                 ('10301481B', ('SBER', 'SBER03')),

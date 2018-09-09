@@ -3,7 +3,7 @@ from collections import Iterable
 import pandas as pd
 
 from web.labels import CLOSE_PRICE
-from web.web_index import index, Index
+from web.moex.iss_index import index, Index
 
 
 def test_index_none_start_date():

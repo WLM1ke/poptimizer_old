@@ -1,6 +1,6 @@
 """Реализация менеджера данных по дивидендам с smart-lab.ru"""
-import web
 from utils.data_manager import AbstractDataManager
+from web import dividends
 from web.labels import TICKER, DIVIDENDS
 
 SMART_LAB_NAME = 'smart-lab'
@@ -18,7 +18,7 @@ class SmartLabDataManager(AbstractDataManager):
         super().__init__(None, SMART_LAB_NAME)
 
     def download_all(self):
-        return web.dividends_smart_lab()
+        return dividends.smart_lab()
 
     def download_update(self):
         super().download_update()

@@ -3,9 +3,9 @@ import functools
 
 import pandas as pd
 
-import web
 from local.local_securities_info import aliases
 from utils.data_manager import AbstractDataManager
+from web import moex
 from web.labels import DATE, VOLUME, CLOSE_PRICE
 
 QUOTES_CATEGORY = 'quotes'
@@ -30,12 +30,12 @@ class QuotesDataManager(AbstractDataManager):
         ticker = self.data_name
         aliases_tickers = aliases(ticker)
         for ticker in aliases_tickers:
-            yield web.quotes(ticker)
+            yield moex.quotes(ticker)
 
     def download_update(self):
         ticker = self.data_name
         last_date = self.value.index[-1]
-        return web.quotes(ticker, last_date)
+        return moex.quotes(ticker, last_date)
 
 
 

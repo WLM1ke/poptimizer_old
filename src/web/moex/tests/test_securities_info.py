@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 
 from web.labels import LOT_SIZE, COMPANY_NAME, REG_NUMBER
-from web.web_securities_info import make_url, get_json, securities_info
+from web.moex.iss_securities_info import make_url, get_json, securities_info
 
 
 def test_make_url():

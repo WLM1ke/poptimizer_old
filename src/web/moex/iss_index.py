@@ -3,7 +3,7 @@
 import pandas as pd
 
 from web.labels import CLOSE_PRICE, DATE
-from web.web_quotes import Quotes
+from web.moex.iss_quotes import Quotes
 
 
 class Index(Quotes):
