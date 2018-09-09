@@ -2,9 +2,9 @@
 
 import random
 
-import web
 from metrics.portfolio import CASH, Portfolio
 from metrics.returns_metrics import ReturnsMetrics
+from web import moex
 from web.labels import REG_NUMBER
 
 # Позиция в строке, в которой отображаются результаты проверки бумаг
@@ -13,7 +13,7 @@ RESULT_ALIMENT = 70
 
 def all_securities():
     """Возвращает данные по всем торгуемым бумагам и печатает их количество"""
-    df = web.securities_info()
+    df = moex.securities_info()
     print()
     print('Общее количество торгуемых бумаг'.ljust(RESULT_ALIMENT), f'{len(df)}')
     return df
