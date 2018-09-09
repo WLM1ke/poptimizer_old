@@ -1,5 +1,4 @@
 """Загружает котировки и объемы торгов для тикеров с http://iss.moex.com"""
-
 import json
 from urllib import request
 
@@ -14,7 +13,7 @@ class Quotes:
     При большом запросе сервер ISS возвращает данные блоками обычно по 100 значений, поэтому класс является итератором
     Если начальная дата не указана, то загружается вся доступная история котировок
     """
-    _base_url = 'https://iss.moex.com/iss/history/engines/stock/markets/shares/securities/'
+    _BASE_URL = 'https://iss.moex.com/iss/history/engines/stock/markets/shares/securities/'
 
     def __init__(self, ticker: str, start_date):
         self._ticker, self._start_date = ticker, start_date
@@ -31,7 +30,7 @@ class Quotes:
 
     def url(self, block_position):
         """Создает url для запроса к серверу http://iss.moex.com"""
-        url = self._base_url + f'{self._ticker}.json'
+        url = self._BASE_URL + f'{self._ticker}.json'
         query_args = [f'start={block_position}']
         if self._start_date:
             if not isinstance(self._start_date, pd.Timestamp):

@@ -12,7 +12,7 @@ class Index(Quotes):
     При большом запросе сервер ISS возвращает данные блоками обычно по 100 значений, поэтому класс является итератором
     Если начальная дата не указана, то загружается вся доступная история котировок
     """
-    _base_url = 'http://iss.moex.com/iss/history/engines/stock/markets/index/boards/RTSI/securities/'
+    _BASE_URL = 'http://iss.moex.com/iss/history/engines/stock/markets/index/boards/RTSI/securities/'
     _ticker = 'MCFTRR'
 
     def __init__(self, start_date):
