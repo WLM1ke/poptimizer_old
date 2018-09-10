@@ -1,5 +1,4 @@
 """Генерация кейсов для обучения и валидации моделей"""
-from enum import Enum
 
 import catboost
 import pandas as pd
@@ -8,31 +7,10 @@ import local
 from local import moex, dividends
 from local.dividends.sqlite import STATISTICS_START
 from settings import AFTER_TAX
-from utils import aggregation
+from utils.aggregation import Freq
 from web.labels import TICKER
 
 MONTH_IN_YEAR = 12
-
-
-class Freq(Enum):
-    """Различные периоды агригации данных для построения обучающих кейсов"""
-    monthly = (aggregation.monthly_aggregation_func, 12)
-    quarterly = (aggregation.quarterly_aggregation_func, 4)
-    yearly = (aggregation.yearly_aggregation_func, 1)
-
-    def __init__(self, aggregation_func, times_in_year):
-        self._aggregation_func = aggregation_func
-        self._times_in_year = times_in_year
-
-    @property
-    def aggregation_func(self):
-        """Функция агригации"""
-        return self._aggregation_func
-
-    @property
-    def times_in_year(self):
-        """Количество периодов в году"""
-        return self._times_in_year
 
 
 class RawCasesIterator:

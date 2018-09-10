@@ -4,8 +4,9 @@ import numpy as np
 import pandas as pd
 
 from metrics.dividends_metrics_base import BaseDividendsMetrics
-from metrics.ml_dividends.cases import RawCasesIterator, learn_pool, Freq, predict_pool
+from metrics.ml_dividends.cases import RawCasesIterator, learn_pool, predict_pool
 from metrics.portfolio import Portfolio
+from utils.aggregation import Freq
 
 
 def test_iterable():

@@ -3,7 +3,7 @@ import catboost
 import pandas as pd
 
 from metrics.ml_dividends import hyper, cases
-from metrics.ml_dividends.cases import Freq
+from utils.aggregation import Freq
 
 PARAMS = {'data': {'freq': Freq.yearly,
                    'lags': 2},

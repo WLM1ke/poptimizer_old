@@ -7,7 +7,8 @@ import numpy as np
 import pandas as pd
 from hyperopt import hp
 
-from metrics.ml_dividends.cases import Freq, learn_pool
+from metrics.ml_dividends.cases import learn_pool
+from utils.aggregation import Freq
 
 # Базовые настройки catboost
 MAX_ITERATIONS = 400

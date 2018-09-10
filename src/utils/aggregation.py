@@ -1,5 +1,6 @@
 """Функции агрегации по времени"""
 import functools
+from enum import Enum
 
 import pandas as pd
 
@@ -115,6 +116,27 @@ def monthly_aggregation_func(end_of_month: pd.Timestamp):
         дату окончания месяца для нее
     """
     return functools.partial(monthly_aggregator, end_of_month=end_of_month)
+
+
+class Freq(Enum):
+    """Различные периоды агригации данных"""
+    monthly = (monthly_aggregation_func, 12)
+    quarterly = (quarterly_aggregation_func, 4)
+    yearly = (yearly_aggregation_func, 1)
+
+    def __init__(self, aggregation_func, times_in_year):
+        self._aggregation_func = aggregation_func
+        self._times_in_year = times_in_year
+
+    @property
+    def aggregation_func(self):
+        """Функция агригации"""
+        return self._aggregation_func
+
+    @property
+    def times_in_year(self):
+        """Количество периодов в году"""
+        return self._times_in_year
 
 
 if __name__ == '__main__':
