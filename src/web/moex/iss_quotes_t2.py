@@ -41,6 +41,6 @@ def quotes_t2(ticker, start=None):
 
 
 if __name__ == '__main__':
-    z = quotes_t2('AKRN', start=pd.to_datetime('2017-10-02'))
+    z = quotes_t2('LSNGP')
     print(z.head())
     print(z.tail())

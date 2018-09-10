@@ -29,28 +29,12 @@ class MLDividendsMetrics(AbstractDividendsMetrics):
 
 
 if __name__ == '__main__':
-    pos = dict(
-        AKRN=563,
-        BANEP=488 + 19,
-        CHMF=234 + 28 + 8,
-        GMKN=146 + 29,
-        LKOH=290 + 18,
-        LSNGP=18,
-        LSRG=2346 + 64 + 80,
-        MSRS=128 + 117,
-        MSTT=1823,
-        MTSS=1383 + 36,
-        PMSBP=2873 + 418 + 336,
-        RTKMP=1726 + 382 + 99,
-        SNGSP=318,
-        TTLK=234,
-        UPRO=986 + 0 + 9,
-        VSMO=102,
-        PRTK=0,
-        MVID=0,
-        IRKT=0,
-        TATNP=0)
-    port = Portfolio(date='2018-09-03',
-                     cash=236_460 + 3_649 + 3_406,
-                     positions=pos)
+    try:
+        from trading import POSITIONS, DATE, CASH
+    except ModuleNotFoundError:
+        POSITIONS = ['AKRN']
+        DATE = '2018-09-06'
+    port = Portfolio(date=DATE,
+                     cash=CASH,
+                     positions=POSITIONS)
     print(MLDividendsMetrics(port))
