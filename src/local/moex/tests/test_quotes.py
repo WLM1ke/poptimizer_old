@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 
 import settings
-from local.local_quotes import prices, volumes, QuotesDataManager
-from local.local_quotes import quotes
+from local.moex.iss_quotes import prices, volumes, QuotesDataManager
+from local.moex.iss_quotes import quotes
 from web.labels import CLOSE_PRICE, VOLUME
 
 

@@ -5,7 +5,7 @@ from functools import lru_cache
 import numpy as np
 import pandas as pd
 
-import local
+from local import moex
 from settings import VOLUME_CUT_OFF
 from web.labels import LOT_SIZE
 
@@ -70,7 +70,7 @@ class Portfolio:
         Размер лота для CASH и PORTFOLIO 1
         """
         lot_size = pd.Series(index=self._positions)
-        lot_size.iloc[:-2] = local.lot_size(self._positions[:-2])
+        lot_size.iloc[:-2] = moex.lot_size(self._positions[:-2])
         lot_size[CASH:PORTFOLIO] = (1, 1)
         return lot_size
 
@@ -100,7 +100,7 @@ class Portfolio:
     def price(self):
         """Цены акций на дату портфеля для отдельных позиций"""
         tickers = self._positions[:-2]
-        prices = local.prices(tickers)
+        prices = moex.prices(tickers)
         prices = prices.loc[:self._date]
         price = prices.apply(self._last_price)
         price[CASH] = 1
@@ -125,7 +125,7 @@ class Portfolio:
 
         Ликвидность в первом приближении убывает пропорционально квадрату оборота, что отражено в формулах расчета
         """
-        last_volume = local.volumes(self.positions[:-2]).loc[self.date]
+        last_volume = moex.volumes(self.positions[:-2]).loc[self.date]
         volume_share_of_portfolio = last_volume * self.price[:-2] / self.value[PORTFOLIO]
         volume_factor = 1 - (VOLUME_CUT_OFF / volume_share_of_portfolio) ** 2
         volume_factor[volume_factor < 0] = 0

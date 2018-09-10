@@ -2,12 +2,12 @@
 import numpy as np
 import pandas as pd
 
-from local import local_dividends_smart_lab, local_dividends_dohod
-from local.local_dividends import DividendsDataManager, STATISTICS_START
+from local.dividends import smart_lab_ru, dohod_ru
+from local.dividends.sqlite import DividendsDataManager, STATISTICS_START
 from web.labels import TICKER, DIVIDENDS
 
-DIVIDENDS_SOURCES = [local_dividends_dohod.dividends_dohod,
-                     local_dividends_smart_lab.dividends_smart_lab]
+DIVIDENDS_SOURCES = [dohod_ru.dividends_dohod,
+                     smart_lab_ru.dividends_smart_lab]
 
 
 def smart_lab_status(tickers: tuple):
@@ -24,7 +24,7 @@ def smart_lab_status(tickers: tuple):
         Нулевой элемент кортежа - список тикеров из переданных без актуальной информации в локальной базе
         Первый элемент кортежа - список тикеров со СмартЛаба, по которым нет актуальной информации в локальной базе
     """
-    df = local_dividends_smart_lab.dividends_smart_lab()
+    df = smart_lab_ru.dividends_smart_lab()
     result = ([], [])
     for i in range(len(df)):
         date = df.index[i]

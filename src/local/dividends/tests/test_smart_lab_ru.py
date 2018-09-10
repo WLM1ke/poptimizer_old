@@ -5,8 +5,8 @@ import pandas as pd
 import pytest
 
 import settings
-from local import local_dividends_smart_lab
-from local.local_dividends_smart_lab import SmartLabDataManager
+from local.dividends import smart_lab_ru
+from local.dividends.smart_lab_ru import SmartLabDataManager
 from web import dividends
 
 
@@ -20,7 +20,7 @@ def make_temp_dir(tmpdir_factory):
 
 
 def test_dividends_smart_lab():
-    df = local_dividends_smart_lab.dividends_smart_lab()
+    df = smart_lab_ru.dividends_smart_lab()
     assert df.equals(dividends.smart_lab())
 
 
@@ -39,6 +39,6 @@ def test_download_update():
 
 
 def test_dividends_smart_lab_for_ticker():
-    df = local_dividends_smart_lab.dividends_smart_lab('CHMF')
+    df = smart_lab_ru.dividends_smart_lab('CHMF')
     assert isinstance(df, pd.Series)
     assert df.name == 'CHMF'

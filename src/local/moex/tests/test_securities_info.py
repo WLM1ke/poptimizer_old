@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 import settings
-from local.local_securities_info import aliases, securities_info, SecuritiesInfoDataManager, lot_size
+from local.moex.iss_securities_info import aliases, securities_info, SecuritiesInfoDataManager, lot_size
 from web.labels import LOT_SIZE, COMPANY_NAME, REG_NUMBER
 
 

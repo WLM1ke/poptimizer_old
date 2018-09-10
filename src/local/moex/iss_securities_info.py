@@ -41,6 +41,7 @@ def securities_info(tickers: tuple):
     data = SecuritiesInfoDataManager()
     return data.value.loc[tickers, :]
 
+
 @lru_cache(maxsize=1)
 def lot_size(tickers: tuple):
     """Возвращает размеры лотов для тикеров

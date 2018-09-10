@@ -1,7 +1,7 @@
 import pandas as pd
 
 from dividends_status import dividends_status, smart_lab_status
-from local import local_dividends_smart_lab
+from local.dividends import smart_lab_ru
 
 
 def test_smart_lab_status(monkeypatch):
@@ -12,7 +12,7 @@ def test_smart_lab_status(monkeypatch):
              pd.Timestamp('2018-10-09'),
              pd.Timestamp('2018-10-12')]
     fake_df = pd.DataFrame(data=data, index=index)
-    monkeypatch.setattr(local_dividends_smart_lab, 'dividends_smart_lab', lambda: fake_df)
+    monkeypatch.setattr(smart_lab_ru, 'dividends_smart_lab', lambda: fake_df)
     result = smart_lab_status(tuple(['PIKK', 'CHMF']))
     assert isinstance(result, tuple)
     assert len(result) == 2

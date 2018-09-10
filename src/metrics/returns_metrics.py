@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from scipy import optimize, stats
 
-import local
+from local import moex
 from metrics.portfolio import Portfolio, CASH, PORTFOLIO
 from settings import T_SCORE
 
@@ -49,7 +49,7 @@ class ReturnsMetrics:
 
         Эти ряды цен служат для расчета всех дальнейших показателей
         """
-        prices = local.prices(self._portfolio.positions[:-2])
+        prices = moex.prices(self._portfolio.positions[:-2])
         prices = prices[:self._portfolio.date].fillna(method='ffill')
         return prices.groupby(by=self._monthly_aggregation).last()
 

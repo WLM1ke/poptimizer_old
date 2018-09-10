@@ -1,13 +1,13 @@
 import arrow
 import pandas as pd
 
-from local import local_index
-from local.local_index import IndexDataManager
+from local.moex import iss_index
+from local.moex.iss_index import IndexDataManager
 from web.labels import CLOSE_PRICE
 
 
 def test_index():
-    df = local_index.index()
+    df = iss_index.index()
     assert isinstance(df, pd.Series)
     assert df.name == CLOSE_PRICE
     assert df.index.is_monotonic_increasing

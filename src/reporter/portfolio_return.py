@@ -7,7 +7,7 @@ import pandas as pd
 from reportlab.lib.units import inch
 from reportlab.platypus import Image, TableStyle, Table, Paragraph, Frame
 
-import local
+from local import moex
 from reporter.pdf_style import BLOCK_HEADER_STYLE, LINE_COLOR, LINE_WIDTH, BlockPosition
 
 # Доля левой части блока - используется для таблицы. В правой расположена диаграмма
@@ -36,7 +36,7 @@ def portfolio_cum_return(df: pd.DataFrame):
 
 def index_cum_return(df):
     """Кумулятивная доходность индекса в течении отчетного периода"""
-    index = local.index()
+    index = moex.index()
     index = index[df.index]
     return index / index.iloc[0]
 

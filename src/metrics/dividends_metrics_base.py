@@ -3,6 +3,7 @@
 from functools import lru_cache
 
 import local
+from local import dividends
 from metrics.dividends_metrics import AbstractDividendsMetrics
 from metrics.portfolio import Portfolio
 from settings import AFTER_TAX
@@ -23,7 +24,7 @@ class BaseDividendsMetrics(AbstractDividendsMetrics):
     def nominal_pretax_monthly(self):
         """Дивиденды в номинальном выражении по месяцам"""
         positions = self._portfolio.positions
-        df = local.monthly_dividends(positions[:-2], self._portfolio.date)
+        df = dividends.monthly_dividends(positions[:-2], self._portfolio.date)
         df = df.iloc[-DIVIDENDS_MONTHS:]
         df.reindex(index=positions)
         return df

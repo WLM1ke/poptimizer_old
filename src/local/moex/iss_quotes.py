@@ -3,7 +3,7 @@ import functools
 
 import pandas as pd
 
-from local.local_securities_info import aliases
+from local.moex.iss_securities_info import aliases
 from utils.data_manager import AbstractDataManager
 from web import moex
 from web.labels import DATE, VOLUME, CLOSE_PRICE
@@ -36,7 +36,6 @@ class QuotesDataManager(AbstractDataManager):
         ticker = self.data_name
         last_date = self.value.index[-1]
         return moex.quotes(ticker, last_date)
-
 
 
 @functools.lru_cache(maxsize=None)
@@ -103,6 +102,6 @@ def volumes(tickers: tuple):
 
 
 if __name__ == '__main__':
-    for ticker in ['GMKN', 'LSRG', 'MSTT']:
-        df = QuotesDataManager(ticker).value
-        print(df.loc['2014-12-30', CLOSE_PRICE])
+    for ticker_ in ['GMKN', 'LSRG', 'MSTT']:
+        df_ = QuotesDataManager(ticker_).value
+        print(df_.loc['2014-12-30', CLOSE_PRICE])

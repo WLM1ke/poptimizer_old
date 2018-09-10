@@ -5,7 +5,8 @@ import catboost
 import pandas as pd
 
 import local
-from local.local_dividends import STATISTICS_START
+from local import moex, dividends
+from local.dividends.sqlite import STATISTICS_START
 from settings import AFTER_TAX
 from utils import aggregation
 from web.labels import TICKER
@@ -47,7 +48,7 @@ class RawCasesIterator:
         self._freq = freq
         self._years = years
         # Дорогая операция - вызывается один раз при создании итератора для ускорения
-        self._prices = local.prices(tickers).fillna(method='ffill', axis='index')
+        self._prices = moex.prices(tickers).fillna(method='ffill', axis='index')
 
     def __iter__(self):
         date = pd.Timestamp(STATISTICS_START) + pd.DateOffset(years=self._years + 1)
@@ -97,8 +98,8 @@ class RawCasesIterator:
 
     def _aggregated_real_after_tax_dividends(self, tickers, date, months, cpi_index):
         """Дивиденды за определенное число months до date агрегированные до нужной частоты и переведенные"""
-        dividends = local.monthly_dividends(tickers, date).iloc[-months:, :]
-        after_tax_dividends = dividends * AFTER_TAX
+        pre_tax_dividends = dividends.monthly_dividends(tickers, date).iloc[-months:, :]
+        after_tax_dividends = pre_tax_dividends * AFTER_TAX
         real_after_tax_dividends = after_tax_dividends.mul(cpi_index, axis='index')
         agg_dividends = real_after_tax_dividends.groupby(by=self._freq.aggregation_func(date)).sum()
         return agg_dividends

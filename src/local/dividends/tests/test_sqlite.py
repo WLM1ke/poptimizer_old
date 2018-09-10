@@ -3,9 +3,9 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-import local.local_dividends as local_dividends
+import local.dividends.sqlite as local_dividends
 import settings
-from local.local_dividends import DividendsDataManager
+from local.dividends.sqlite import DividendsDataManager
 
 
 @pytest.fixture(scope='module', autouse=True)

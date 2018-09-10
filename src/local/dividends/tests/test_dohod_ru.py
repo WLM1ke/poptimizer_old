@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 import settings
-from local import local_dividends_dohod
+from local.dividends import dohod_ru
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -18,7 +18,7 @@ def make_temp_dir(tmpdir_factory):
 
 
 def test_dividends():
-    df = local_dividends_dohod.dividends_dohod('GAZP')
+    df = dohod_ru.dividends_dohod('GAZP')
     assert isinstance(df, pd.Series)
     assert df.name == 'GAZP'
     assert df.index.is_monotonic_increasing
@@ -29,7 +29,7 @@ def test_dividends():
 
 def test_update():
     time0 = arrow.now()
-    manager = local_dividends_dohod.DohodDataManager('LKOH')
+    manager = dohod_ru.DohodDataManager('LKOH')
     assert manager.last_update > time0
     df = manager.value
     time1 = arrow.now()
