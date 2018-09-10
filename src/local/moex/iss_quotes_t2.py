@@ -3,23 +3,33 @@ import functools
 
 import pandas as pd
 
+import local
 from utils import data_manager
 from web import moex
-from web.labels import VOLUME, CLOSE_PRICE
+from web.labels import VOLUME, CLOSE_PRICE, DATE
 
 QUOTES_CATEGORY = 'quotes_t2'
 
 
 class QuotesT2DataManager(data_manager.AbstractDataManager):
     """Реализует особенность загрузки и хранения истории котировок в режиме T+2"""
-
     def __init__(self, ticker):
         super().__init__(QUOTES_CATEGORY, ticker)
 
     def download_all(self):
-        """Загружает историю котировок в режиме T+2"""
+        """Загружает историю котировок в режиме T+2, склеенную из всех тикеров аналогов
+
+        Если на одну дату приходится несколько результатов торгов, то выбирается с максимальным оборотом
+        """
+        df = pd.concat(self._yield_aliases_quotes_history())
+        return df.loc[df.groupby(DATE)[VOLUME].idxmax()]
+
+    def _yield_aliases_quotes_history(self):
+        """Генерирует истории котировок для все тикеров аналогов заданного тикера"""
         ticker = self.data_name
-        return moex.quotes_t2(ticker)
+        aliases_tickers = local.moex.aliases(ticker)
+        for ticker in aliases_tickers:
+            yield moex.quotes_t2(ticker)
 
     def download_update(self):
         """Загружает историю котировок в режиме T+2 начиная с последней имеющейся даты"""
@@ -86,4 +96,4 @@ def volumes_t2(tickers: tuple):
 
 
 if __name__ == '__main__':
-    print(prices_t2(('LSRG',)))
+    print(quotes_t2('UPRO'))

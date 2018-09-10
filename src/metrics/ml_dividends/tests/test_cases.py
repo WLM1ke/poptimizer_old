@@ -4,13 +4,13 @@ import numpy as np
 import pandas as pd
 
 from metrics.dividends_metrics_base import BaseDividendsMetrics
-from metrics.ml_dividends.cases import RawCasesIterator, learn_pool, predict_pool
+from metrics.ml_dividends.cases import DividendsCasesIterator, learn_pool, predict_pool
 from metrics.portfolio import Portfolio
 from utils.aggregation import Freq
 
 
 def test_iterable():
-    iterable = RawCasesIterator(tuple(['GMKN', 'LSRG', 'MSTT']), pd.Timestamp('2018-05-21'), Freq.quarterly)
+    iterable = DividendsCasesIterator(tuple(['GMKN', 'LSRG', 'MSTT']), pd.Timestamp('2018-05-21'), Freq.quarterly)
     assert isinstance(iterable, collections.Iterable)
     assert isinstance(iter(iterable), collections.Iterator)
 
@@ -24,7 +24,7 @@ def test_yields_vs_dividends_metrics():
                      positions=positions)
     metrics_yields = BaseDividendsMetrics(port).yields
     tickers = tuple(key for key in sorted(positions))
-    itr = RawCasesIterator(tickers, pd.Timestamp('2018-07-31'), Freq.yearly)
+    itr = DividendsCasesIterator(tickers, pd.Timestamp('2018-07-31'), Freq.yearly)
     df = itr._real_dividends_yields(pd.Timestamp('2018-07-31'))
     assert np.allclose(metrics_yields, df.iloc[:, 1:-1].T)
 
@@ -38,7 +38,7 @@ def test_yields_vs_dividends_metrics_predicted_false():
                      positions=positions)
     metrics_yields = BaseDividendsMetrics(port).yields
     tickers = tuple(key for key in sorted(positions))
-    itr = RawCasesIterator(tickers, pd.Timestamp('2018-08-30'), Freq.yearly)
+    itr = DividendsCasesIterator(tickers, pd.Timestamp('2018-08-30'), Freq.yearly)
     df = itr._real_dividends_yields(pd.Timestamp('2018-08-30'), predicted=False)
     assert np.allclose(metrics_yields, df.iloc[:, 1:].T)
 
@@ -52,7 +52,7 @@ def test_cases_vs_dividends_metrics():
                      positions=positions)
     metrics_yields = BaseDividendsMetrics(port).yields
     tickers = tuple(key for key in sorted(positions))
-    df = RawCasesIterator(tickers, pd.Timestamp('2018-07-31'), Freq.yearly).cases(pd.Timestamp('2018-06-28'))
+    df = DividendsCasesIterator(tickers, pd.Timestamp('2018-07-31'), Freq.yearly).cases(pd.Timestamp('2018-06-28'))
     assert len(df) == 3
     assert df.iat[0, 0] == 'ALRS'
     assert df.iat[1, 0] == 'MSTT'
@@ -70,7 +70,8 @@ def test_cases_vs_dividends_metrics_predicted_false():
                      positions=positions)
     metrics_yields = BaseDividendsMetrics(port).yields
     tickers = tuple(key for key in sorted(positions))
-    df = RawCasesIterator(tickers, pd.Timestamp('2018-07-31'), Freq.yearly).cases(pd.Timestamp('2018-07-31'), False)
+    df = DividendsCasesIterator(tickers, pd.Timestamp('2018-07-31'), Freq.yearly).cases(pd.Timestamp('2018-07-31'),
+                                                                                        False)
     assert len(df) == 3
     assert df.iat[0, 0] == 'AKRN'
     assert df.iat[1, 0] == 'LKOH'
@@ -80,7 +81,7 @@ def test_cases_vs_dividends_metrics_predicted_false():
 
 
 def test_iter():
-    iterator = RawCasesIterator(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-01-05'), Freq.yearly)
+    iterator = DividendsCasesIterator(tuple(['AKRN', 'MTSS', 'PMSBP']), pd.Timestamp('2016-01-05'), Freq.yearly)
     df = next(iter(iterator))
     assert len(df) == 3
     assert df.iat[0, 0] == 'AKRN'

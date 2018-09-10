@@ -102,6 +102,4 @@ def volumes(tickers: tuple):
 
 
 if __name__ == '__main__':
-    for ticker_ in ['GMKN', 'LSRG', 'MSTT']:
-        df_ = QuotesDataManager(ticker_).value
-        print(df_.loc['2014-12-30', CLOSE_PRICE])
+    print(quotes('UPRO'))

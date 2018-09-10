@@ -13,13 +13,12 @@ from web.labels import TICKER
 MONTH_IN_YEAR = 12
 
 
-class RawCasesIterator:
+class DividendsCasesIterator:
     """Итератор кейсов для обучения
 
     Кейсы состоят из значений дивидендной доходности за последние years лет с частотой freq и следующих годовых
     дивидендов за период с начала данных до last_date
     """
-
     def __init__(self, tickers: tuple, last_date: pd.Timestamp, freq: Freq, years: int = 5):
         self._tickers = tickers
         self._last_date = last_date
@@ -117,7 +116,7 @@ def learn_pool(tickers: tuple, last_date: pd.Timestamp, freq: Freq, lags: int = 
     catboost.Pool
         Кейсы для обучения
     """
-    learn_cases = pd.concat(RawCasesIterator(tickers, last_date, freq, lags))
+    learn_cases = pd.concat(DividendsCasesIterator(tickers, last_date, freq, lags))
     learn = catboost.Pool(data=learn_cases.iloc[:, :-1],
                           label=learn_cases.iloc[:, -1],
                           cat_features=[0],
@@ -147,7 +146,7 @@ def predict_pool(tickers: tuple, last_date: pd.Timestamp, freq: Freq, lags: int 
         catboost.Pool
             Кейсы для предсказания
     """
-    predict_cases = RawCasesIterator(tickers, last_date, freq, lags).cases(last_date, predicted=False)
+    predict_cases = DividendsCasesIterator(tickers, last_date, freq, lags).cases(last_date, predicted=False)
     predict = catboost.Pool(data=predict_cases.iloc[:, :-1],
                             label=None,
                             cat_features=[0],

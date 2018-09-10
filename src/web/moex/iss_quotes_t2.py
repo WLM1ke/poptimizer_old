@@ -13,6 +13,10 @@ class QuotesT2(iss_quotes.Quotes):
     """
     _BASE_URL = 'https://iss.moex.com/iss/history/engines/stock/markets/shares/boards/TQBR/securities/'
 
+    def _validate_response(self, block_position, json_data):
+        """Для TQBR возможны пустые ответы - проверка не нужна"""
+        pass
+
 
 def quotes_t2(ticker, start=None):
     """
@@ -35,12 +39,16 @@ def quotes_t2(ticker, start=None):
         В столбцах [CLOSE, VOLUME] цена закрытия и оборот в штуках
     """
     gen = QuotesT2(ticker, start)
-    df = pd.concat(gen, ignore_index=True)
-    df = df.set_index(DATE)
-    return df
+    try:
+        df = pd.concat(gen, ignore_index=True)
+    except ValueError:
+        return pd.DataFrame()
+    else:
+        df = df.set_index(DATE)
+        return df
 
 
 if __name__ == '__main__':
-    z = quotes_t2('LSNGP')
+    z = quotes_t2('MTSI', None)
     print(z.head())
     print(z.tail())

@@ -49,7 +49,7 @@ class Quotes:
     def _validate_response(self, block_position, json_data):
         """Первый запрос должен содержать не нулевое количество строк"""
         if block_position == 0 and len(json_data['history']['data']) == 0:
-            raise ValueError(f'Пустой ответ. Проверьте запрос: {self.url}')
+            raise ValueError(f'Пустой ответ. Проверьте запрос: {self.url(block_position)}')
 
     def get_df(self, block_position):
         """Формирует DataFrame и выбирает необходимые колонки - даты, цены закрытия и объемы"""
