@@ -1,7 +1,7 @@
 import pandas as pd
 
-from dividends_status import dividends_status, smart_lab_status
 from local.dividends import smart_lab_ru
+from local.dividends.dividends_status import dividends_status, smart_lab_status
 
 
 def test_smart_lab_status(monkeypatch):
