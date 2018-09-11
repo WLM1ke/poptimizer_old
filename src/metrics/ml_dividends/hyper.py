@@ -11,7 +11,7 @@ from metrics.ml_dividends.cases import learn_pool
 from utils.aggregation import Freq
 
 # Базовые настройки catboost
-MAX_ITERATIONS = 500
+MAX_ITERATIONS = 600
 SEED = 284704
 FOLDS_COUNT = 20
 BASE_PARAMS = dict(iterations=MAX_ITERATIONS,
@@ -33,14 +33,14 @@ ONE_HOT_SIZE = [2, 100]
 
 # Скорость обучения
 MEAN_LEARNING_RATE = 0.1
-RANGE_LEARNING_RATE = 0.1
+RANGE_LEARNING_RATE = 0.2
 
 # Глубина деревьев
 MAX_DEPTH = 8
 
 # L2-регуляризация
-MEAN_L2 = 2.3
-RANGE_L2 = 0.3
+MEAN_L2 = 2.0
+RANGE_L2 = 0.4
 
 # Случайность разбиений
 MEAN_RAND_STRENGTH = 1.3
