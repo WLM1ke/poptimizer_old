@@ -11,7 +11,7 @@ from metrics.ml_dividends.cases import learn_pool
 from utils.aggregation import Freq
 
 # Базовые настройки catboost
-MAX_ITERATIONS = 400
+MAX_ITERATIONS = 500
 SEED = 284704
 FOLDS_COUNT = 20
 BASE_PARAMS = dict(iterations=MAX_ITERATIONS,

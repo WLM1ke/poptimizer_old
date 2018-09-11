@@ -49,4 +49,7 @@ if __name__ == '__main__':
         POSITIONS = ['AKRN']
         DATE = '2018-09-06'
     iter_ = ReturnsCasesIterator(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), 12)
-    print(iter_._returns)
+    describe = iter_._returns.describe().T
+    print(describe)
+    print(describe['mean'] / describe['std'] * (12 ** 0.5))
+    print(describe['mean'].mean() / (describe['std'] ** 2).mean() ** 0.5 * (12 ** 0.5))
