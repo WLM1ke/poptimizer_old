@@ -54,10 +54,5 @@ def make_heatmap(positions: tuple, date: pd.Timestamp):
 
 
 if __name__ == '__main__':
-    try:
-        from trading import POSITIONS, DATE
-    except ModuleNotFoundError:
-        POSITIONS = ['AKRN']
-        DATE = '2018-09-06'
-
+    from trading import POSITIONS, DATE
     make_heatmap(tuple(sorted(POSITIONS)), pd.Timestamp(DATE))
