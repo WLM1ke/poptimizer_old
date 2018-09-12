@@ -18,9 +18,11 @@ class SecuritiesInfoDataManager(AbstractDataManager):
         super().__init__(None, SECURITIES_INFO_MANE)
 
     def download_all(self):
+        """Загружает одним запросом информацию о всех тикерах"""
         return moex.securities_info()[[COMPANY_NAME, REG_NUMBER, LOT_SIZE]]
 
     def download_update(self):
+        """Отсутствует возможность частичного обновления данных """
         super().download_update()
 
 
