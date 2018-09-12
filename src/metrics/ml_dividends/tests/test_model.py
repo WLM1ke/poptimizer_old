@@ -13,16 +13,29 @@ PARAMS = {'data': {'freq': Freq.yearly,
                     'one_hot_max_size': 2,
                     'random_strength': 1.0464151963029267}}
 
+SPACE = {
+    'data': {'freq': hyper.make_choice_space('freq', Freq),
+             'lags': hyper.make_choice_space('lags', 3)},
+    'model': {'one_hot_max_size': hyper.make_choice_space('one_hot_max_size', hyper.ONE_HOT_SIZE),
+              'learning_rate': hyper.make_log_space('learning_rate', 0.1, 0.1),
+              'depth': hyper.make_choice_space('depth', 8),
+              'l2_leaf_reg': hyper.make_log_space('l2_leaf_reg', 2.3, 0.3),
+              'random_strength': hyper.make_log_space('rand_strength', 1.3, 0.3),
+              'bagging_temperature': hyper.make_log_space('bagging_temperature', 1.4, 0.4)}}
+
 
 @pytest.fixture(scope='module', name='data')
 def make_data():
     saved_params = model.PARAMS
     saved_searches = hyper.MAX_SEARCHES
+    saved_space = hyper.PARAM_SPACE
     model.PARAMS = PARAMS
     hyper.MAX_SEARCHES = 2
+    hyper.PARAM_SPACE = SPACE
     yield model.DividendsML(('CHMF', 'MSTT', 'PMSBP', 'SNGSP', 'NLMK'), pd.Timestamp('2018-09-05'))
     model.PARAMS = saved_params
     hyper.MAX_SEARCHES = saved_searches
+    hyper.PARAM_SPACE = saved_space
 
 
 def test_str(data):

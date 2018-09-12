@@ -142,23 +142,18 @@ def test_cv_model():
 
 
 def test_optimize_hyper(monkeypatch):
+    fake_space = {
+        'data': {'freq': hyper.make_choice_space('freq', Freq),
+                 'lags': hyper.make_choice_space('lags', 3)},
+        'model': {'one_hot_max_size': hyper.make_choice_space('one_hot_max_size', hyper.ONE_HOT_SIZE),
+                  'learning_rate': hyper.make_log_space('learning_rate', 0.1, 0.1),
+                  'depth': hyper.make_choice_space('depth', 8),
+                  'l2_leaf_reg': hyper.make_log_space('l2_leaf_reg', 2.3, 0.3),
+                  'random_strength': hyper.make_log_space('rand_strength', 1.3, 0.3),
+                  'bagging_temperature': hyper.make_log_space('bagging_temperature', 1.4, 0.4)}}
+
+    monkeypatch.setattr(hyper, 'PARAM_SPACE', fake_space)
     monkeypatch.setattr(hyper, 'MAX_SEARCHES', 2)
-
-    monkeypatch.setattr(hyper, 'MAX_LAG', 3)
-
-    monkeypatch.setattr(hyper, 'MEAN_LEARNING_RATE', 0.1)
-    monkeypatch.setattr(hyper, 'RANGE_LEARNING_RATE', 0.1)
-
-    monkeypatch.setattr(hyper, 'MAX_DEPTH', 8)
-
-    monkeypatch.setattr(hyper, 'MEAN_L2', 2.3)
-    monkeypatch.setattr(hyper, 'RANGE_L2', 0.3)
-
-    monkeypatch.setattr(hyper, 'MEAN_RAND_STRENGTH', 1.3)
-    monkeypatch.setattr(hyper, 'RANGE_RAND_STRENGTH', 0.3)
-
-    monkeypatch.setattr(hyper, 'MEAN_BAGGING', 1.4)
-    monkeypatch.setattr(hyper, 'RANGE_BAGGING', 0.4)
 
     date = '2018-09-03'
     pos = ('CHMF', 'RTKMP', 'SNGSP', 'VSMO', 'LKOH')
