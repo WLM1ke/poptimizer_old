@@ -6,7 +6,7 @@ import pandas as pd
 import local
 from utils import data_manager
 from web import moex
-from web.labels import VOLUME, CLOSE_PRICE, DATE
+from web.labels import VOLUME, CLOSE_PRICE, DATE, TICKER
 
 QUOTES_CATEGORY = 'quotes_t2'
 
@@ -73,6 +73,7 @@ def prices_t2(tickers: tuple):
     """
     df = pd.concat([quotes_t2(ticker)[CLOSE_PRICE] for ticker in tickers], axis=1)
     df.columns = tickers
+    df.columns.name = TICKER
     return df
 
 
@@ -96,4 +97,4 @@ def volumes_t2(tickers: tuple):
 
 
 if __name__ == '__main__':
-    print(quotes_t2('UPRO'))
+    print(prices_t2(('UPRO',)).columns)

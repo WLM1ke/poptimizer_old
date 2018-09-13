@@ -1,6 +1,7 @@
 """Генерация кейсов для обучения и валидации моделей"""
 
 import catboost
+import numpy as np
 import pandas as pd
 
 import local
@@ -89,7 +90,7 @@ class DividendsCasesIterator:
             cases.drop(columns=cases.columns[-self._freq.times_in_year:], inplace=True)
             cases['y'] = y
         else:
-            cases['y'] = None
+            cases['y'] = np.nan
         cases.columns = [TICKER] + [f'lag - {i}' for i in range(self._years * self._freq.times_in_year, 0, -1)] + ['y']
         return cases
 
@@ -127,24 +128,24 @@ def learn_pool(tickers: tuple, last_date: pd.Timestamp, freq: Freq, lags: int = 
 def predict_pool(tickers: tuple, last_date: pd.Timestamp, freq: Freq, lags: int = 5):
     """Возвращает кейсы предсказания до указанной даты включительно в формате Pool
 
-        Кейсы состоят из значений дивидендной доходности за последние years лет с частотой freq за период с начала
-        данных до last_date
+    Кейсы состоят из значений дивидендной доходности за последние years лет с частотой freq за период с начала
+    данных до last_date
 
-        Parameters
-        ----------
-        tickers
-            Кортеж тикеров
-        last_date
-            Последняя дата, на которую нужно подготовить кейсы
-        freq
-            Частота агрегации данных по дивидендам
-        lags
-            Количество лет данных по дивидендам
+    Parameters
+    ----------
+    tickers
+        Кортеж тикеров
+    last_date
+        Последняя дата, на которую нужно подготовить кейсы
+    freq
+        Частота агрегации данных по дивидендам
+    lags
+        Количество лет данных по дивидендам
 
-        Returns
-        -------
-        catboost.Pool
-            Кейсы для предсказания
+    Returns
+    -------
+    catboost.Pool
+        Кейсы для предсказания
     """
     predict_cases = DividendsCasesIterator(tickers, last_date, freq, lags).cases(last_date, predicted=False)
     predict = catboost.Pool(data=predict_cases.iloc[:, :-1],
