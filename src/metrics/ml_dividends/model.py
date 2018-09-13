@@ -7,12 +7,12 @@ from utils.aggregation import Freq
 
 PARAMS = {'data': {'freq': Freq.yearly,
                    'lags': 1},
-          'model': {'bagging_temperature': 1.4557545823759683,
-                    'depth': 3,
-                    'l2_leaf_reg': 1.657306237050477,
-                    'learning_rate': 0.09777087528308336,
+          'model': {'bagging_temperature': 1.3618836143837367,
+                    'depth': 5,
+                    'l2_leaf_reg': 1.6294424745350315,
+                    'learning_rate': 0.08734412340076643,
                     'one_hot_max_size': 2,
-                    'random_strength': 1.1584533218936162}}
+                    'random_strength': 1.4532571936170824}}
 
 
 class DividendsML:
@@ -103,4 +103,4 @@ if __name__ == '__main__':
     print(pred)
     pred.find_better_model()
 
-    # СКО - 3.9612%
+    # СКО - 3.9547%

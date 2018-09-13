@@ -92,7 +92,7 @@ def learn_pool(tickers: tuple, last_date: pd.Timestamp, lags):
     return learn
 
 
-def predict_pool(tickers: tuple, last_date: pd.Timestamp, lags: int = 5):
+def predict_pool(tickers: tuple, last_date: pd.Timestamp, lags):
     """Возвращает кейсы предсказания до указанной даты включительно в формате Pool
 
     Кейсы состоят из значений доходности с учетом дивидендов за последние lags месяцев, тикера и СКО, которое
@@ -122,6 +122,36 @@ def predict_pool(tickers: tuple, last_date: pd.Timestamp, lags: int = 5):
 
 if __name__ == '__main__':
     from trading import POSITIONS, DATE
-    iter_ = ReturnsCasesIterator(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), 12)
-    describe = iter_.cases(pd.Timestamp(DATE))
-    print(iter_.cases(pd.Timestamp(DATE), predicted=False))
+
+    pool = learn_pool(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), 11)
+    print(pd.Series(pool.get_label()).std())
+    ignored_features = [1]
+    scores = catboost.cv(
+        pool=pool,
+        params=dict(
+            random_state=284704,
+            od_type='Iter',
+            verbose=False,
+            allow_writing_files=False,
+            ignored_features=ignored_features),
+        fold_count=20)
+    index = scores['test-RMSE-mean'].idxmin()
+    print(index + 1)
+    print(scores.loc[index, 'test-RMSE-mean'])
+    print(1 - (scores.loc[index, 'test-RMSE-mean'] / pd.Series(pool.get_label()).std(ddof=0)) ** 2)
+
+    clf = catboost.CatBoostRegressor(
+        **dict(
+            random_state=284704,
+            od_type='Iter',
+            verbose=False,
+            allow_writing_files=False,
+            ignored_features=ignored_features,
+            iterations=index + 1
+        ))
+    clf.fit(pool)
+    print(clf.feature_importances_)
+
+    pred_pool = predict_pool(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), 11)
+    print(pd.Series(clf.predict(pred_pool), index=sorted(POSITIONS)))
+    print(pd.Series(clf.predict(pred_pool), index=sorted(POSITIONS)) * np.array(pred_pool.get_features())[:, 1])
