@@ -36,15 +36,15 @@ MEAN_LEARNING_RATE = 0.1
 RANGE_LEARNING_RATE = 0.2
 
 # Глубина деревьев
-MAX_DEPTH = 8
+MAX_DEPTH = 10
 
 # L2-регуляризация
-MEAN_L2 = 2.0
-RANGE_L2 = 0.4
+MEAN_L2 = 1.7
+RANGE_L2 = 0.5
 
 # Случайность разбиений
-MEAN_RAND_STRENGTH = 1.3
-RANGE_RAND_STRENGTH = 0.3
+MEAN_RAND_STRENGTH = 1.8
+RANGE_RAND_STRENGTH = 0.5
 
 # Интенсивность бегинга
 MEAN_BAGGING = 1.4
