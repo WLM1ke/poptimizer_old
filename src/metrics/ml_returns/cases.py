@@ -1,27 +1,27 @@
 """Генератор примеров для обучения и предсказания ожидаемой доходности"""
 import catboost
-import numpy as np
+import collections
 import pandas as pd
 from pandas.tseries.offsets import BDay
 
 from local import moex, dividends
-from utils import aggregation
+from web import labels
 
 T2 = 2
+DAYS_IN_YEAR = 365.25
 
 
 class ReturnsCasesIterator:
-    def __init__(self, tickers: tuple, last_date: pd.Timestamp, lags: int):
+    def __init__(self, tickers: tuple, last_date: pd.Timestamp, lags: int, threshold: float):
         self._tickers = tickers
         self._last_date = last_date
         self._lags = lags
+        self._threshold = threshold
         self._returns = self._make_returns()
 
     def _make_returns(self):
         """Создает доходности с учетом дивидендов"""
         prices = moex.prices_t2(self._tickers).fillna(method='ffill', axis='index')
-        monthly_prices = prices.groupby(by=aggregation.monthly_aggregation_func(self._last_date)).last()
-        monthly_prices = monthly_prices.loc[:self._last_date]
 
         def t2_shift(x):
             """Рассчитывает T-2 дату
@@ -35,56 +35,51 @@ class ReturnsCasesIterator:
                 return prices.index[index - T2]
             return x - T2 * BDay()
 
-        div = dividends.dividends(self._tickers).loc[monthly_prices.index[0]:, :]
+        div = dividends.dividends(self._tickers).loc[prices.index[0]:, :]
         div.index = div.index.map(t2_shift)
-        monthly_dividends = div.groupby(by=aggregation.monthly_aggregation_func(self._last_date)).sum()
-        # В некоторые месяцы не платятся дивиденды - без этого буду NaN при расчете доходностей
-        monthly_dividends = monthly_dividends.reindex(index=monthly_prices.index, fill_value=0)
-        returns = (monthly_prices + monthly_dividends) / monthly_prices.shift(1) - 1
+        prices = prices.loc[:self._last_date]
+        # Если отсечки приходятся на выходные и соседние с ними дни, то последний торговый день с дивидендами задвоится
+        div = div.groupby(by=labels.DATE).sum()
+        div = div.reindex(index=prices.index, fill_value=0)
+        returns = (prices + div) / prices.shift(1) - 1
         return returns
 
     def __iter__(self):
-        for date in self._returns.index[self._lags:]:
-            yield self.cases(date)
+        for ticker in self._tickers:
+            yield from self.cases(ticker)
 
-    def cases(self, date: pd.Timestamp, predicted: bool = True):
-        last_index = self._returns.index.get_loc(date)
-        first_index = last_index - self._lags
-        if not predicted:
-            first_index += 1
-        cases = self._returns.iloc[first_index:last_index + 1, :]
-        cases = cases.T
-        cases.dropna(inplace=True)
-        if not predicted:
-            cases['y'] = np.nan
-        cases.columns = [f'lag - {i}' for i in range(self._lags, 0, -1)] + ['y']
-        std = cases.iloc[:, 0:-1].std(axis=1, ddof=0)
-        cases = cases.div(std, axis=0)
-        cases.insert(0, 'std', std)
-        return cases.reset_index()
+    def threshold_returns(self, ticker: str):
+        """Формирует квазистационарный ряд доходностей с отсечкой по threshold с неравномерным временем"""
+        returns = self._returns[ticker].dropna(axis=0) + 1
+        cum_returns = returns.cumprod(axis=0)
+        new_index = collections.deque([cum_returns.index[-1]])
+        for back_pos in range(2, cum_returns.index.size + 1):
+            last_return = cum_returns[new_index[0]] / cum_returns.iloc[-back_pos]
+            if abs(last_return - 1) > self._threshold:
+                new_index.appendleft(cum_returns.index[-back_pos])
+        cum_returns = cum_returns.reindex(new_index)
+        threshold_returns = cum_returns.pct_change().to_frame()
+        threshold_returns['len'] = threshold_returns.index
+        threshold_returns['len'] = threshold_returns['len'].diff()
+        threshold_returns.dropna(axis=0, inplace=True)
+        threshold_returns['len'] = threshold_returns['len'].apply(lambda x: x.days)
+        threshold_returns['years'] = threshold_returns['len'].rolling(self._lags).sum() / DAYS_IN_YEAR / self._lags
+        return threshold_returns
+
+    def cases(self, ticker: str):
+        threshold_returns = self.threshold_returns(ticker)
+        lags = self._lags
+        for index in range(lags, len(threshold_returns)):
+            cases = threshold_returns.iloc[index - lags: index + 1, [0]]
+            cases = cases.T
+            cases.columns = [f'lag - {i}' for i in range(self._lags, 0, -1)] + ['y']
+            cases.insert(0, 'years', threshold_returns.iloc[index - 1, -1])
+            cases.index.name = labels.TICKER
+            yield cases.reset_index()
 
 
-def learn_pool(tickers: tuple, last_date: pd.Timestamp, lags):
-    """Возвращает обучающие кейсы до указанной даты включительно в формате Pool
-
-    Кейсы состоят из значений доходности с учетом дивидендов за последние lags месяцев, тикера и СКО, которое
-    использовалось для нормирования
-
-    Parameters
-    ----------
-    tickers
-        Кортеж тикеров
-    last_date
-        Последняя дата, на которую нужно подготовить кейсы
-    lags
-        Количество лет данных по доходностям
-
-    Returns
-    -------
-    catboost.Pool
-        Кейсы для обучения
-    """
-    learn_cases = pd.concat(ReturnsCasesIterator(tickers, last_date, lags))
+def learn_pool(tickers: tuple, last_date: pd.Timestamp, lags: int, threshold: float):
+    learn_cases = pd.concat(ReturnsCasesIterator(tickers, last_date, lags, threshold))
     learn = catboost.Pool(data=learn_cases.iloc[:, :-1],
                           label=learn_cases.iloc[:, -1],
                           cat_features=[0],
@@ -92,7 +87,7 @@ def learn_pool(tickers: tuple, last_date: pd.Timestamp, lags):
     return learn
 
 
-def predict_pool(tickers: tuple, last_date: pd.Timestamp, lags):
+def predict_pool(tickers: tuple, last_date: pd.Timestamp, lags: int, std_lags: int):
     """Возвращает кейсы предсказания до указанной даты включительно в формате Pool
 
     Кейсы состоят из значений доходности с учетом дивидендов за последние lags месяцев, тикера и СКО, которое
@@ -105,7 +100,9 @@ def predict_pool(tickers: tuple, last_date: pd.Timestamp, lags):
     last_date
         Последняя дата, на которую нужно подготовить кейсы
     lags
-        Количество лет данных по дивидендам
+        Количество месяцев данных по доходностям
+    std_lags
+        Количество месяцев, по которым нормируется СКО
 
     Returns
     -------
@@ -113,6 +110,7 @@ def predict_pool(tickers: tuple, last_date: pd.Timestamp, lags):
         Кейсы для предсказания
     """
     predict_cases = ReturnsCasesIterator(tickers, last_date, lags).cases(last_date, predicted=False)
+    predict_cases = normalize_cases(predict_cases, lags, std_lags)
     predict = catboost.Pool(data=predict_cases.iloc[:, :-1],
                             label=None,
                             cat_features=[0],
@@ -123,35 +121,48 @@ def predict_pool(tickers: tuple, last_date: pd.Timestamp, lags):
 if __name__ == '__main__':
     from trading import POSITIONS, DATE
 
-    pool = learn_pool(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), 11)
-    print(pd.Series(pool.get_label()).std())
-    ignored_features = [1]
-    scores = catboost.cv(
-        pool=pool,
-        params=dict(
-            random_state=284704,
-            od_type='Iter',
-            verbose=False,
-            allow_writing_files=False,
-            ignored_features=ignored_features),
-        fold_count=20)
-    index = scores['test-RMSE-mean'].idxmin()
-    print(index + 1)
-    print(scores.loc[index, 'test-RMSE-mean'])
-    print(1 - (scores.loc[index, 'test-RMSE-mean'] / pd.Series(pool.get_label()).std(ddof=0)) ** 2)
+    best = 0.0
+    for threshold in range(9, 1, -1):
+        threshold = threshold / 100
+        for lags in range(1, 9):
+            print(f'{threshold:0.2f}', lags, end=' ')
+            pool = learn_pool(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), lags, threshold)
+            ignored_features = []
+            scores = catboost.cv(
+                pool=pool,
+                params=dict(
+                    random_state=284704,
+                    od_type='Iter',
+                    verbose=False,
+                    custom_metric='R2',
+                    allow_writing_files=False,
+                    ignored_features=ignored_features),
+                fold_count=20)
+            index_ = scores['test-R2-mean'].idxmax()
+            score = scores.loc[index_, 'test-RMSE-mean']
+            r2 = scores.loc[index_, 'test-R2-mean']
+            if r2 > best:
+                best = r2
+                print(index_ + 1, f'{score:0.4f}', f'{r2:0.2%}')
+            else:
+                print(f'{r2:0.2%}')
+    # 0.05 1 119 0.0712 4.12%
 
+    """
+    pool = learn_pool(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), 1, 0.05)
     clf = catboost.CatBoostRegressor(
         **dict(
             random_state=284704,
             od_type='Iter',
             verbose=False,
             allow_writing_files=False,
-            ignored_features=ignored_features,
-            iterations=index + 1
+            ignored_features=[],
+            iterations=119
         ))
     clf.fit(pool)
     print(clf.feature_importances_)
-
+  
     pred_pool = predict_pool(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), 11)
     print(pd.Series(clf.predict(pred_pool), index=sorted(POSITIONS)))
     print(pd.Series(clf.predict(pred_pool), index=sorted(POSITIONS)) * np.array(pred_pool.get_features())[:, 1])
+    """

@@ -208,13 +208,13 @@ class ReturnsMetrics:
 
 
 if __name__ == '__main__':
-    pos = dict(MSTT=4650,
-               LSNGP=162,
-               MTSS=749,
-               AKRN=795,
-               GMKN=223)
-    port = Portfolio(date='2018-03-19',
-                     cash=1_415_988,
-                     positions=pos)
+    from trading import POSITIONS, DATE, CASH
+
+    port = Portfolio(date=DATE,
+                     cash=CASH,
+                     positions=POSITIONS)
     metrics = ReturnsMetrics(port)
-    print(metrics)
+    print(metrics.std)
+    print(metrics.std.median())
+    print(len(POSITIONS))
+    print(metrics.std.median() / len(POSITIONS) ** 0.5)
