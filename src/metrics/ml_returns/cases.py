@@ -73,8 +73,12 @@ class ReturnsCasesIterator:
             cases = threshold_returns.iloc[index - lags: index + 1, [0]]
             cases = cases.T
             cases.columns = [f'lag - {i}' for i in range(self._lags, 0, -1)] + ['y']
-            cases.insert(0, 'years', threshold_returns.iloc[index - 1, -1])
-            cases.index.name = labels.TICKER
+
+            time = threshold_returns.iloc[index - lags: index, [1]]
+            time = time.T
+            time.columns = [f't{i}' for i in range(self._lags, 0, -1)]
+            time.index = [ticker]
+            cases = pd.concat([time, cases], axis=1)
             yield cases.reset_index()
 
 
@@ -121,7 +125,7 @@ def predict_pool(tickers: tuple, last_date: pd.Timestamp, lags: int, std_lags: i
 if __name__ == '__main__':
     from trading import POSITIONS, DATE
 
-    best = 0.0
+    best = 0
     for threshold in range(9, 1, -1):
         threshold = threshold / 100
         for lags in range(1, 9):
@@ -134,19 +138,19 @@ if __name__ == '__main__':
                     random_state=284704,
                     od_type='Iter',
                     verbose=False,
-                    custom_metric='R2',
                     allow_writing_files=False,
                     ignored_features=ignored_features),
                 fold_count=20)
-            index_ = scores['test-R2-mean'].idxmax()
+            index_ = scores['test-RMSE-mean'].idxmin()
             score = scores.loc[index_, 'test-RMSE-mean']
-            r2 = scores.loc[index_, 'test-R2-mean']
+            r2 = 1 - score ** 2 / pd.Series(pool.get_label()).std() ** 2
             if r2 > best:
                 best = r2
-                print(index_ + 1, f'{score:0.4f}', f'{r2:0.2%}')
+                print(index_ + 1, f'{score:0.2%}', f'{r2:0.2%}')
             else:
                 print(f'{r2:0.2%}')
-    # 0.05 1 119 0.0712 4.12%
+
+    # 0.07 5 130 8.83% 6.57%
 
     """
     pool = learn_pool(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), 1, 0.05)
