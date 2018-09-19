@@ -72,4 +72,4 @@ def dividends_status(ticker: str):
 
 
 if __name__ == '__main__':
-    dividends_status('AFLT')
+    dividends_status('SIBN')

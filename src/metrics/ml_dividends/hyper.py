@@ -11,7 +11,7 @@ from metrics.ml_dividends.cases import learn_pool
 from utils.aggregation import Freq
 
 # Базовые настройки catboost
-MAX_ITERATIONS = 700
+MAX_ITERATIONS = 800
 SEED = 284704
 FOLDS_COUNT = 20
 BASE_PARAMS = dict(iterations=MAX_ITERATIONS,
@@ -47,8 +47,8 @@ MEAN_RAND_STRENGTH = 2.2
 RANGE_RAND_STRENGTH = 0.6
 
 # Интенсивность бегинга
-MEAN_BAGGING = 1.4
-RANGE_BAGGING = 0.4
+MEAN_BAGGING = 1.7
+RANGE_BAGGING = 0.5
 
 
 def log_limits(mean_, percent_range):

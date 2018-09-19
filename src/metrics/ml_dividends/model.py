@@ -7,12 +7,12 @@ from utils.aggregation import Freq
 
 PARAMS = {'data': {'freq': Freq.yearly,
                    'lags': 1},
-          'model': {'bagging_temperature': 1.2620841054719028,
-                    'depth': 9,
-                    'l2_leaf_reg': 1.2696839122455463,
-                    'learning_rate': 0.1085766539222693,
-                    'one_hot_max_size': 2,
-                    'random_strength': 2.8247147072632632}}
+          'model': {'bagging_temperature': 1.9520420836714245,
+                    'depth': 6,
+                    'l2_leaf_reg': 1.2622538954307505,
+                    'learning_rate': 0.08755192137575037,
+                    'one_hot_max_size': 100,
+                    'random_strength': 3.1924251581170666}}
 
 
 class DividendsML:
