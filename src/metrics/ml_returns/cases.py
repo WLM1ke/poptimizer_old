@@ -7,28 +7,55 @@ from pandas.tseries.offsets import BDay
 from local import moex, dividends
 from web import labels
 
-T2 = 2
+T2 = 1
 DAYS_IN_YEAR = 365.25
 
 
 class ReturnsCasesIterator:
-    def __init__(self, tickers: tuple, last_date: pd.Timestamp, lags: int, threshold: float):
+    def __init__(self, tickers: tuple, last_date: pd.Timestamp, lags: int, u_bound: float, l_bound: float):
+        """Формирует обучающие примеры для набора тикеров
+
+        Осуществляется расчет доходностей с учетом дивидендов. Полученные ряды доходностей трансформируются в
+        неравномерную временную шкалу: отсечки по шкале происходят, когда накопленная доходность превышает u_bound или
+        оказывается меньше l_bound - в результате получается ряд доходностей чуть больше u_bound или чуть меньше
+        l_bound (более стационарные и гомоскедастичный).
+
+        Для полученного ряда формируются обучающие примеры из тикера, нескольких лагов доходности и длины временных
+        интервалов для этих доходностей
+
+        Parameters
+        ----------
+        tickers
+            Набор тикеров, для которых строятся обучающие примеры
+        last_date
+            Последняя дата, статистика до которой используется для построения примеров
+        lags
+            Количество лагов доходности и длины периодов, которые используются в обучающих примерах
+        u_bound
+            Верхняя граница накопленной доходности, которая используется для отсечки периодов
+        l_bound
+            Нижняя граница накопленной доходности, которая используется для отсечки периодов
+        """
         self._tickers = tickers
         self._last_date = last_date
         self._lags = lags
-        self._threshold = threshold
+        self._u_bound = u_bound
+        self._l_bound = l_bound
         self._returns = self._make_returns()
 
     def _make_returns(self):
-        """Создает доходности с учетом дивидендов"""
+        """Создает доходности с учетом дивидендов
+
+        Используются котировки в режиме T+2 и учитывается сдвиг относительно даты закрытия реестра
+        """
         prices = moex.prices_t2(self._tickers).fillna(method='ffill', axis='index')
 
         def t2_shift(x):
-            """Рассчитывает T-2 дату
+            """Рассчитывает дату котировок без дивидендов
 
             Если дата не содержится индексе цен, то необходимо найти предыдущую из индекса цен. После этого взять
-            сдвинутую на 2 назад дату. Если дата находится в будущем за пределом истории котировок, то достаточно
-            сдвинуть на 2 бизнес дня назад - упрощенный подход, который может не корректно работать из-за праздников
+            сдвинутую на 1 назад дату. Если дата находится в будущем за пределом истории котировок, то достаточно
+            сдвинуть на 1 бизнес дня назад - упрощенный подход, который может не корректно работать из-за праздников
             """
             if x <= prices.index[-1]:
                 index = prices.index.get_loc(x, 'ffill')
@@ -123,6 +150,10 @@ def predict_pool(tickers: tuple, last_date: pd.Timestamp, lags: int, std_lags: i
 
 
 if __name__ == '__main__':
+    itr = ReturnsCasesIterator(('RTKMP',), pd.Timestamp('2018-07-15'), 5, 0.01, 0.01)
+    print(itr._returns)
+
+    """
     from trading import POSITIONS, DATE
 
     best = 0
@@ -151,6 +182,7 @@ if __name__ == '__main__':
                 print(f'{r2:0.2%}')
 
     # 0.07 5 130 8.83% 6.57%
+    """
 
     """
     pool = learn_pool(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), 1, 0.05)
