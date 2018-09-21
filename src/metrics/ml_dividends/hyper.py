@@ -36,19 +36,19 @@ MEAN_LEARNING_RATE = 0.1
 RANGE_LEARNING_RATE = 0.2
 
 # Глубина деревьев
-MAX_DEPTH = 10
+MAX_DEPTH = 12
 
 # L2-регуляризация
-MEAN_L2 = 1.7
-RANGE_L2 = 0.5
+MEAN_L2 = 1.4
+RANGE_L2 = 0.6
 
 # Случайность разбиений
 MEAN_RAND_STRENGTH = 2.2
 RANGE_RAND_STRENGTH = 0.6
 
 # Интенсивность бегинга
-MEAN_BAGGING = 1.7
-RANGE_BAGGING = 0.5
+MEAN_BAGGING = 2.7
+RANGE_BAGGING = 0.7
 
 
 def log_limits(mean_, percent_range):
