@@ -36,14 +36,14 @@ class DividendsCasesIterator:
             yield self.cases(date)
             date = end_of_period_offset(date + pd.DateOffset(days=1))
 
-    def _real_dividends_yields(self, date: pd.Timestamp, predicted: bool = True):
+    def _real_dividends_yields(self, date: pd.Timestamp, labels: bool = True):
         """Возвращает посленалоговые дивидендные доходности в постоянных ценах для заданной даты
 
         Parameters
         ----------
         date
             Дата для которой, рассчитываются кейсы
-        predicted
+        labels
             Если True, то информация создается для lags + 1 лет - последний год прогнозный
 
         Returns
@@ -51,7 +51,7 @@ class DividendsCasesIterator:
         pd.DataFrame
             Кейс с частотой freq
         """
-        if predicted:
+        if labels:
             months_in_period = MONTH_IN_YEAR * (self._years + 1)
             base_index = - MONTH_IN_YEAR - 1
         else:

@@ -39,7 +39,7 @@ def test_yields_vs_dividends_metrics_predicted_false():
     metrics_yields = BaseDividendsMetrics(port).yields
     tickers = tuple(key for key in sorted(positions))
     itr = DividendsCasesIterator(tickers, pd.Timestamp('2018-08-30'), Freq.yearly)
-    df = itr._real_dividends_yields(pd.Timestamp('2018-08-30'), predicted=False)
+    df = itr._real_dividends_yields(pd.Timestamp('2018-08-30'), labels=False)
     assert np.allclose(metrics_yields, df.iloc[:, 1:].T)
 
 
