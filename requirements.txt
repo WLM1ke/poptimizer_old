@@ -9,5 +9,5 @@ reportlab
 matplotlib
 openpyxl != 2.5.6
 sklearn
-catboost == 0.9.1.1
+catboost
 hyperopt

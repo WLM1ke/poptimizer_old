@@ -39,7 +39,7 @@ def make_data():
 
 
 def test_str(data):
-    assert 'СКО - 4.0158%' in str(data)
+    assert 'СКО - 4.0920%' in str(data)
 
 
 def test_positions(data):
@@ -51,7 +51,7 @@ def test_date(data):
 
 
 def test_std(data):
-    assert data.std == pytest.approx(0.04015840764454069)
+    assert data.std == pytest.approx(0.040920258736284)
 
 
 def test_model_params(data):
@@ -60,7 +60,7 @@ def test_model_params(data):
             'freq': Freq.yearly,
             'lags': 1},
         'model': {
-            'iterations': 45,
+            'iterations': 50,
             'random_state': 284704,
             'od_type': 'Iter',
             'verbose': False,
@@ -74,24 +74,24 @@ def test_model_params(data):
 
 
 def test_div_prediction(data):
-    assert data.div_prediction['CHMF'] == pytest.approx(0.10449959406625338)
-    assert data.div_prediction['MSTT'] == pytest.approx(0.09941238015148807)
-    assert data.div_prediction['PMSBP'] == pytest.approx(0.11062365247546475)
-    assert data.div_prediction['SNGSP'] == pytest.approx(0.05153182076179733)
-    assert data.div_prediction['NLMK'] == pytest.approx(0.09941238015148807)
+    assert data.div_prediction['CHMF'] == pytest.approx(0.10459980858366799)
+    assert data.div_prediction['MSTT'] == pytest.approx(0.1071490717673651)
+    assert data.div_prediction['PMSBP'] == pytest.approx(0.11000412382799508)
+    assert data.div_prediction['SNGSP'] == pytest.approx(0.05088185727905429)
+    assert data.div_prediction['NLMK'] == pytest.approx(0.1071490717673651)
 
 
 def test_find_better_model(data, capsys):
     data.find_better_model()
     captured = capsys.readouterr()
     assert 'ЛУЧШАЯ МОДЕЛЬ - Базовая модель' in captured.out
-    assert 'СКО - 4.0158%' in captured.out
-    assert 'Количество итераций - 45' in captured.out
+    assert 'СКО - 4.0920%' in captured.out
+    assert 'Количество итераций - 50' in captured.out
     assert "{'data': {'freq': <Freq.yearly" in captured.out
 
     assert 'Найденная модель' in captured.out
-    assert 'СКО - 4.9915%' in captured.out
-    assert 'Количество итераций - 78' in captured.out
+    assert 'СКО - 4.9768%' in captured.out
+    assert 'Количество итераций - 57' in captured.out
     assert "{'data': {'freq': <Freq.quarterly" in captured.out
 
 
@@ -109,11 +109,11 @@ def test_find_better_model_fake_std(data, capsys, monkeypatch):
     data.find_better_model()
     captured = capsys.readouterr()
     assert 'Базовая модель' in captured.out
-    assert 'СКО - 4.0158%' in captured.out
-    assert 'Количество итераций - 45' in captured.out
+    assert 'СКО - 4.0920%' in captured.out
+    assert 'Количество итераций - 50' in captured.out
     assert "{'data': {'freq': <Freq.yearly" in captured.out
 
     assert 'ЛУЧШАЯ МОДЕЛЬ - Найденная модель' in captured.out
     assert 'СКО - 3.3300%' in captured.out
-    assert 'Количество итераций - 78' in captured.out
+    assert 'Количество итераций - 57' in captured.out
     assert "{'data': {'freq': <Freq.quarterly" in captured.out

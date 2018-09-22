@@ -123,7 +123,7 @@ def test_cv_model():
     cv_result = hyper.cv_model(params, pos, pd.Timestamp(date))
     assert isinstance(cv_result, dict)
 
-    assert cv_result['loss'] == pytest.approx(0.0403266376215667)
+    assert cv_result['loss'] == pytest.approx(0.03958830516058179)
     assert cv_result['status'] == hyperopt.STATUS_OK
     assert cv_result['data'] == params['data']
 

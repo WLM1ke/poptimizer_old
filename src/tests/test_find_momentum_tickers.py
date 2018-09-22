@@ -102,4 +102,3 @@ def test_find_momentum_tickers_find(port, capsys, monkeypatch):
     momentum_tickers.find_momentum_tickers(port, -100.0)
     captured_string = capsys.readouterr().out
     assert '1. ' in captured_string
-    assert '2. ' not in captured_string
