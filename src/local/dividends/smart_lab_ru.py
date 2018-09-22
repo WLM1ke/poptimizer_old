@@ -14,13 +14,16 @@ class SmartLabDataManager(AbstractDataManager):
     is_unique = False
     is_monotonic = False
     update_from_scratch = True
+
     def __init__(self):
         super().__init__(None, SMART_LAB_NAME)
 
     def download_all(self):
+        """Загружает данные СмартЛаб"""
         return dividends.smart_lab()
 
     def download_update(self):
+        """Нет возможности частичной загрузки"""
         super().download_update()
 
 

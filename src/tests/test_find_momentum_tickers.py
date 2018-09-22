@@ -95,3 +95,11 @@ def test_find_momentum_tickers(port, capsys, monkeypatch, cases):
     assert '1. ' in captured_string
     assert ((' 1.73 СКО' in captured_string) or
             ('Фактор оборота                                                          0.0000' in captured_string))
+
+
+def test_find_momentum_tickers_find(port, capsys, monkeypatch):
+    monkeypatch.setattr(momentum_tickers, 'non_portfolio_securities', lambda x: ['ARSA', 'SNGSP', 'ALNU'])
+    momentum_tickers.find_momentum_tickers(port, -100.0)
+    captured_string = capsys.readouterr().out
+    assert '1. ' in captured_string
+    assert '2. ' not in captured_string
