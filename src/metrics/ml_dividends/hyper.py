@@ -32,22 +32,22 @@ MAX_LAG = 3
 ONE_HOT_SIZE = [2, 100]
 
 # Скорость обучения
-MEAN_LEARNING_RATE = 0.1
-RANGE_LEARNING_RATE = 0.2
+MEAN_LEARNING_RATE = 0.11
+RANGE_LEARNING_RATE = 0.3
 
 # Глубина деревьев
-MAX_DEPTH = 12
+MAX_DEPTH = 10
 
 # L2-регуляризация
-MEAN_L2 = 1.4
+MEAN_L2 = 2.2
 RANGE_L2 = 0.6
 
 # Случайность разбиений
-MEAN_RAND_STRENGTH = 2.2
-RANGE_RAND_STRENGTH = 0.6
+MEAN_RAND_STRENGTH = 1.8
+RANGE_RAND_STRENGTH = 0.7
 
 # Интенсивность бегинга
-MEAN_BAGGING = 2.7
+MEAN_BAGGING = 1.4
 RANGE_BAGGING = 0.7
 
 
