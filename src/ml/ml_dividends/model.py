@@ -2,7 +2,7 @@
 import catboost
 import pandas as pd
 
-from metrics.ml_dividends import hyper, cases
+from ml.ml_dividends import hyper, cases
 from utils.aggregation import Freq
 
 PARAMS = {'data': {'freq': Freq.yearly,
@@ -38,6 +38,7 @@ class DividendsML:
 
     def __str__(self):
         return (f'СКО - {self.std:0.4%}'
+                f'\nR2 - {self.r2:0.4%}'
                 f'\n\nПрогноз:\n{self.div_prediction}'
                 f'\n\nВажность признаков: {self._clf.feature_importances_}'
                 f'\n\nМодель:\n{self.params}')
@@ -53,7 +54,12 @@ class DividendsML:
     @property
     def std(self):
         """СКО прогноза"""
-        return self._cv_result['loss']
+        return self._cv_result['std']
+
+    @property
+    def r2(self):
+        """СКО прогноза"""
+        return self._cv_result['r2']
 
     @property
     def div_prediction(self):

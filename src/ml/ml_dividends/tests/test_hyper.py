@@ -2,7 +2,7 @@ import hyperopt
 import pandas as pd
 import pytest
 
-from metrics.ml_dividends import hyper
+from ml.ml_dividends import hyper
 from utils.aggregation import Freq
 
 

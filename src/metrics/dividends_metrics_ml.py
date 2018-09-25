@@ -1,7 +1,7 @@
 """Реализация основных метрик дивидендного потока с помощью ML-модели"""
 import pandas as pd
 
-import metrics.ml_dividends.manager
+import ml.ml_dividends.manager
 from metrics.dividends_metrics import AbstractDividendsMetrics
 from metrics.portfolio import Portfolio
 
@@ -16,15 +16,15 @@ class MLDividendsMetrics(AbstractDividendsMetrics):
     @property
     def _tickers_real_after_tax_mean(self):
         portfolio = self._portfolio
-        manager = metrics.ml_dividends.manager.DividendsMLDataManager(portfolio.positions[:-2],
-                                                                      pd.Timestamp(portfolio.date))
+        manager = ml.ml_dividends.manager.DividendsMLDataManager(portfolio.positions[:-2],
+                                                                 pd.Timestamp(portfolio.date))
         return manager.value.div_prediction
 
     @property
     def _tickers_real_after_tax_std(self):
         portfolio = self._portfolio
-        manager = metrics.ml_dividends.manager.DividendsMLDataManager(portfolio.positions[:-2],
-                                                                      pd.Timestamp(portfolio.date))
+        manager = ml.ml_dividends.manager.DividendsMLDataManager(portfolio.positions[:-2],
+                                                                 pd.Timestamp(portfolio.date))
         return pd.Series(manager.value.std, index=portfolio.positions[:-2])
 
 

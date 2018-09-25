@@ -1,7 +1,7 @@
 """Менеджер данных с обученной ML-моделью дивидендов"""
 import pandas as pd
 
-from metrics.ml_dividends import model
+from ml.ml_dividends import model
 from utils.data_manager import AbstractDataManager
 
 ML_NAME = 'dividends_ml'

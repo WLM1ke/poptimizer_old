@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 
 from metrics.dividends_metrics_base import BaseDividendsMetrics
-from metrics.ml_dividends.cases import DividendsCasesIterator, learn_pool, predict_pool
 from metrics.portfolio import Portfolio
+from ml.ml_dividends import DividendsCasesIterator, learn_pool, predict_pool
 from utils.aggregation import Freq
 
 

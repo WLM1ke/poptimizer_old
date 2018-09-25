@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from hyperopt import hp
 
-from metrics.ml_dividends.cases import learn_pool
+from ml.ml_dividends.cases import learn_pool
 from utils.aggregation import Freq
 
 # Базовые настройки catboost
@@ -128,7 +128,7 @@ def validate_model_params(model_params: dict):
 
 
 def cv_model(params: dict, positions: tuple, date: pd.Timestamp):
-    """Кросс-валидирует модель по RMSE
+    """Кросс-валидирует модель по RMSE, нормированному на СКО набора данных
 
     Осуществляется проверка, что не достигнут максимум итераций, возвращается RMSE и параметры модели с оптимальным
     количеством итераций в формате целевой функции hyperopt
@@ -151,6 +151,7 @@ def cv_model(params: dict, positions: tuple, date: pd.Timestamp):
     validate_model_params(params)
     data_params = params['data']
     data = learn_pool(positions, date, **data_params)
+    pool_std = np.array(data.get_label()).std()
     model_params = {}
     model_params.update(BASE_PARAMS)
     model_params.update(params['model'])
@@ -161,8 +162,10 @@ def cv_model(params: dict, positions: tuple, date: pd.Timestamp):
         raise ValueError(f'Необходимо увеличить MAX_ITERATIONS = {MAX_ITERATIONS}')
     index = scores['test-RMSE-mean'].idxmin()
     model_params['iterations'] = index + 1
-    return dict(loss=scores.loc[index, 'test-RMSE-mean'],
+    return dict(loss=scores.loc[index, 'test-RMSE-mean'] / pool_std,
                 status=hyperopt.STATUS_OK,
+                std=scores.loc[index, 'test-RMSE-mean'],
+                r2=1 - (scores.loc[index, 'test-RMSE-mean'] / pool_std) ** 2,
                 data=data_params,
                 model=model_params)
 

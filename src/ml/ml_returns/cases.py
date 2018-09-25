@@ -153,7 +153,7 @@ if __name__ == '__main__':
 
     best = 0
     for lags_std in range(9, 10):
-        for lags in range(7, 8):
+        for lags in range(4, 7):
             print(lags_std, lags, end=' ')
             pool = learn_pool(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), lags_std, lags)
             ignored_features = []
@@ -175,7 +175,7 @@ if __name__ == '__main__':
             else:
                 print(f'{r2:0.2%}')
 
-    pool = learn_pool(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), 9, 7)
+    pool = learn_pool(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), 9, 5)
     clf = catboost.CatBoostRegressor(
         **dict(
             random_state=284704,

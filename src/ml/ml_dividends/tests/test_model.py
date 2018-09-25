@@ -1,7 +1,8 @@
 import pandas as pd
 import pytest
 
-from metrics.ml_dividends import hyper, model
+from ml.ml_dividends import hyper
+from ml.ml_dividends import model
 from utils.aggregation import Freq
 
 PARAMS = {'data': {'freq': Freq.yearly,

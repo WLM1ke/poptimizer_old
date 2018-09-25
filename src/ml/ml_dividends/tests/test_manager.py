@@ -3,7 +3,8 @@ import copy
 import pandas as pd
 import pytest
 
-from metrics.ml_dividends import manager, model
+from ml.ml_dividends import manager
+from ml.ml_dividends import model
 
 
 def test_manager_first_time():
