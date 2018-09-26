@@ -1,4 +1,5 @@
 """Менеджер данных с обученной ML-моделью дивидендов"""
+import arrow
 import pandas as pd
 
 from ml.dividends import model
@@ -28,20 +29,23 @@ class DividendsMLDataManager(AbstractDataManager):
         self._positions = positions
         self._date = date
         super().__init__(None, ML_NAME)
-        if positions != self.value.positions or date != self.value.date:
-            self.create()
-            return
-        for outer_key in model._PARAMS:
-            for inner_key in model._PARAMS[outer_key]:
-                if model._PARAMS[outer_key][inner_key] != self.value.params[outer_key][inner_key]:
-                    self.create()
-                    return
 
     def download_all(self):
         return model.DividendsML(self._positions, self._date)
 
     def download_update(self):
         super().download_update()
+
+    @property
+    def next_update(self):
+        """Время следующего планового обновления данных - arrow в часовом поясе MOEX"""
+        if self._positions != self.value.positions or self._date != self.value.date:
+            return arrow.now().shift(days=-1)
+        for outer_key in model.PARAMS:
+            for inner_key in model.PARAMS[outer_key]:
+                if model.PARAMS[outer_key][inner_key] != self.value.params[outer_key][inner_key]:
+                    return arrow.now().shift(days=-1)
+        return super().next_update
 
 
 if __name__ == '__main__':
