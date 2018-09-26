@@ -11,7 +11,7 @@ def test_tickers_real_after_tax_mean():
     portfolio = metrics.Portfolio(date, 0, positions)
     dividends_metrics = metrics.MLDividendsMetrics(portfolio)
     dividends_model = model.DividendsML(tuple(sorted(positions)), pd.Timestamp(date))
-    assert dividends_metrics._tickers_real_after_tax_mean.equals(dividends_model.div_prediction)
+    assert dividends_metrics._tickers_real_after_tax_mean.equals(dividends_model.prediction)
 
 
 def test_tickers_real_after_tax_std():

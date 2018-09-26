@@ -1,4 +1,4 @@
-"""Модель для предсказания дивидендов"""
+"""ML-модель для предсказания дивидендов"""
 import catboost
 import pandas as pd
 
@@ -6,47 +6,23 @@ from ml import hyper
 from ml.dividends import cases
 from utils.aggregation import Freq
 
-P_____ = {'data': {'freq': Freq.yearly,
-                   'lags': 1},
-          'model': {'bagging_temperature': 1.1309994272659563,
-                    'depth': 5,
-                    'l2_leaf_reg': 1.6947129385586475,
-                    'learning_rate': 0.1229294573322397,
-                    'one_hot_max_size': 100,
-                    'random_strength': 2.6665434457041237}}
-
 PARAMS = {'data': {'freq': Freq.yearly,
                    'lags': 1},
-          'model': {'bagging_temperature': 0.8514582238067644,
+          'model': {'bagging_temperature': 1.1542008340618164,
                     'depth': 4,
-                    'l2_leaf_reg': 3.100562393381714,
-                    'learning_rate': 0.0883151996608085,
+                    'l2_leaf_reg': 2.7558209934423616,
+                    'learning_rate': 0.02991973118954086,
                     'one_hot_max_size': 100,
-                    'random_strength': 0.992155907806343}}
+                    'random_strength': 1.024116898045557}}
 
-# Количество лагов в данных
+# Диапазон лагов относительно базового, для которого осуществляется поиск оптимальной ML-модели
 LAGS_RANGE = 1
 
 
-def lags():
-    base_lags = PARAMS['data']['lags']
+def lags(base_params: dict):
+    """Список лагов для оптимизации - должны быть больше 0"""
+    base_lags = base_params['data']['lags']
     return [lag for lag in range(base_lags - LAGS_RANGE, base_lags + LAGS_RANGE + 1) if lag > 0]
-
-
-def make_param_space():
-    """Пространство поиска параметров модели"""
-    space = {
-        'data': {'freq': hyper.make_choice_space('freq', Freq),
-                 'lags': hyper.make_choice_space('lags', lags())},
-        'model': hyper.make_model_space(PARAMS)}
-    return space
-
-
-def check_space_bounds(params: dict):
-    data = params['data']
-    if data['lags'] != 1 and (data['lags'] == lags()[0] or data['lags'] == lags()[-1]):
-        print(f'\nНеобходимо увеличить LAGS_RANGE до {LAGS_RANGE + 1}')
-    hyper.check_model_bounds(params, PARAMS)
 
 
 class DividendsML:
@@ -59,30 +35,53 @@ class DividendsML:
     date
         Дата, для которой необходимо составить прогноз
     """
+    _PARAMS = PARAMS
 
     def __init__(self, positions: tuple, date: pd.Timestamp):
         self._positions = positions
         self._date = date
-        self._cv_result = hyper.cv_model(PARAMS, positions, date, cases.learn_pool)
+        self._cv_result = hyper.cv_model(self._PARAMS, positions, date, self._learn_pool_func)
         self._clf = catboost.CatBoostRegressor(**self._cv_result['model'])
-        learn_data = cases.learn_pool(tickers=positions, last_date=date, **self._cv_result['data'])
+        learn_data = self._learn_pool_func(tickers=positions, last_date=date, **self._cv_result['data'])
         self._clf.fit(learn_data)
-        pred_data = cases.predict_pool(tickers=positions, last_date=date, **self._cv_result['data'])
-        self._prediction = pd.Series(self.predict(pred_data), list(self._positions))
 
     def __str__(self):
         return (f'СКО - {self.std:0.4%}'
                 f'\nR2 - {self.r2:0.4%}'
-                f'\n\nПрогноз:\n{self.div_prediction}'
+                f'\n\nПрогноз:\n{self.prediction}'
                 f'\n\nВажность признаков: {self._clf.feature_importances_}'
                 f'\n\nМодель:\n{self.params}')
 
+    @staticmethod
+    def _learn_pool_func(*args, **kwargs):
+        """catboost.Pool с данными для обучения"""
+        return cases.learn_pool(*args, **kwargs)
+
+    @staticmethod
+    def _predict_pool_func(*args, **kwargs):
+        """catboost.Pool с данными для предсказания"""
+        return cases.predict_pool(*args, **kwargs)
+
+    def _make_data_space(self):
+        """Пространство поиска параметров данных модели"""
+        space = {'freq': hyper.make_choice_space('freq', Freq),
+                 'lags': hyper.make_choice_space('lags', lags(self._PARAMS))}
+        return space
+
+    def _check_data_space_bounds(self, params: dict):
+        """Проверка, что параметры лежал не около границы вероятностного пространства"""
+        lag = params['data']['lags']
+        if lag != 1 and (lag == lags(self._PARAMS)[0] or lag == lags(self._PARAMS)[-1]):
+            print(f'\nНеобходимо увеличить LAGS_RANGE до {LAGS_RANGE + 1}')
+
     @property
     def positions(self):
+        """Перечень позиций, для которых составлен прогноз"""
         return self._positions
 
     @property
     def date(self):
+        """Дата, для которой составлен прогноз"""
         return self._date
 
     @property
@@ -96,9 +95,10 @@ class DividendsML:
         return self._cv_result['r2']
 
     @property
-    def div_prediction(self):
+    def prediction(self):
         """pd.Series с прогнозом дивидендов"""
-        return self._prediction
+        pred_data = self._predict_pool_func(tickers=self.positions, last_date=self.date, **self._cv_result['data'])
+        return pd.Series(self._clf.predict(pred_data), list(self.positions))
 
     @property
     def params(self):
@@ -106,37 +106,33 @@ class DividendsML:
         return dict(data=self._cv_result['data'],
                     model=self._cv_result['model'])
 
-    def predict(self, pred_data):
-        """Данные, по которым нужно построить прогноз - первая колонка с тикерами"""
-        return self._clf.predict(pred_data)
-
     def find_better_model(self):
         """Ищет оптимальную модель и сравнивает с базовой - результаты сравнения распечатываются"""
         positions = self._positions
         date = self._date
-        base = hyper.cv_model(PARAMS, positions, date, cases.learn_pool)
-        param_space = make_param_space()
-        best_model_params = hyper.optimize_hyper(param_space, positions, date, cases.learn_pool)
-        check_space_bounds(best_model_params)
-        best = hyper.cv_model(best_model_params, positions, date, cases.learn_pool)
-        if base['loss'] < best['loss']:
+        base_cv_results = hyper.cv_model(self._PARAMS, positions, date, self._learn_pool_func)
+        find_params = hyper.optimize_hyper(self._PARAMS, positions, date,
+                                           self._learn_pool_func, self._make_data_space())
+        self._check_data_space_bounds(find_params)
+        best_cv_results = hyper.cv_model(find_params, positions, date, self._learn_pool_func)
+        if base_cv_results['loss'] < best_cv_results['loss']:
             print('\nЛУЧШАЯ МОДЕЛЬ - Базовая модель')
-            print(f"R2 - {base['r2']:0.4%}"
-                  f"\nКоличество итераций - {base['model']['iterations']}"
-                  f"\n{PARAMS}")
+            print(f"R2 - {base_cv_results['r2']:0.4%}"
+                  f"\nКоличество итераций - {base_cv_results['model']['iterations']}"
+                  f"\n{self._PARAMS}")
             print('\nНайденная модель')
-            print(f"R2 - {best['r2']:0.4%}"
-                  f"\nКоличество итераций - {best['model']['iterations']}"
-                  f"\n{best_model_params}")
+            print(f"R2 - {best_cv_results['r2']:0.4%}"
+                  f"\nКоличество итераций - {best_cv_results['model']['iterations']}"
+                  f"\n{find_params}")
         else:
             print('\nЛУЧШАЯ МОДЕЛЬ - Найденная модель')
-            print(f"R2 - {best['r2']:0.4%}"
-                  f"\nКоличество итераций - {best['model']['iterations']}"
-                  f"\n{best_model_params}")
+            print(f"R2 - {best_cv_results['r2']:0.4%}"
+                  f"\nКоличество итераций - {best_cv_results['model']['iterations']}"
+                  f"\n{find_params}")
             print('\nБазовая модель')
-            print(f"R2 - {base['r2']:0.4%}"
-                  f"\nКоличество итераций - {base['model']['iterations']}"
-                  f"\n{PARAMS}")
+            print(f"R2 - {base_cv_results['r2']:0.4%}"
+                  f"\nКоличество итераций - {base_cv_results['model']['iterations']}"
+                  f"\n{self._PARAMS}")
 
 
 if __name__ == '__main__':

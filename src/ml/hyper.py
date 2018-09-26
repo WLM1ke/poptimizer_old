@@ -1,4 +1,4 @@
-"""Оптимизация гиперпараметров ML-модели"""
+"""Кросс-валидация и оптимизация гиперпараметров ML-модели"""
 import functools
 
 import catboost
@@ -11,7 +11,7 @@ from hyperopt import hp
 MAX_ITERATIONS = 800
 SEED = 284704
 FOLDS_COUNT = 20
-BASE_PARAMS = dict(iterations=MAX_ITERATIONS,
+TECH_PARAMS = dict(iterations=MAX_ITERATIONS,
                    random_state=SEED,
                    od_type='Iter',
                    verbose=False,
@@ -20,47 +20,43 @@ BASE_PARAMS = dict(iterations=MAX_ITERATIONS,
 # Настройки hyperopt
 MAX_SEARCHES = 100
 
+# Диапазоны поиска ключевых гиперпараметров относительно базового значения параметров
 # Рекомендации Яндекс - https://tech.yandex.com/catboost/doc/dg/concepts/parameter-tuning-docpage/
 
 # OneHot кодировка - учитывая количество акций в портфеле используется cat-кодировка или OneHot-кодировка
 ONE_HOT_SIZE = [2, 100]
 
-# Скорость обучения
+# Диапазон поиска скорости обучения
 LEARNING_RATE_RANGE = 0.1
 
-# Глубина деревьев
-DEPTH_RANGE = 3
+# Диапазон поиска глубины деревьев
+DEPTH_RANGE = 2
 
-# L2-регуляризация
+# Диапазон поиска параметра L2-регуляризации
 L2_RANGE = 0.1
 
-# Случайность разбиений
+# Диапазон поиска случайности разбиений
 RAND_STRENGTH_RANGE = 0.1
 
-# Интенсивность бегинга
-BAGGING_RANGE = 0.1
+# Диапазон поиска интенсивности бегинга
+BAGGING_RANGE = 0.2
 
 
-def log_limits(mean_, percent_range):
+def log_limits(middle: float, percent_range: float):
     """Логарифмический интервал"""
-    log_x = np.log(mean_)
+    log_x = np.log(middle)
     log_delta = np.log1p(percent_range)
     return log_x - log_delta, log_x + log_delta
 
 
-def make_log_space(space_name, mean_, percent_range):
+def make_log_space(space_name: str, middle: float, percent_range: float):
     """Создает логарифмическое вероятностное пространство"""
-    min_, max_ = log_limits(mean_, percent_range)
-    return hp.loguniform(space_name, min_, max_)
+    lower, upper = log_limits(middle, percent_range)
+    return hp.loguniform(space_name, lower, upper)
 
 
-def make_choice_space(space_name, choice):
-    """Создает вероятностное пространство для выбора из нескольких вариантов
-
-    Работает напрямую для iterable, а для int формирует выбор из range(1, choice + 1)
-    """
-    if isinstance(choice, int):
-        choice = range(1, choice + 1)
+def make_choice_space(space_name: str, choice):
+    """Создает вероятностное пространство для выбора из нескольких вариантов"""
     return hp.choice(space_name, list(choice))
 
 
@@ -82,31 +78,30 @@ def check_model_bounds(params: dict, base_params: dict):
     """Проверяет и дает рекомендации о расширении границ пространства поиска параметров
 
     Для целочисленных параметров - предупреждение выдается на границе диапазона и рекомендуется увеличить диапазон на 1.
-    Для реальных параметров - предупреждение выдается в 10% от границе. Рекомендуется сместить центр поиска к текущему
-    значению и расширить границы поиска на 10%
+    Для реальных параметров - предупреждение выдается в 10% от границе и рекомендуется расширить границы поиска на 10%
     """
     model = params['model']
     base_model = base_params['model']
     if abs(np.log(model['learning_rate'] / base_model['learning_rate'])) / np.log1p(LEARNING_RATE_RANGE) > 0.9:
-        print(f'Необходимо увеличить RANGE_LEARNING_RATE до {LEARNING_RATE_RANGE + 0.1:0.1f}')
+        print(f'\nНеобходимо увеличить RANGE_LEARNING_RATE до {LEARNING_RATE_RANGE + 0.1:0.1f}')
 
     if model['depth'] == base_model['depth'] - DEPTH_RANGE or model['depth'] == base_model['depth'] + DEPTH_RANGE:
         print(f'\nНеобходимо увеличить DEPTH_RANGE до {DEPTH_RANGE + 1}')
 
     if abs(np.log(model['l2_leaf_reg'] / base_model['l2_leaf_reg'])) / np.log1p(L2_RANGE) > 0.9:
-        print(f'Необходимо увеличить RANGE_L2 до {L2_RANGE + 0.1:0.1f}')
+        print(f'\nНеобходимо увеличить RANGE_L2 до {L2_RANGE + 0.1:0.1f}')
 
     if abs(np.log(model['random_strength'] / base_model['random_strength'])) / np.log1p(RAND_STRENGTH_RANGE) > 0.9:
-        print(f'Необходимо увеличить RANGE_RAND_STRENGTH до {RAND_STRENGTH_RANGE + 0.1:0.1f}')
+        print(f'\nНеобходимо увеличить RANGE_RAND_STRENGTH до {RAND_STRENGTH_RANGE + 0.1:0.1f}')
 
     if abs(np.log(model['bagging_temperature'] / base_model['bagging_temperature'])) / np.log1p(BAGGING_RANGE) > 0.9:
-        print(f'Необходимо увеличить RANGE_BAGGING до {BAGGING_RANGE + 0.1:0.1f}')
+        print(f'\nНеобходимо увеличить RANGE_BAGGING до {BAGGING_RANGE + 0.1:0.1f}')
 
 
-def cv_model(params: dict, positions: tuple, date: pd.Timestamp, data_pool):
+def cv_model(params: dict, positions: tuple, date: pd.Timestamp, data_pool_func):
     """Кросс-валидирует модель по RMSE, нормированному на СКО набора данных
 
-    Осуществляется проверка, что не достигнут максимум итераций, возвращается RMSE и параметры модели с оптимальным
+    Осуществляется проверка, что не достигнут максимум итераций, возвращается RMSE, R2 и параметры модели с оптимальным
     количеством итераций в формате целевой функции hyperopt
 
     Parameters
@@ -117,21 +112,25 @@ def cv_model(params: dict, positions: tuple, date: pd.Timestamp, data_pool):
         Кортеж тикеров, для которых необходимо осуществить кросс-валидацию
     date
         Дата, для которой необходимо осуществить кросс-валидацию
-    data_pool
+    data_pool_func
         Функция для получения catboost.Pool с данными
     Returns
     -------
     dict
-        Словарь с результатом в формате hyperopt: ключ 'loss' - нормированная RMSE на кросс-валидации,
-        'status' - успешного прохождения, ключ 'std' - RMSE на кросс-валидации, ключ 'r2' - нормированная RMSE на
-        кросс-валидации, ключ 'data' - параметры данных, ключ 'model' - параметры модели, в которые добавлено
-        оптимальное количество итераций градиентного бустинга на кросс-валидации и вспомогательные настройки
+        Словарь с результатом в формате hyperopt:
+        ключ 'loss' - нормированная RMSE на кросс-валидации (для hyperopt),
+        ключ 'status' - успешного прохождения (для hyperopt),
+        ключ 'std' - RMSE на кросс-валидации,
+        ключ 'r2' - нормированная RMSE на кросс-валидации,
+        ключ 'data' - параметры данных,
+        ключ 'model' - параметры модели, в которые добавлено оптимальное количество итераций градиентного бустинга на
+        кросс-валидации и вспомогательные настройки
     """
     data_params = params['data']
-    data = data_pool(positions, date, **data_params)
+    data = data_pool_func(positions, date, **data_params)
     pool_std = np.array(data.get_label()).std()
     model_params = {}
-    model_params.update(BASE_PARAMS)
+    model_params.update(TECH_PARAMS)
     model_params.update(params['model'])
     scores = catboost.cv(pool=data,
                          params=model_params,
@@ -148,13 +147,35 @@ def cv_model(params: dict, positions: tuple, date: pd.Timestamp, data_pool):
                 model=model_params)
 
 
-def optimize_hyper(param_space: dict, positions: tuple, date: pd.Timestamp, data_pool):
-    """Ищет и  возвращает лучший набор гиперпараметров без количества итераций"""
-    objective = functools.partial(cv_model, positions=positions, date=date, data_pool=data_pool)
+def optimize_hyper(base_params: dict, positions: tuple, date: pd.Timestamp, data_pool_func, data_space: dict):
+    """Ищет и  возвращает лучший набор гиперпараметров без количества итераций
+
+    Parameters
+    ----------
+    base_params
+        Параметры, в окрестностях которых осуществляется поиск оптимума
+    positions
+        Кортеж тикеров, для которых необходимо осуществляется поиск оптимума
+    date
+        Дата, до которой используются данные
+    data_pool_func
+        Функция получения данных для тренировки модели
+    data_space
+        Функция для формирования пространства поиска вариантов данных для модели
+    Returns
+    -------
+    dict
+        ключ 'data' - параметры данных,
+        ключ 'model' - параметры модели без количества итераций градиентного бустинга
+    """
+    objective = functools.partial(cv_model, positions=positions, date=date, data_pool_func=data_pool_func)
+    param_space = dict(data=data_space,
+                       model=make_model_space(base_params))
     best = hyperopt.fmin(objective,
                          space=param_space,
                          algo=hyperopt.tpe.suggest,
                          max_evals=MAX_SEARCHES,
                          rstate=np.random.RandomState(SEED))
-    best_space = hyperopt.space_eval(param_space, best)
-    return best_space
+    best_params = hyperopt.space_eval(param_space, best)
+    check_model_bounds(best_params, base_params)
+    return best_params

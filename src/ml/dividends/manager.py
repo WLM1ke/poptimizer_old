@@ -31,9 +31,9 @@ class DividendsMLDataManager(AbstractDataManager):
         if positions != self.value.positions or date != self.value.date:
             self.create()
             return
-        for outer_key in model.PARAMS:
-            for inner_key in model.PARAMS[outer_key]:
-                if model.PARAMS[outer_key][inner_key] != self.value.params[outer_key][inner_key]:
+        for outer_key in model._PARAMS:
+            for inner_key in model._PARAMS[outer_key]:
+                if model._PARAMS[outer_key][inner_key] != self.value.params[outer_key][inner_key]:
                     self.create()
                     return
 

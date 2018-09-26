@@ -18,7 +18,7 @@ class MLDividendsMetrics(AbstractDividendsMetrics):
         portfolio = self._portfolio
         manager = ml.dividends.manager.DividendsMLDataManager(portfolio.positions[:-2],
                                                               pd.Timestamp(portfolio.date))
-        return manager.value.div_prediction
+        return manager.value.prediction
 
     @property
     def _tickers_real_after_tax_std(self):

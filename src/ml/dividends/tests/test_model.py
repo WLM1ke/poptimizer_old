@@ -28,14 +28,14 @@ SPACE = {
 
 @pytest.fixture(scope='module', name='data')
 def make_data():
-    saved_params = model.PARAMS
+    saved_params = model._PARAMS
     saved_searches = ml.hyper.MAX_SEARCHES
     saved_space = hyper.PARAM_SPACE
-    model.PARAMS = PARAMS
+    model._PARAMS = PARAMS
     ml.hyper.MAX_SEARCHES = 2
     hyper.PARAM_SPACE = SPACE
     yield model.DividendsML(('CHMF', 'MSTT', 'PMSBP', 'SNGSP', 'NLMK'), pd.Timestamp('2018-09-05'))
-    model.PARAMS = saved_params
+    model._PARAMS = saved_params
     ml.hyper.MAX_SEARCHES = saved_searches
     hyper.PARAM_SPACE = saved_space
 
@@ -76,11 +76,11 @@ def test_model_params(data):
 
 
 def test_div_prediction(data):
-    assert data.div_prediction['CHMF'] == pytest.approx(0.10459980858366799)
-    assert data.div_prediction['MSTT'] == pytest.approx(0.1071490717673651)
-    assert data.div_prediction['PMSBP'] == pytest.approx(0.11000412382799508)
-    assert data.div_prediction['SNGSP'] == pytest.approx(0.05088185727905429)
-    assert data.div_prediction['NLMK'] == pytest.approx(0.1071490717673651)
+    assert data.prediction['CHMF'] == pytest.approx(0.10459980858366799)
+    assert data.prediction['MSTT'] == pytest.approx(0.1071490717673651)
+    assert data.prediction['PMSBP'] == pytest.approx(0.11000412382799508)
+    assert data.prediction['SNGSP'] == pytest.approx(0.05088185727905429)
+    assert data.prediction['NLMK'] == pytest.approx(0.1071490717673651)
 
 
 def test_find_better_model(data, capsys):
