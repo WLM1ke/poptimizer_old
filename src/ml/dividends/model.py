@@ -2,10 +2,11 @@
 import catboost
 import pandas as pd
 
-from ml.ml_dividends import hyper, cases
+from ml import hyper
+from ml.dividends import cases
 from utils.aggregation import Freq
 
-PARAMS = {'data': {'freq': Freq.yearly,
+P_____ = {'data': {'freq': Freq.yearly,
                    'lags': 1},
           'model': {'bagging_temperature': 1.1309994272659563,
                     'depth': 5,
@@ -13,6 +14,39 @@ PARAMS = {'data': {'freq': Freq.yearly,
                     'learning_rate': 0.1229294573322397,
                     'one_hot_max_size': 100,
                     'random_strength': 2.6665434457041237}}
+
+PARAMS = {'data': {'freq': Freq.yearly,
+                   'lags': 1},
+          'model': {'bagging_temperature': 0.8514582238067644,
+                    'depth': 4,
+                    'l2_leaf_reg': 3.100562393381714,
+                    'learning_rate': 0.0883151996608085,
+                    'one_hot_max_size': 100,
+                    'random_strength': 0.992155907806343}}
+
+# Количество лагов в данных
+LAGS_RANGE = 1
+
+
+def lags():
+    base_lags = PARAMS['data']['lags']
+    return [lag for lag in range(base_lags - LAGS_RANGE, base_lags + LAGS_RANGE + 1) if lag > 0]
+
+
+def make_param_space():
+    """Пространство поиска параметров модели"""
+    space = {
+        'data': {'freq': hyper.make_choice_space('freq', Freq),
+                 'lags': hyper.make_choice_space('lags', lags())},
+        'model': hyper.make_model_space(PARAMS)}
+    return space
+
+
+def check_space_bounds(params: dict):
+    data = params['data']
+    if data['lags'] != 1 and (data['lags'] == lags()[0] or data['lags'] == lags()[-1]):
+        print(f'\nНеобходимо увеличить LAGS_RANGE до {LAGS_RANGE + 1}')
+    hyper.check_model_bounds(params, PARAMS)
 
 
 class DividendsML:
@@ -29,7 +63,7 @@ class DividendsML:
     def __init__(self, positions: tuple, date: pd.Timestamp):
         self._positions = positions
         self._date = date
-        self._cv_result = hyper.cv_model(PARAMS, positions, date)
+        self._cv_result = hyper.cv_model(PARAMS, positions, date, cases.learn_pool)
         self._clf = catboost.CatBoostRegressor(**self._cv_result['model'])
         learn_data = cases.learn_pool(tickers=positions, last_date=date, **self._cv_result['data'])
         self._clf.fit(learn_data)
@@ -80,25 +114,27 @@ class DividendsML:
         """Ищет оптимальную модель и сравнивает с базовой - результаты сравнения распечатываются"""
         positions = self._positions
         date = self._date
-        base = hyper.cv_model(PARAMS, positions, date)
-        best_model_params = hyper.optimize_hyper(positions, date)
-        best = hyper.cv_model(best_model_params, positions, date)
+        base = hyper.cv_model(PARAMS, positions, date, cases.learn_pool)
+        param_space = make_param_space()
+        best_model_params = hyper.optimize_hyper(param_space, positions, date, cases.learn_pool)
+        check_space_bounds(best_model_params)
+        best = hyper.cv_model(best_model_params, positions, date, cases.learn_pool)
         if base['loss'] < best['loss']:
             print('\nЛУЧШАЯ МОДЕЛЬ - Базовая модель')
-            print(f"СКО - {base['loss']:0.4%}"
+            print(f"R2 - {base['r2']:0.4%}"
                   f"\nКоличество итераций - {base['model']['iterations']}"
                   f"\n{PARAMS}")
             print('\nНайденная модель')
-            print(f"СКО - {best['loss']:0.4%}"
+            print(f"R2 - {best['r2']:0.4%}"
                   f"\nКоличество итераций - {best['model']['iterations']}"
                   f"\n{best_model_params}")
         else:
             print('\nЛУЧШАЯ МОДЕЛЬ - Найденная модель')
-            print(f"СКО - {best['loss']:0.4%}"
+            print(f"R2 - {best['r2']:0.4%}"
                   f"\nКоличество итераций - {best['model']['iterations']}"
                   f"\n{best_model_params}")
             print('\nБазовая модель')
-            print(f"СКО - {base['loss']:0.4%}"
+            print(f"R2 - {base['r2']:0.4%}"
                   f"\nКоличество итераций - {base['model']['iterations']}"
                   f"\n{PARAMS}")
 

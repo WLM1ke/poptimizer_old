@@ -1,4 +1,4 @@
-"""Оптимизация гиперпараметров ML-модели дивидендов"""
+"""Оптимизация гиперпараметров ML-модели"""
 import functools
 
 import catboost
@@ -6,9 +6,6 @@ import hyperopt
 import numpy as np
 import pandas as pd
 from hyperopt import hp
-
-from ml.ml_dividends.cases import learn_pool
-from utils.aggregation import Freq
 
 # Базовые настройки catboost
 MAX_ITERATIONS = 800
@@ -23,32 +20,25 @@ BASE_PARAMS = dict(iterations=MAX_ITERATIONS,
 # Настройки hyperopt
 MAX_SEARCHES = 100
 
-# Количество лагов в данных
-MAX_LAG = 3
-
 # Рекомендации Яндекс - https://tech.yandex.com/catboost/doc/dg/concepts/parameter-tuning-docpage/
 
 # OneHot кодировка - учитывая количество акций в портфеле используется cat-кодировка или OneHot-кодировка
 ONE_HOT_SIZE = [2, 100]
 
 # Скорость обучения
-MEAN_LEARNING_RATE = 0.11
-RANGE_LEARNING_RATE = 0.3
+LEARNING_RATE_RANGE = 0.1
 
 # Глубина деревьев
-MAX_DEPTH = 10
+DEPTH_RANGE = 3
 
 # L2-регуляризация
-MEAN_L2 = 2.2
-RANGE_L2 = 0.6
+L2_RANGE = 0.1
 
 # Случайность разбиений
-MEAN_RAND_STRENGTH = 1.8
-RANGE_RAND_STRENGTH = 0.7
+RAND_STRENGTH_RANGE = 0.1
 
 # Интенсивность бегинга
-MEAN_BAGGING = 1.4
-RANGE_BAGGING = 0.7
+BAGGING_RANGE = 0.1
 
 
 def log_limits(mean_, percent_range):
@@ -74,60 +64,46 @@ def make_choice_space(space_name, choice):
     return hp.choice(space_name, list(choice))
 
 
-# Описание пространства поиска параметров
-PARAM_SPACE = {
-    'data': {'freq': make_choice_space('freq', Freq),
-             'lags': make_choice_space('lags', MAX_LAG)},
-    'model': {'one_hot_max_size': make_choice_space('one_hot_max_size', ONE_HOT_SIZE),
-              'learning_rate': make_log_space('learning_rate', MEAN_LEARNING_RATE, RANGE_LEARNING_RATE),
-              'depth': make_choice_space('depth', MAX_DEPTH),
-              'l2_leaf_reg': make_log_space('l2_leaf_reg', MEAN_L2, RANGE_L2),
-              'random_strength': make_log_space('rand_strength', MEAN_RAND_STRENGTH, RANGE_RAND_STRENGTH),
-              'bagging_temperature': make_log_space('bagging_temperature', MEAN_BAGGING, RANGE_BAGGING)}}
+def make_model_space(params: dict):
+    """Создает вероятностное пространство для параметров регрессии"""
+    model = params['model']
+    depths = [depth for depth in range(model['depth'] - DEPTH_RANGE, model['depth'] + DEPTH_RANGE + 1) if depth > 0]
+    space = {
+        'one_hot_max_size': make_choice_space('one_hot_max_size', ONE_HOT_SIZE),
+        'learning_rate': make_log_space('learning_rate', model['learning_rate'], LEARNING_RATE_RANGE),
+        'depth': make_choice_space('depth', depths),
+        'l2_leaf_reg': make_log_space('l2_leaf_reg', model['l2_leaf_reg'], L2_RANGE),
+        'random_strength': make_log_space('rand_strength', model['random_strength'], RAND_STRENGTH_RANGE),
+        'bagging_temperature': make_log_space('bagging_temperature', model['bagging_temperature'], BAGGING_RANGE)}
+    return space
 
 
-def check_space_bounds(space: dict):
+def check_model_bounds(params: dict, base_params: dict):
     """Проверяет и дает рекомендации о расширении границ пространства поиска параметров
 
     Для целочисленных параметров - предупреждение выдается на границе диапазона и рекомендуется увеличить диапазон на 1.
     Для реальных параметров - предупреждение выдается в 10% от границе. Рекомендуется сместить центр поиска к текущему
     значению и расширить границы поиска на 10%
     """
-    if space['data']['lags'] == MAX_LAG:
-        print(f'\nНеобходимо увеличить MAX_LAG до {MAX_LAG + 1}')
+    model = params['model']
+    base_model = base_params['model']
+    if abs(np.log(model['learning_rate'] / base_model['learning_rate'])) / np.log1p(LEARNING_RATE_RANGE) > 0.9:
+        print(f'Необходимо увеличить RANGE_LEARNING_RATE до {LEARNING_RATE_RANGE + 0.1:0.1f}')
 
-    if abs(np.log(space['model']['learning_rate'] / MEAN_LEARNING_RATE)) / np.log1p(RANGE_LEARNING_RATE) > 0.9:
-        new_mean = (MEAN_LEARNING_RATE + space['model']['learning_rate']) / 2
-        print(f"\nНеобходимо изменить MEAN_LEARNING_RATE на {new_mean:0.2f}")
-        print(f'Необходимо увеличить RANGE_LEARNING_RATE до {RANGE_LEARNING_RATE + 0.1:0.1f}')
+    if model['depth'] == base_model['depth'] - DEPTH_RANGE or model['depth'] == base_model['depth'] + DEPTH_RANGE:
+        print(f'\nНеобходимо увеличить DEPTH_RANGE до {DEPTH_RANGE + 1}')
 
-    if space['model']['depth'] == MAX_DEPTH:
-        print(f'\nНеобходимо увеличить MAX_DEPTH до {MAX_DEPTH + 1}')
+    if abs(np.log(model['l2_leaf_reg'] / base_model['l2_leaf_reg'])) / np.log1p(L2_RANGE) > 0.9:
+        print(f'Необходимо увеличить RANGE_L2 до {L2_RANGE + 0.1:0.1f}')
 
-    if abs(np.log(space['model']['l2_leaf_reg'] / MEAN_L2)) / np.log1p(RANGE_L2) > 0.9:
-        new_mean = (MEAN_L2 + space['model']['l2_leaf_reg']) / 2
-        print(f"\nНеобходимо изменить MEAN_L2 на {new_mean:0.1f}")
-        print(f'Необходимо увеличить RANGE_L2 до {RANGE_L2 + 0.1:0.1f}')
+    if abs(np.log(model['random_strength'] / base_model['random_strength'])) / np.log1p(RAND_STRENGTH_RANGE) > 0.9:
+        print(f'Необходимо увеличить RANGE_RAND_STRENGTH до {RAND_STRENGTH_RANGE + 0.1:0.1f}')
 
-    if abs(np.log(space['model']['random_strength'] / MEAN_RAND_STRENGTH)) / np.log1p(RANGE_RAND_STRENGTH) > 0.9:
-        new_mean = (MEAN_RAND_STRENGTH + space['model']['random_strength']) / 2
-        print(f"\nНеобходимо изменить MEAN_RAND_STRENGTH на {new_mean:0.1f}")
-        print(f'Необходимо увеличить RANGE_RAND_STRENGTH до {RANGE_RAND_STRENGTH + 0.1:0.1f}')
-
-    if abs(np.log(space['model']['bagging_temperature'] / MEAN_BAGGING)) / np.log1p(RANGE_BAGGING) > 0.9:
-        new_mean = (MEAN_BAGGING + space['model']['bagging_temperature']) / 2
-        print(f"\nНеобходимо изменить MEAN_BAGGING на {new_mean:0.1f}")
-        print(f'Необходимо увеличить RANGE_BAGGING до {RANGE_BAGGING + 0.1:0.1f}')
+    if abs(np.log(model['bagging_temperature'] / base_model['bagging_temperature'])) / np.log1p(BAGGING_RANGE) > 0.9:
+        print(f'Необходимо увеличить RANGE_BAGGING до {BAGGING_RANGE + 0.1:0.1f}')
 
 
-def validate_model_params(model_params: dict):
-    """Проверяет наличие верных ключей в словаре, описывающем модель"""
-    for key in model_params:
-        if set(model_params[key]) != set(PARAM_SPACE[key]):
-            raise ValueError(f'Неверный перечень ключей в разделе {key}')
-
-
-def cv_model(params: dict, positions: tuple, date: pd.Timestamp):
+def cv_model(params: dict, positions: tuple, date: pd.Timestamp, data_pool):
     """Кросс-валидирует модель по RMSE, нормированному на СКО набора данных
 
     Осуществляется проверка, что не достигнут максимум итераций, возвращается RMSE и параметры модели с оптимальным
@@ -141,16 +117,18 @@ def cv_model(params: dict, positions: tuple, date: pd.Timestamp):
         Кортеж тикеров, для которых необходимо осуществить кросс-валидацию
     date
         Дата, для которой необходимо осуществить кросс-валидацию
+    data_pool
+        Функция для получения catboost.Pool с данными
     Returns
     -------
     dict
-        Словарь с результатом в формате hyperopt: ключ 'loss' - RMSE на кросс-валидации, 'status' - успешного
-        прохождения оценки RMSE, ключ 'data' - параметры данных, ключ 'model' - параметры модели, в которые добавлено
+        Словарь с результатом в формате hyperopt: ключ 'loss' - нормированная RMSE на кросс-валидации,
+        'status' - успешного прохождения, ключ 'std' - RMSE на кросс-валидации, ключ 'r2' - нормированная RMSE на
+        кросс-валидации, ключ 'data' - параметры данных, ключ 'model' - параметры модели, в которые добавлено
         оптимальное количество итераций градиентного бустинга на кросс-валидации и вспомогательные настройки
     """
-    validate_model_params(params)
     data_params = params['data']
-    data = learn_pool(positions, date, **data_params)
+    data = data_pool(positions, date, **data_params)
     pool_std = np.array(data.get_label()).std()
     model_params = {}
     model_params.update(BASE_PARAMS)
@@ -170,21 +148,13 @@ def cv_model(params: dict, positions: tuple, date: pd.Timestamp):
                 model=model_params)
 
 
-def optimize_hyper(positions: tuple, date: pd.Timestamp):
+def optimize_hyper(param_space: dict, positions: tuple, date: pd.Timestamp, data_pool):
     """Ищет и  возвращает лучший набор гиперпараметров без количества итераций"""
-    objective = functools.partial(cv_model, positions=positions, date=date)
+    objective = functools.partial(cv_model, positions=positions, date=date, data_pool=data_pool)
     best = hyperopt.fmin(objective,
-                         space=PARAM_SPACE,
+                         space=param_space,
                          algo=hyperopt.tpe.suggest,
                          max_evals=MAX_SEARCHES,
                          rstate=np.random.RandomState(SEED))
-    best_space = hyperopt.space_eval(PARAM_SPACE, best)
-    check_space_bounds(best_space)
+    best_space = hyperopt.space_eval(param_space, best)
     return best_space
-
-
-if __name__ == '__main__':
-    DATE = '2018-09-03'
-    pos = ('CHMF', 'RTKMP', 'SNGSP', 'VSMO', 'LKOH')
-    MAX_SEARCHES = 2
-    print(optimize_hyper(pos, pd.Timestamp(DATE)))

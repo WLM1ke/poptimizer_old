@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from ml.ml_dividends import model
+from ml.dividends import model
 
 DIVIDENDS_LIST = [i / 100 for i in range(0, 16, 1)]
 
