@@ -31,7 +31,7 @@ class DividendsMLDataManager(AbstractDataManager):
         super().__init__(None, ML_NAME)
 
     def download_all(self):
-        return model.DividendsML(self._positions, self._date)
+        return model.DividendsModel(self._positions, self._date)
 
     def download_update(self):
         super().download_update()

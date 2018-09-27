@@ -11,28 +11,28 @@ def test_manager_first_time():
     positions = tuple(['MSTT', 'MVID', 'CHMF', 'MTSS', 'PMSBP'])
     date = pd.Timestamp('2018-09-06')
     data = manager.DividendsMLDataManager(positions, date)
-    assert data.value.params == model.DividendsML(positions, date).params
+    assert data.value.params == model.DividendsModel(positions, date).params
 
 
 def test_manager_second_time():
     positions = tuple(['MSTT', 'MVID', 'CHMF', 'MTSS', 'PMSBP'])
     date = pd.Timestamp('2018-09-06')
     data = manager.DividendsMLDataManager(positions, date)
-    assert data.value.params == model.DividendsML(positions, date).params
+    assert data.value.params == model.DividendsModel(positions, date).params
 
 
 def test_manager_change_date():
     positions = tuple(['MSTT', 'MVID', 'CHMF', 'MTSS', 'PMSBP'])
     date = pd.Timestamp('2018-09-05')
     data = manager.DividendsMLDataManager(positions, date)
-    assert data.value.params == model.DividendsML(positions, date).params
+    assert data.value.params == model.DividendsModel(positions, date).params
 
 
 def test_manager_change_positions():
     positions = tuple(['PRTK', 'MVID', 'CHMF', 'MTSS', 'PMSBP'])
     date = pd.Timestamp('2018-09-06')
     data = manager.DividendsMLDataManager(positions, date)
-    assert data.value.params == model.DividendsML(positions, date).params
+    assert data.value.params == model.DividendsModel(positions, date).params
 
 
 def test_manager_change_params(monkeypatch):
@@ -44,7 +44,7 @@ def test_manager_change_params(monkeypatch):
     date = pd.Timestamp('2018-09-06')
     data = manager.DividendsMLDataManager(positions, date)
     assert data.value.params['data']['lags_range'] == test_lags
-    assert data.value.params == model.DividendsML(positions, date).params
+    assert data.value.params == model.DividendsModel(positions, date).params
 
 
 def test_download_update():

@@ -7,7 +7,7 @@ import pandas as pd
 from ml import hyper
 
 
-class DividendsML(abc.ABC):
+class BaseModel(abc.ABC):
     """Содержит прогноз и его СКО
 
     Parameters
@@ -58,6 +58,18 @@ class DividendsML(abc.ABC):
         raise NotImplementedError
 
     @property
+    @abc.abstractmethod
+    def prediction_mean(self):
+        """pd.Series с прогнозом дивидендов"""
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def prediction_std(self):
+        """pd.Series с прогнозом дивидендов"""
+        raise NotImplementedError
+
+    @property
     def positions(self):
         """Перечень позиций, для которых составлен прогноз"""
         return self._positions
@@ -76,18 +88,6 @@ class DividendsML(abc.ABC):
     def r2(self):
         """СКО прогноза"""
         return self._cv_result['r2']
-
-    @property
-    @abc.abstractmethod
-    def prediction_mean(self):
-        """pd.Series с прогнозом дивидендов"""
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def prediction_std(self):
-        """pd.Series с прогнозом дивидендов"""
-        raise NotImplementedError
 
     @property
     def params(self):

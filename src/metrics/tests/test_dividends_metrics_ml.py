@@ -10,7 +10,7 @@ def test_tickers_real_after_tax_mean():
     date = '2018-09-04'
     portfolio = metrics.Portfolio(date, 0, positions)
     dividends_metrics = metrics.MLDividendsMetrics(portfolio)
-    dividends_model = model.DividendsML(tuple(sorted(positions)), pd.Timestamp(date))
+    dividends_model = model.DividendsModel(tuple(sorted(positions)), pd.Timestamp(date))
     assert dividends_metrics._tickers_real_after_tax_mean.equals(dividends_model.prediction_mean)
 
 
@@ -19,7 +19,7 @@ def test_tickers_real_after_tax_std():
     date = '2018-09-04'
     portfolio = metrics.Portfolio(date, 0, positions)
     dividends_metrics = metrics.MLDividendsMetrics(portfolio)
-    dividends_model = model.DividendsML(tuple(sorted(positions)), pd.Timestamp(date))
+    dividends_model = model.DividendsModel(tuple(sorted(positions)), pd.Timestamp(date))
     assert isinstance(dividends_metrics._tickers_real_after_tax_std, pd.Series)
     assert dividends_metrics._tickers_real_after_tax_std.index.equals(pd.Index(sorted(positions)))
     assert np.allclose(dividends_metrics._tickers_real_after_tax_std.values, dividends_model.std)

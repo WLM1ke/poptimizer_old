@@ -34,7 +34,7 @@ def make_data():
     model._PARAMS = PARAMS
     ml.hyper.MAX_SEARCHES = 2
     hyper.PARAM_SPACE = SPACE
-    yield model.DividendsML(('CHMF', 'MSTT', 'PMSBP', 'SNGSP', 'NLMK'), pd.Timestamp('2018-09-05'))
+    yield model.DividendsModel(('CHMF', 'MSTT', 'PMSBP', 'SNGSP', 'NLMK'), pd.Timestamp('2018-09-05'))
     model._PARAMS = saved_params
     ml.hyper.MAX_SEARCHES = saved_searches
     hyper.PARAM_SPACE = saved_space
