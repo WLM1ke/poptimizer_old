@@ -76,11 +76,11 @@ def test_model_params(data):
 
 
 def test_div_prediction(data):
-    assert data.prediction['CHMF'] == pytest.approx(0.10459980858366799)
-    assert data.prediction['MSTT'] == pytest.approx(0.1071490717673651)
-    assert data.prediction['PMSBP'] == pytest.approx(0.11000412382799508)
-    assert data.prediction['SNGSP'] == pytest.approx(0.05088185727905429)
-    assert data.prediction['NLMK'] == pytest.approx(0.1071490717673651)
+    assert data.prediction_mean['CHMF'] == pytest.approx(0.10459980858366799)
+    assert data.prediction_mean['MSTT'] == pytest.approx(0.1071490717673651)
+    assert data.prediction_mean['PMSBP'] == pytest.approx(0.11000412382799508)
+    assert data.prediction_mean['SNGSP'] == pytest.approx(0.05088185727905429)
+    assert data.prediction_mean['NLMK'] == pytest.approx(0.1071490717673651)
 
 
 def test_find_better_model(data, capsys):
