@@ -8,12 +8,12 @@ from utils.aggregation import Freq
 
 PARAMS = {'data': {'freq': Freq.yearly,
                    'lags': 1},
-          'model': {'bagging_temperature': 1.1542008340618164,
-                    'depth': 4,
-                    'l2_leaf_reg': 2.7558209934423616,
-                    'learning_rate': 0.02991973118954086,
+          'model': {'bagging_temperature': 1.1045537855283285,
+                    'depth': 3,
+                    'l2_leaf_reg': 1.240078407471568,
+                    'learning_rate': 0.10013835715140001,
                     'one_hot_max_size': 100,
-                    'random_strength': 1.024116898045557}}
+                    'random_strength': 2.239571135008486}}
 
 # Диапазон лагов относительно базового, для которого осуществляется поиск оптимальной ML-модели
 LAGS_RANGE = 1

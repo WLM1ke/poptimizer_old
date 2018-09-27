@@ -27,19 +27,19 @@ MAX_SEARCHES = 100
 ONE_HOT_SIZE = [2, 100]
 
 # Диапазон поиска скорости обучения
-LEARNING_RATE_RANGE = 0.1
+LEARNING_RATE_RANGE = 0.2
 
 # Диапазон поиска глубины деревьев
-DEPTH_RANGE = 2
+DEPTH_RANGE = 4
 
 # Диапазон поиска параметра L2-регуляризации
-L2_RANGE = 0.1
+L2_RANGE = 0.5
 
 # Диапазон поиска случайности разбиений
-RAND_STRENGTH_RANGE = 0.1
+RAND_STRENGTH_RANGE = 0.2
 
 # Диапазон поиска интенсивности бегинга
-BAGGING_RANGE = 0.2
+BAGGING_RANGE = 0.3
 
 
 def log_limits(middle: float, percent_range: float):
@@ -83,19 +83,19 @@ def check_model_bounds(params: dict, base_params: dict):
     model = params['model']
     base_model = base_params['model']
     if abs(np.log(model['learning_rate'] / base_model['learning_rate'])) / np.log1p(LEARNING_RATE_RANGE) > 0.9:
-        print(f'\nНеобходимо увеличить RANGE_LEARNING_RATE до {LEARNING_RATE_RANGE + 0.1:0.1f}')
+        print(f'\nНеобходимо увеличить LEARNING_RATE_RANGE до {LEARNING_RATE_RANGE + 0.1:0.1f}')
 
     if model['depth'] == base_model['depth'] - DEPTH_RANGE or model['depth'] == base_model['depth'] + DEPTH_RANGE:
         print(f'\nНеобходимо увеличить DEPTH_RANGE до {DEPTH_RANGE + 1}')
 
     if abs(np.log(model['l2_leaf_reg'] / base_model['l2_leaf_reg'])) / np.log1p(L2_RANGE) > 0.9:
-        print(f'\nНеобходимо увеличить RANGE_L2 до {L2_RANGE + 0.1:0.1f}')
+        print(f'\nНеобходимо увеличить L2_RANGE до {L2_RANGE + 0.1:0.1f}')
 
     if abs(np.log(model['random_strength'] / base_model['random_strength'])) / np.log1p(RAND_STRENGTH_RANGE) > 0.9:
-        print(f'\nНеобходимо увеличить RANGE_RAND_STRENGTH до {RAND_STRENGTH_RANGE + 0.1:0.1f}')
+        print(f'\nНеобходимо увеличить RAND_STRENGTH_RANGE до {RAND_STRENGTH_RANGE + 0.1:0.1f}')
 
     if abs(np.log(model['bagging_temperature'] / base_model['bagging_temperature'])) / np.log1p(BAGGING_RANGE) > 0.9:
-        print(f'\nНеобходимо увеличить RANGE_BAGGING до {BAGGING_RANGE + 0.1:0.1f}')
+        print(f'\nНеобходимо увеличить BAGGING_RANGE до {BAGGING_RANGE + 0.1:0.1f}')
 
 
 def cv_model(params: dict, positions: tuple, date: pd.Timestamp, data_pool_func):

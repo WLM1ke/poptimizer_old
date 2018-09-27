@@ -102,4 +102,4 @@ def volumes(tickers: tuple):
 
 
 if __name__ == '__main__':
-    print(quotes('UPRO'))
+    print(quotes('VZRZP').to_excel('data.xlsx'))
