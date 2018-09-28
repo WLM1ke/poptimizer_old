@@ -11,7 +11,7 @@ T2 = 1
 
 
 class ReturnsCasesIterator:
-    def __init__(self, tickers: tuple, last_date: pd.Timestamp, ew_lags: float, lags: int):
+    def __init__(self, tickers: tuple, last_date: pd.Timestamp, ew_lags: float, returns_lags: int):
         """Генератор кейсов для обучения
 
         Обучающие кейсы состоят из тикера, экспоненциально сглаженного СКО и нескольких последних доходностей,
@@ -25,13 +25,13 @@ class ReturnsCasesIterator:
             Дата, до которой используется статистика
         ew_lags
             1 / ew_lags - константа экспоненциального сглаживания
-        lags
+        returns_lags
             Количество лагов нормированной по СКО доходности, включаемой в кейсы
         """
         self._tickers = tickers
         self._last_date = last_date
         self._ew_lags = ew_lags
-        self._lags = lags
+        self._lags = returns_lags
         self._returns = self._make_returns()
         self._ew_std = self._returns.ewm(alpha=1 / ew_lags, min_periods=ew_lags).std()
 
@@ -85,7 +85,7 @@ class ReturnsCasesIterator:
         return cases.reset_index()
 
 
-def learn_pool(tickers: tuple, last_date: pd.Timestamp, ew_lags: float, lags: int):
+def learn_pool(tickers: tuple, last_date: pd.Timestamp, ew_lags: float, returns_lags: int):
     """Возвращает обучающие кейсы до указанной даты включительно в формате Pool
 
     Обучающие кейсы состоят из тикера, экспоненциально сглаженного СКО и нескольких последних доходностей,
@@ -99,7 +99,7 @@ def learn_pool(tickers: tuple, last_date: pd.Timestamp, ew_lags: float, lags: in
         Дата, до которой используется статистика
     ew_lags
         1 / ew_lags - константа экспоненциального сглаживания
-    lags
+    returns_lags
         Количество лагов нормированной по СКО доходности, включаемой в кейсы
 
     Returns
@@ -107,7 +107,7 @@ def learn_pool(tickers: tuple, last_date: pd.Timestamp, ew_lags: float, lags: in
     catboost.Pool
         Кейсы для обучения
     """
-    learn_cases = pd.concat(ReturnsCasesIterator(tickers, last_date, ew_lags, lags))
+    learn_cases = pd.concat(ReturnsCasesIterator(tickers, last_date, ew_lags, returns_lags))
     learn = catboost.Pool(data=learn_cases.iloc[:, :-1],
                           label=learn_cases.iloc[:, -1],
                           cat_features=[0],
@@ -115,7 +115,7 @@ def learn_pool(tickers: tuple, last_date: pd.Timestamp, ew_lags: float, lags: in
     return learn
 
 
-def predict_pool(tickers: tuple, last_date: pd.Timestamp, ew_lags: float, lags: int):
+def predict_pool(tickers: tuple, last_date: pd.Timestamp, ew_lags: float, returns_lags: int):
     """Возвращает кейсы предсказания до указанной даты включительно в формате Pool
 
     Обучающие кейсы состоят из тикера, экспоненциально сглаженного СКО и нескольких последних доходностей,
@@ -129,7 +129,7 @@ def predict_pool(tickers: tuple, last_date: pd.Timestamp, ew_lags: float, lags: 
         Дата, до которой используется статистика
     ew_lags
         1 / ew_lags - константа экспоненциального сглаживания
-    lags
+    returns_lags
         Количество лагов нормированной по СКО доходности, включаемой в кейсы
 
     Returns
@@ -137,8 +137,7 @@ def predict_pool(tickers: tuple, last_date: pd.Timestamp, ew_lags: float, lags: 
     catboost.Pool
         Кейсы для предсказания
     """
-    predict_cases = ReturnsCasesIterator(tickers, last_date, ew_lags, lags).cases(last_date, labels=False)
-    print(predict_cases)
+    predict_cases = ReturnsCasesIterator(tickers, last_date, ew_lags, returns_lags).cases(last_date, labels=False)
     predict = catboost.Pool(data=predict_cases.iloc[:, :-1],
                             label=None,
                             cat_features=[0],
@@ -153,7 +152,7 @@ if __name__ == '__main__':
 
     best = 0
     for lags_std in range(9, 10):
-        for lags in range(4, 7):
+        for lags in range(0, 9):
             print(lags_std, lags, end=' ')
             pool = learn_pool(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), lags_std, lags)
             ignored_features = []
@@ -173,7 +172,7 @@ if __name__ == '__main__':
                 best = r2
                 print(index_ + 1, f'{score:0.2f}', f'{r2:0.2%}')
             else:
-                print(f'{r2:0.2%}')
+                print(f'{score:0.2f}', f'{r2:0.2%}')
 
     pool = learn_pool(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), 9, 5)
     clf = catboost.CatBoostRegressor(

@@ -29,9 +29,11 @@ class BaseModel(abc.ABC):
         self._clf.fit(learn_data)
 
     def __str__(self):
+        prediction = pd.concat([self.prediction_mean, self.prediction_std], axis=1)
+        prediction.columns = ['mean', 'std']
         return (f'СКО - {self.std:0.4%}'
                 f'\nR2 - {self.r2:0.4%}'
-                f'\n\nПрогноз:\n{self.prediction_mean}'
+                f'\n\nПрогноз:\n{prediction}'
                 f'\n\nВажность признаков: {self._clf.feature_importances_}'
                 f'\n\nМодель:\n{self.params}')
 
