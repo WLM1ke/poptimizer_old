@@ -6,18 +6,18 @@ from ml import hyper
 from ml.model_base import BaseModel
 from ml.returns import cases
 
-PARAMS = {'data': {'ew_lags': 9.096018979715915,
-                   'returns_lags': 6},
-          'model': {'bagging_temperature': 1.1386437533110965,
-                    'depth': 6,
-                    'l2_leaf_reg': 2.098052521058102,
-                    'learning_rate': 0.02927689086178085,
+PARAMS = {'data': {'ew_lags': 8.178364910843529,
+                   'returns_lags': 0},
+          'model': {'bagging_temperature': 0.9151076771639531,
+                    'depth': 5,
+                    'l2_leaf_reg': 4.1338176156683355,
+                    'learning_rate': 0.02964357637153455,
                     'one_hot_max_size': 2,
-                    'random_strength': 1.068723499055894}}
+                    'random_strength': 1.0342174731768807}}
 
 # Диапазон лагов относительно базового, для которого осуществляется поиск оптимальной ML-модели
-EW_LAGS_RANGE = 0.1
-RETURNS_LAGS_RANGE = 2
+EW_LAGS_RANGE = 0.2
+RETURNS_LAGS_RANGE = 6
 
 
 def ew_lags(base_params: dict, cut=1.0):
@@ -61,14 +61,14 @@ class ReturnsModel(BaseModel):
             print(f'\nНеобходимо увеличить RETURNS_LAGS_RANGE до {RETURNS_LAGS_RANGE + 1}')
 
     @property
-    def prediction_mean(self):  # TODO
+    def prediction_mean(self):
         """pd.Series с прогнозом дивидендов"""
         data_pool = self._predict_pool_func(tickers=self.positions, last_date=self.date, **self._cv_result['data'])
         std = pd.DataFrame(data_pool.get_features(), list(self.positions)).iloc[:, 1]
         return pd.Series(self._clf.predict(data_pool), list(self.positions)) * std
 
     @property
-    def prediction_std(self):  # TODO
+    def prediction_std(self):
         """pd.Series с прогнозом дивидендов"""
         data_pool = self._predict_pool_func(tickers=self.positions, last_date=self.date, **self._cv_result['data'])
         return pd.DataFrame(data_pool.get_features(), list(self.positions)).iloc[:, 1] * self.std

@@ -29,14 +29,15 @@ ONE_HOT_SIZE = [2, 100]
 # Диапазон поиска скорости обучения
 LEARNING_RATE_RANGE = 0.2
 
-# Диапазон поиска глубины деревьев
-DEPTH_RANGE = 4
+# Диапазон поиска и ограничение на максимальную глубину деревьев
+DEPTH_RANGE = 5
+MAX_DEPTH = 16
 
 # Диапазон поиска параметра L2-регуляризации
-L2_RANGE = 0.5
+L2_RANGE = 0.8
 
 # Диапазон поиска случайности разбиений
-RAND_STRENGTH_RANGE = 0.2
+RAND_STRENGTH_RANGE = 0.3
 
 # Диапазон поиска интенсивности бегинга
 BAGGING_RANGE = 0.3
@@ -63,7 +64,8 @@ def make_choice_space(space_name: str, choice):
 def make_model_space(params: dict):
     """Создает вероятностное пространство для параметров регрессии"""
     model = params['model']
-    depths = [depth for depth in range(model['depth'] - DEPTH_RANGE, model['depth'] + DEPTH_RANGE + 1) if depth > 0]
+    depths = [depth for depth in range(model['depth'] - DEPTH_RANGE, model['depth'] + DEPTH_RANGE + 1)
+              if 0 < depth <= MAX_DEPTH]
     space = {
         'one_hot_max_size': make_choice_space('one_hot_max_size', ONE_HOT_SIZE),
         'learning_rate': make_log_space('learning_rate', model['learning_rate'], LEARNING_RATE_RANGE),
