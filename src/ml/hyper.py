@@ -29,9 +29,8 @@ ONE_HOT_SIZE = [2, 100]
 # Диапазон поиска скорости обучения
 LEARNING_RATE_RANGE = 0.2
 
-# Диапазон поиска и ограничение на максимальную глубину деревьев
-DEPTH_RANGE = 5
-MAX_DEPTH = 16
+# Ограничение на максимальную глубину деревьев
+MAX_DEPTH = 7
 
 # Диапазон поиска параметра L2-регуляризации
 L2_RANGE = 0.8
@@ -64,8 +63,7 @@ def make_choice_space(space_name: str, choice):
 def make_model_space(params: dict):
     """Создает вероятностное пространство для параметров регрессии"""
     model = params['model']
-    depths = [depth for depth in range(model['depth'] - DEPTH_RANGE, model['depth'] + DEPTH_RANGE + 1)
-              if 0 < depth <= MAX_DEPTH]
+    depths = [depth for depth in range(1, MAX_DEPTH + 1)]
     space = {
         'one_hot_max_size': make_choice_space('one_hot_max_size', ONE_HOT_SIZE),
         'learning_rate': make_log_space('learning_rate', model['learning_rate'], LEARNING_RATE_RANGE),
@@ -87,8 +85,8 @@ def check_model_bounds(params: dict, base_params: dict):
     if abs(np.log(model['learning_rate'] / base_model['learning_rate'])) / np.log1p(LEARNING_RATE_RANGE) > 0.9:
         print(f'\nНеобходимо увеличить LEARNING_RATE_RANGE до {LEARNING_RATE_RANGE + 0.1:0.1f}')
 
-    if model['depth'] == base_model['depth'] - DEPTH_RANGE or model['depth'] == base_model['depth'] + DEPTH_RANGE:
-        print(f'\nНеобходимо увеличить DEPTH_RANGE до {DEPTH_RANGE + 1}')
+    if model['depth'] == MAX_DEPTH:
+        print(f'\nНеобходимо увеличить MAX_DEPTH до {MAX_DEPTH + 1}')
 
     if abs(np.log(model['l2_leaf_reg'] / base_model['l2_leaf_reg'])) / np.log1p(L2_RANGE) > 0.9:
         print(f'\nНеобходимо увеличить L2_RANGE до {L2_RANGE + 0.1:0.1f}')

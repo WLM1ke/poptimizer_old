@@ -16,13 +16,13 @@ PARAMS = {'data': {'freq': Freq.yearly,
                     'random_strength': 2.239571135008486}}
 
 # Диапазон лагов относительно базового, для которого осуществляется поиск оптимальной ML-модели
-LAGS_RANGE = 1
+MAX_LAGS = 2
 
 
 def lags(base_params: dict):
     """Список лагов для оптимизации - должны быть больше 0"""
     base_lags = base_params['data']['lags']
-    return [lag for lag in range(base_lags - LAGS_RANGE, base_lags + LAGS_RANGE + 1) if lag > 0]
+    return [lag for lag in range(1, MAX_LAGS + 1)]
 
 
 class DividendsModel(BaseModel):
@@ -48,8 +48,8 @@ class DividendsModel(BaseModel):
     def _check_data_space_bounds(self, params: dict):
         """Проверка, что параметры лежал не около границы вероятностного пространства"""
         lag = params['data']['lags']
-        if lag != 1 and (lag == lags(self._PARAMS)[0] or lag == lags(self._PARAMS)[-1]):
-            print(f'\nНеобходимо увеличить LAGS_RANGE до {LAGS_RANGE + 1}')
+        if lag == MAX_LAGS:
+            print(f'\nНеобходимо увеличить MAX_LAGS до {MAX_LAGS + 1}')
 
     @property
     def prediction_mean(self):

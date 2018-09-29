@@ -6,18 +6,18 @@ from ml import hyper
 from ml.model_base import BaseModel
 from ml.returns import cases
 
-PARAMS = {'data': {'ew_lags': 8.178364910843529,
+PARAMS = {'data': {'ew_lags': 9,
                    'returns_lags': 0},
-          'model': {'bagging_temperature': 0.9151076771639531,
-                    'depth': 5,
-                    'l2_leaf_reg': 4.1338176156683355,
-                    'learning_rate': 0.02964357637153455,
+          'model': {'bagging_temperature': 1,
+                    'depth': 6,
+                    'l2_leaf_reg': 3,
+                    'learning_rate': 0.03,
                     'one_hot_max_size': 2,
-                    'random_strength': 1.0342174731768807}}
+                    'random_strength': 1}}
 
 # Диапазон лагов относительно базового, для которого осуществляется поиск оптимальной ML-модели
-EW_LAGS_RANGE = 0.2
-RETURNS_LAGS_RANGE = 6
+EW_LAGS_RANGE = 0.3
+MAX_RETURNS_LAGS = 12
 
 
 def ew_lags(base_params: dict, cut=1.0):
@@ -27,7 +27,7 @@ def ew_lags(base_params: dict, cut=1.0):
 
 def returns_lags(base_params: dict):
     lags = base_params['data']['returns_lags']
-    return [lag for lag in range(lags - RETURNS_LAGS_RANGE, lags + RETURNS_LAGS_RANGE + 1) if lag >= 0]
+    return [lag for lag in range(1, MAX_RETURNS_LAGS + 1)]
 
 
 class ReturnsModel(BaseModel):
@@ -57,8 +57,8 @@ class ReturnsModel(BaseModel):
         if lags < lags_range[0] or lags_range[1] < lags:
             print(f'\nНеобходимо увеличить EW_LAGS_RANGE до {EW_LAGS_RANGE + 0.1:0.1f}')
         lag = params['data']['returns_lags']
-        if lag != 0 and (lag == returns_lags(self._PARAMS)[0] or lag == returns_lags(self._PARAMS)[-1]):
-            print(f'\nНеобходимо увеличить RETURNS_LAGS_RANGE до {RETURNS_LAGS_RANGE + 1}')
+        if lag == MAX_RETURNS_LAGS:
+            print(f'\nНеобходимо увеличить MAX_RETURNS_LAGS до {MAX_RETURNS_LAGS + 1}')
 
     @property
     def prediction_mean(self):
