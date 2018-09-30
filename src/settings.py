@@ -28,3 +28,6 @@ VOLUME_CUT_OFF = 2.1 * MAX_TRADE
 
 # Какой класс используется для метрик дивидендов BaseDividendsMetrics или MLDividendsMetrics
 DIVIDENDS_METRICS = 'MLDividendsMetrics'
+
+# Какой класс используется для метрик дивидендов BaseReturnsMetrics или MLReturnsMetrics
+RETURNS_METRICS = 'MLReturnsMetrics'
