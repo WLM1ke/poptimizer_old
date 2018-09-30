@@ -3,7 +3,7 @@
 import random
 
 from metrics.portfolio import CASH, Portfolio
-from metrics.returns_metrics import ReturnsMetrics
+from metrics.returns_metrics_base import ReturnsMetrics
 from web import moex
 from web.labels import REG_NUMBER
 

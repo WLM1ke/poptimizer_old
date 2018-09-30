@@ -151,38 +151,13 @@ if __name__ == '__main__':
     # 9 7 126 1.00 4.16%
 
     best = 0
-    for lags_std in range(9, 10):
-        for lags in range(0, 9):
-            print(lags_std, lags, end=' ')
-            pool = learn_pool(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), lags_std, lags)
-            ignored_features = []
-            scores = catboost.cv(
-                pool=pool,
-                params=dict(
-                    random_state=284704,
-                    od_type='Iter',
-                    verbose=False,
-                    allow_writing_files=False,
-                    ignored_features=ignored_features),
-                fold_count=20)
-            index_ = scores['test-RMSE-mean'].idxmin()
-            score = scores.loc[index_, 'test-RMSE-mean']
-            r2 = 1 - score ** 2 / pd.Series(pool.get_label()).std() ** 2
-            if r2 > best:
-                best = r2
-                print(index_ + 1, f'{score:0.2f}', f'{r2:0.2%}')
-            else:
-                print(f'{score:0.2f}', f'{r2:0.2%}')
+    data = []
+    lags_ = list(range(3, 13))
+    for lags_std in lags_:
+        pool = learn_pool(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), lags_std, 0)
+        data.append(pd.Series(pool.get_label()).describe())
 
-    pool = learn_pool(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), 9, 5)
-    clf = catboost.CatBoostRegressor(
-        **dict(
-            random_state=284704,
-            od_type='Iter',
-            verbose=False,
-            allow_writing_files=False,
-            ignored_features=[],
-            iterations=126
-        ))
-    clf.fit(pool)
-    print(clf.feature_importances_)
+    result = pd.concat(data, axis=1)
+    result.columns = lags_
+    print(result)
+    print(result.iloc[1:2, :].values / result.iloc[2:3, :].values)

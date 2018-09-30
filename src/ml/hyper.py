@@ -33,13 +33,13 @@ LEARNING_RATE_RANGE = 0.2
 MAX_DEPTH = 7
 
 # Диапазон поиска параметра L2-регуляризации
-L2_RANGE = 0.8
+L2_RANGE = 0.9
 
 # Диапазон поиска случайности разбиений
-RAND_STRENGTH_RANGE = 0.3
+RAND_STRENGTH_RANGE = 0.6
 
 # Диапазон поиска интенсивности бегинга
-BAGGING_RANGE = 0.3
+BAGGING_RANGE = 0.4
 
 
 def log_limits(middle: float, percent_range: float):

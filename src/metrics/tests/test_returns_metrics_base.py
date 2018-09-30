@@ -1,6 +1,6 @@
 import pytest
 
-from metrics import portfolio, returns_metrics
+from metrics import portfolio, returns_metrics_base
 from metrics.portfolio import CASH, PORTFOLIO
 
 
@@ -14,7 +14,7 @@ def case_metrics():
     port = portfolio.Portfolio(date='2018-03-19',
                                cash=1_415_988,
                                positions=positions)
-    return returns_metrics.ReturnsMetrics(port)
+    return returns_metrics_base.ReturnsMetrics(port)
 
 
 def test_decay(returns):

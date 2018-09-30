@@ -6,18 +6,18 @@ from ml import hyper
 from ml.model_base import BaseModel
 from ml.returns import cases
 
-PARAMS = {'data': {'ew_lags': 9,
-                   'returns_lags': 0},
-          'model': {'bagging_temperature': 1,
-                    'depth': 6,
-                    'l2_leaf_reg': 3,
-                    'learning_rate': 0.03,
+PARAMS = {'data': {'ew_lags': 2.834205660350255,
+                   'returns_lags': 8},
+          'model': {'bagging_temperature': 2.1249647762984076,
+                    'depth': 2,
+                    'l2_leaf_reg': 9.70230752375663,
+                    'learning_rate': 0.03528156296900205,
                     'one_hot_max_size': 2,
-                    'random_strength': 1}}
+                    'random_strength': 1.0924931390721244}}
 
 # Диапазон лагов относительно базового, для которого осуществляется поиск оптимальной ML-модели
-EW_LAGS_RANGE = 0.3
-MAX_RETURNS_LAGS = 12
+EW_LAGS_RANGE = 0.4
+MAX_RETURNS_LAGS = 9
 
 
 def ew_lags(base_params: dict, cut=1.0):
@@ -25,9 +25,8 @@ def ew_lags(base_params: dict, cut=1.0):
     return lags / (1 + cut * EW_LAGS_RANGE), lags * (1 + cut * EW_LAGS_RANGE)
 
 
-def returns_lags(base_params: dict):
-    lags = base_params['data']['returns_lags']
-    return [lag for lag in range(1, MAX_RETURNS_LAGS + 1)]
+def returns_lags():
+    return [lag for lag in range(0, MAX_RETURNS_LAGS + 1)]
 
 
 class ReturnsModel(BaseModel):
@@ -47,7 +46,7 @@ class ReturnsModel(BaseModel):
     def _make_data_space(self):
         """Пространство поиска параметров данных модели"""
         space = {'ew_lags': hp.uniform('ew_lags', *ew_lags(self._PARAMS)),
-                 'returns_lags': hyper.make_choice_space('returns_lags', returns_lags(self._PARAMS))}
+                 'returns_lags': hyper.make_choice_space('returns_lags', returns_lags())}
         return space
 
     def _check_data_space_bounds(self, params: dict):

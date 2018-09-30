@@ -19,9 +19,8 @@ PARAMS = {'data': {'freq': Freq.yearly,
 MAX_LAGS = 2
 
 
-def lags(base_params: dict):
+def lags():
     """Список лагов для оптимизации - должны быть больше 0"""
-    base_lags = base_params['data']['lags']
     return [lag for lag in range(1, MAX_LAGS + 1)]
 
 
@@ -42,7 +41,7 @@ class DividendsModel(BaseModel):
     def _make_data_space(self):
         """Пространство поиска параметров данных модели"""
         space = {'freq': hyper.make_choice_space('freq', Freq),
-                 'lags': hyper.make_choice_space('lags', lags(self._PARAMS))}
+                 'lags': hyper.make_choice_space('lags', lags())}
         return space
 
     def _check_data_space_bounds(self, params: dict):
