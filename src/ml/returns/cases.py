@@ -58,7 +58,8 @@ class ReturnsCasesIterator:
         monthly_dividends = div.groupby(by=aggregation.monthly_aggregation_func(self._last_date)).sum()
         # В некоторые месяцы не платятся дивиденды - без этого буду NaN при расчете доходностей
         monthly_dividends = monthly_dividends.reindex(index=monthly_prices.index, fill_value=0)
-        returns = (monthly_prices + monthly_dividends) / monthly_prices.shift(1) - 1
+        returns = (monthly_prices + monthly_dividends) / monthly_prices.shift(1)
+        returns = returns.apply(np.log)
         return returns
 
     def __iter__(self):
