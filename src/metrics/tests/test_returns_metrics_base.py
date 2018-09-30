@@ -14,7 +14,7 @@ def case_metrics():
     port = portfolio.Portfolio(date='2018-03-19',
                                cash=1_415_988,
                                positions=positions)
-    return returns_metrics_base.ReturnsMetrics(port)
+    return returns_metrics_base.BaseReturnsMetrics(port)
 
 
 def test_decay(returns):

@@ -31,39 +31,15 @@ class AbstractReturnsMetrics(ABC):
 
     @property
     @abstractmethod
-    def _tickers_mean(self):
-        """Series матожидания доходности тикеров"""
-        raise NotImplementedError
-
-    @property
     def mean(self):
-        """Ожидаемая доходность отдельных позиций и портфеля
-
-        Используется простой процесс экспоненциального сглаживания
-        """
-        mean = self._tickers_mean
-        mean[CASH] = 0
-        weighted_mean = mean * self._portfolio.weight[mean.index]
-        mean[PORTFOLIO] = weighted_mean.sum(axis='index')
-        return self._tickers_mean
+        """Series матожидания доходности"""
+        raise NotImplementedError
 
     @property
     @abstractmethod
-    def _tickers_std(self):
-        """Series СКО доходности тикеров"""
-        raise NotImplementedError
-
-    @property
     def std(self):
-        """СКО отдельных позиций и портфеля
-
-        Используется простой процесс экспоненциального сглаживания
-        """
-        std = self._tickers_std
-        std[CASH] = 0
-        weighted_std = std * self._portfolio.weight[std.index]
-        std[PORTFOLIO] = (weighted_std ** 2).sum(axis='index') ** 0.5
-        return std
+        """Series СКО доходности"""
+        raise NotImplementedError
 
     @property
     @abstractmethod
