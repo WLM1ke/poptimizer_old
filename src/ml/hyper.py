@@ -27,19 +27,19 @@ MAX_SEARCHES = 100
 ONE_HOT_SIZE = [2, 100]
 
 # Диапазон поиска скорости обучения
-LEARNING_RATE_RANGE = 0.2
+LEARNING_RATE_RANGE = 0.5
 
 # Ограничение на максимальную глубину деревьев
-MAX_DEPTH = 7
+MAX_DEPTH = 8
 
 # Диапазон поиска параметра L2-регуляризации
-L2_RANGE = 1.0
+L2_RANGE = 1.1
 
 # Диапазон поиска случайности разбиений
-RAND_STRENGTH_RANGE = 0.6
+RAND_STRENGTH_RANGE = 0.7
 
 # Диапазон поиска интенсивности бегинга
-BAGGING_RANGE = 0.4
+BAGGING_RANGE = 0.7
 
 
 def log_limits(middle: float, percent_range: float):
@@ -66,6 +66,7 @@ def make_model_space(params: dict):
     depths = [depth for depth in range(1, MAX_DEPTH + 1)]
     space = {
         'one_hot_max_size': make_choice_space('one_hot_max_size', ONE_HOT_SIZE),
+        'ignored_features': model['ignored_features'],
         'learning_rate': make_log_space('learning_rate', model['learning_rate'], LEARNING_RATE_RANGE),
         'depth': make_choice_space('depth', depths),
         'l2_leaf_reg': make_log_space('l2_leaf_reg', model['l2_leaf_reg'], L2_RANGE),
