@@ -6,15 +6,14 @@ from ml import hyper
 from ml.model_base import BaseModel
 from ml.returns import cases
 
-PARAMS = {'data': {'ew_lags': 13.523677155929757,
-                   'returns_lags': 0},
-          'model': {'bagging_temperature': 0.6120465548010962,
-                    'depth': 4,
+PARAMS = {'data': {'ew_lags': 13.881575113047445,
+                   'returns_lags': 4},
+          'model': {'bagging_temperature': 0.8485279204639461,
+                    'depth': 1,
                     'ignored_features': (),
-                    'l2_leaf_reg': 2.4519745941125777,
-                    'learning_rate': 0.03552954503839252,
-                    'one_hot_max_size': 100,
-                    'random_strength': 0.5356619437557193}}
+                    'l2_leaf_reg': 3.8358641573857164,
+                    'learning_rate': 0.03406100079656756,
+                    'one_hot_max_size': 2, 'random_strength': 0.5337312973319386}}
 
 # Диапазон лагов относительно базового, для которого осуществляется поиск оптимальной ML-модели
 EW_LAGS_RANGE = 0.4
@@ -64,8 +63,11 @@ class ReturnsModel(BaseModel):
     def prediction_mean(self):
         """pd.Series с прогнозом дивидендов"""
         data_pool = self._predict_pool_func(tickers=self.positions, last_date=self.date, **self._cv_result['data'])
+
+        mean = pd.DataFrame(data_pool.get_features(), list(self.positions)).iloc[:, 2]
         std = pd.DataFrame(data_pool.get_features(), list(self.positions)).iloc[:, 1]
-        return pd.Series(self._clf.predict(data_pool), list(self.positions)) * std
+
+        return (pd.Series(self._clf.predict(data_pool), list(self.positions)) + mean) * std
 
     @property
     def prediction_std(self):

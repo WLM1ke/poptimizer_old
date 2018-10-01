@@ -60,7 +60,9 @@ class ReturnsCasesIterator:
         self._ew_lags = ew_lags
         self._lags = returns_lags
         self._returns = log_returns_with_div(tickers, last_date)
-        self._ew_std = self._returns.ewm(alpha=1 / ew_lags, min_periods=ew_lags).std()
+        ewm = self._returns.ewm(alpha=1 / ew_lags, min_periods=ew_lags)
+        self._ew_mean = ewm.mean()
+        self._ew_std = ewm.std()
 
     def __iter__(self):
         for date in self._returns.index[self._lags:]:
@@ -75,14 +77,23 @@ class ReturnsCasesIterator:
         if not labels:
             first_index += 1
         cases = returns.iloc[first_index:last_index + 1, :]
+
+        mean = self._ew_mean.iloc[first_index + lags - 1, :]
+        cases = cases.sub(mean, axis=1)
+
         std = self._ew_std.iloc[first_index + lags - 1, :]
         cases = cases.div(std, axis=1)
         cases = cases.T
+
+        mean = mean.div(std)
+        cases.insert(0, 'mean', mean.T)
+
         cases.insert(0, 'std', std.T)
         cases.dropna(inplace=True)
+
         if not labels:
             cases['y'] = np.nan
-        cases.columns = ['std'] + [f'lag - {i}' for i in range(self._lags, 0, -1)] + ['y']
+        cases.columns = ['std', 'mean'] + [f'lag - {i}' for i in range(self._lags, 0, -1)] + ['y']
         return cases.reset_index()
 
 
@@ -150,6 +161,8 @@ if __name__ == '__main__':
     from trading import POSITIONS, DATE
 
     # 9 7 126 1.00 4.16%
+
+    print(pd.concat(ReturnsCasesIterator(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), 13, 4)))
 
     best = 0
     data = []

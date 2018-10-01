@@ -24,6 +24,7 @@ class AbstractReturnsMetrics(ABC):
         df.columns = ['MEAN', 'STD', 'BETA', 'DRAW_DOWN', 'GRADIENT']
         return (f'\nКЛЮЧЕВЫЕ МЕТРИКИ ДОХОДНОСТИ'
                 f'\n'
+                f'\nКонстанта сглаживания - {self.decay:.4f}'
                 f'\nВремя до максимальной просадки - {self.time_to_draw_down:.1f}'
                 f'\nСКО стоимости портфеля около максимума просадки - {self.std_at_draw_down:.4f}'
                 f'\n'
