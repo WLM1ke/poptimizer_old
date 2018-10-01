@@ -36,7 +36,7 @@ MAX_DEPTH = 8
 L2_RANGE = 1.1
 
 # Диапазон поиска случайности разбиений
-RAND_STRENGTH_RANGE = 0.7
+RAND_STRENGTH_RANGE = 0.8
 
 # Диапазон поиска интенсивности бегинга
 BAGGING_RANGE = 0.7

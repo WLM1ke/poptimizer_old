@@ -107,31 +107,6 @@ class BaseReturnsMetrics(AbstractReturnsMetrics):
         необязательный характер"""
         return self._decay
 
-    @property
-    def mean(self):
-        """Ожидаемая доходность отдельных позиций и портфеля
-        Используется простой процесс экспоненциального сглаживания
-        """
-        return self.returns.ewm(alpha=1 - self.decay).mean().iloc[-1]
-
-    @property
-    def std(self):
-        """СКО отдельных позиций и портфеля
-        Используется простой процесс экспоненциального сглаживания
-        """
-        return self.returns.ewm(alpha=1 - self.decay).std().iloc[-1]
-
-    @property
-    def beta(self):
-        """Беты отдельных позиций и портфеля
-
-        При расчете беты используется классическая формула cov(r,rp) / var(rp), где r и rp - доходность актива и
-        портфеля, соответственно, при этом используется простой процесс экспоненциального сглаживания
-        """
-        ewm = self.returns.ewm(alpha=1 - self.decay)
-        ewm_cov = ewm.cov(self.returns[PORTFOLIO])
-        return ewm_cov.multiply(1 / ewm_cov[PORTFOLIO], axis='index').iloc[-1]
-
 
 if __name__ == '__main__':
     import trading

@@ -31,21 +31,40 @@ class AbstractReturnsMetrics(ABC):
 
     @property
     @abstractmethod
+    def returns(self):
+        """Доходности составляющих портфеля и самого портфеля"""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def decay(self):
+        """Константа сглаживания"""
+        raise NotImplementedError
+
+    @property
     def mean(self):
-        """Series матожидания доходности"""
-        raise NotImplementedError
+        """Ожидаемая доходность отдельных позиций и портфеля
+        Используется простой процесс экспоненциального сглаживания
+        """
+        return self.returns.ewm(alpha=1 - self.decay).mean().iloc[-1]
 
     @property
-    @abstractmethod
     def std(self):
-        """Series СКО доходности"""
-        raise NotImplementedError
+        """СКО отдельных позиций и портфеля
+        Используется простой процесс экспоненциального сглаживания
+        """
+        return self.returns.ewm(alpha=1 - self.decay).std().iloc[-1]
 
     @property
-    @abstractmethod
     def beta(self):
-        """Беты отдельных позиций и портфеля"""
-        raise NotImplementedError
+        """Беты отдельных позиций и портфеля
+
+        При расчете беты используется классическая формула cov(r,rp) / var(rp), где r и rp - доходность актива и
+        портфеля, соответственно, при этом используется простой процесс экспоненциального сглаживания
+        """
+        ewm = self.returns.ewm(alpha=1 - self.decay)
+        ewm_cov = ewm.cov(self.returns[PORTFOLIO])
+        return ewm_cov.multiply(1 / ewm_cov[PORTFOLIO], axis='index').iloc[-1]
 
     @property
     def draw_down(self):
