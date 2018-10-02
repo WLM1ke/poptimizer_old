@@ -32,14 +32,17 @@ def case_optimizer():
     save_max_trade = optimizer.MAX_TRADE
     save_cut_off = portfolio.VOLUME_CUT_OFF
     save_dividends_metrics = optimizer.DIVIDENDS_METRICS
+    save_returns_metrics = optimizer.RETURNS_METRICS
     optimizer.MAX_TRADE = 0.006
     portfolio.VOLUME_CUT_OFF = 2.9 * optimizer.MAX_TRADE
     optimizer.DIVIDENDS_METRICS = 'BaseDividendsMetrics'
+    optimizer.RETURNS_METRICS = 'BaseReturnsMetrics'
     opt = Optimizer(port)
     yield opt
     optimizer.MAX_TRADE = save_max_trade
     portfolio.VOLUME_CUT_OFF = save_cut_off
     optimizer.DIVIDENDS_METRICS = save_dividends_metrics
+    optimizer.RETURNS_METRICS = save_returns_metrics
 
 
 def test_dividends_gradient_growth(opt):

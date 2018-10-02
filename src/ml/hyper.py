@@ -8,7 +8,7 @@ import pandas as pd
 from hyperopt import hp
 
 # Базовые настройки catboost
-MAX_ITERATIONS = 800
+MAX_ITERATIONS = 900
 SEED = 284704
 FOLDS_COUNT = 20
 TECH_PARAMS = dict(iterations=MAX_ITERATIONS,
@@ -27,16 +27,16 @@ MAX_SEARCHES = 100
 ONE_HOT_SIZE = [2, 100]
 
 # Диапазон поиска скорости обучения
-LEARNING_RATE_RANGE = 0.5
+LEARNING_RATE_RANGE = 0.1
 
 # Ограничение на максимальную глубину деревьев
-MAX_DEPTH = 8
+MAX_DEPTH = 9
 
 # Диапазон поиска параметра L2-регуляризации
-L2_RANGE = 1.2
+L2_RANGE = 1.3
 
 # Диапазон поиска случайности разбиений
-RAND_STRENGTH_RANGE = 0.8
+RAND_STRENGTH_RANGE = 1.0
 
 # Диапазон поиска интенсивности бегинга
 BAGGING_RANGE = 0.7
