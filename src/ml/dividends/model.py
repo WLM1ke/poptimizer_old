@@ -3,20 +3,21 @@ import pandas as pd
 
 from ml import hyper
 from ml.dividends import cases
-from ml.model_base import BaseModel
+from ml.model_base import AbstractModel
 from utils.aggregation import Freq
 
 PARAMS = {'data': {'freq': Freq.yearly,
                    'lags': 1},
           'model': {'bagging_temperature': 1.1045537855283285,
                     'depth': 3,
+                    'ignored_features': (),
                     'l2_leaf_reg': 1.240078407471568,
                     'learning_rate': 0.10013835715140001,
                     'one_hot_max_size': 100,
                     'random_strength': 2.239571135008486}}
 
-# Диапазон лагов относительно базового, для которого осуществляется поиск оптимальной ML-модели
-MAX_LAGS = 2
+# Максимальное количество лагов, для которого осуществляется поиск оптимальной ML-модели
+MAX_LAGS = 3
 
 
 def lags():
@@ -24,8 +25,8 @@ def lags():
     return [lag for lag in range(1, MAX_LAGS + 1)]
 
 
-class DividendsModel(BaseModel):
-    """Содержит прогноз дивидендов и его СКО"""
+class DividendsModel(AbstractModel):
+    """Содержит прогноз дивидендов с помощью ML-модели"""
     _PARAMS = PARAMS
 
     @staticmethod

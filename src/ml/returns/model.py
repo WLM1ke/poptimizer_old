@@ -3,7 +3,7 @@ import pandas as pd
 from hyperopt import hp
 
 from ml import hyper
-from ml.model_base import BaseModel
+from ml.model_base import AbstractModel
 from ml.returns import cases
 
 PARAMS = {'data': {'ew_lags': 7.370495526735477,
@@ -30,7 +30,7 @@ def returns_lags():
     return [lag for lag in range(0, MAX_RETURNS_LAGS + 1)]
 
 
-class ReturnsModel(BaseModel):
+class ReturnsModel(AbstractModel):
     """Содержит прогноз доходности и его СКО"""
     _PARAMS = PARAMS
 

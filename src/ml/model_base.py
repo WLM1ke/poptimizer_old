@@ -7,7 +7,7 @@ import pandas as pd
 from ml import hyper
 
 
-class BaseModel(abc.ABC):
+class AbstractModel(abc.ABC):
     """Содержит прогноз и его СКО
 
     Parameters
