@@ -1,5 +1,5 @@
 """Абстрактный класс ML-модели"""
-import abc
+from abc import ABC, abstractmethod
 
 import catboost
 import pandas as pd
@@ -7,7 +7,7 @@ import pandas as pd
 from ml import hyper
 
 
-class AbstractModel(abc.ABC):
+class AbstractModel(ABC):
     """Содержит прогноз и его СКО
 
     Parameters
@@ -18,12 +18,12 @@ class AbstractModel(abc.ABC):
         Дата, для которой необходимо составить прогноз
     """
     # Словарь с параметрами ML-модели данных
-    _PARAMS = None
+    PARAMS = None
 
     def __init__(self, positions: tuple, date: pd.Timestamp):
         self._positions = positions
         self._date = date
-        self._cv_result = hyper.cv_model(self._PARAMS, positions, date, self._learn_pool_func)
+        self._cv_result = hyper.cv_model(self.PARAMS, positions, date, self._learn_pool_func)
         self._clf = catboost.CatBoostRegressor(**self._cv_result['model'])
         learn_data = self._learn_pool_func(tickers=positions, last_date=date, **self._cv_result['data'])
         self._clf.fit(learn_data)
@@ -38,35 +38,35 @@ class AbstractModel(abc.ABC):
                 f'\n\nМодель:\n{self.params}')
 
     @staticmethod
-    @abc.abstractmethod
+    @abstractmethod
     def _learn_pool_func(*args, **kwargs):
         """catboost.Pool с данными для обучения"""
         raise NotImplementedError
 
     @staticmethod
-    @abc.abstractmethod
+    @abstractmethod
     def _predict_pool_func(*args, **kwargs):
         """catboost.Pool с данными для предсказания"""
         raise NotImplementedError
 
-    @abc.abstractmethod
+    @abstractmethod
     def _make_data_space(self):
         """Пространство поиска параметров данных модели"""
         raise NotImplementedError
 
-    @abc.abstractmethod
+    @abstractmethod
     def _check_data_space_bounds(self, params: dict):
         """Проверка, что параметры лежал не около границы вероятностного пространства"""
         raise NotImplementedError
 
     @property
-    @abc.abstractmethod
+    @abstractmethod
     def prediction_mean(self):
         """pd.Series с прогнозом дивидендов"""
         raise NotImplementedError
 
     @property
-    @abc.abstractmethod
+    @abstractmethod
     def prediction_std(self):
         """pd.Series с прогнозом дивидендов"""
         raise NotImplementedError
@@ -101,8 +101,8 @@ class AbstractModel(abc.ABC):
         """Ищет оптимальную модель и сравнивает с базовой - результаты сравнения распечатываются"""
         positions = self._positions
         date = self._date
-        base_cv_results = hyper.cv_model(self._PARAMS, positions, date, self._learn_pool_func)
-        find_params = hyper.optimize_hyper(self._PARAMS, positions, date,
+        base_cv_results = self._cv_result
+        find_params = hyper.optimize_hyper(self.PARAMS, positions, date,
                                            self._learn_pool_func, self._make_data_space())
         self._check_data_space_bounds(find_params)
         best_cv_results = hyper.cv_model(find_params, positions, date, self._learn_pool_func)
@@ -110,7 +110,7 @@ class AbstractModel(abc.ABC):
             print('\nЛУЧШАЯ МОДЕЛЬ - Базовая модель')
             print(f"R2 - {base_cv_results['r2']:0.4%}"
                   f"\nКоличество итераций - {base_cv_results['model']['iterations']}"
-                  f"\n{self._PARAMS}")
+                  f"\n{self.PARAMS}")
             print('\nНайденная модель')
             print(f"R2 - {best_cv_results['r2']:0.4%}"
                   f"\nКоличество итераций - {best_cv_results['model']['iterations']}"
@@ -123,4 +123,4 @@ class AbstractModel(abc.ABC):
             print('\nБазовая модель')
             print(f"R2 - {base_cv_results['r2']:0.4%}"
                   f"\nКоличество итераций - {base_cv_results['model']['iterations']}"
-                  f"\n{self._PARAMS}")
+                  f"\n{self.PARAMS}")

@@ -32,7 +32,7 @@ def returns_lags():
 
 class ReturnsModel(AbstractModel):
     """Содержит прогноз доходности и его СКО"""
-    _PARAMS = PARAMS
+    PARAMS = PARAMS
 
     @staticmethod
     def _learn_pool_func(*args, **kwargs):

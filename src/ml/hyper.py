@@ -63,12 +63,11 @@ def make_choice_space(space_name: str, choice):
 def make_model_space(params: dict):
     """Создает вероятностное пространство для параметров регрессии"""
     model = params['model']
-    depths = [depth for depth in range(1, MAX_DEPTH + 1)]
     space = {
         'one_hot_max_size': make_choice_space('one_hot_max_size', ONE_HOT_SIZE),
         'ignored_features': model['ignored_features'],
         'learning_rate': make_log_space('learning_rate', model['learning_rate'], LEARNING_RATE_RANGE),
-        'depth': make_choice_space('depth', depths),
+        'depth': make_choice_space('depth', list(range(1, MAX_DEPTH + 1))),
         'l2_leaf_reg': make_log_space('l2_leaf_reg', model['l2_leaf_reg'], L2_RANGE),
         'random_strength': make_log_space('rand_strength', model['random_strength'], RAND_STRENGTH_RANGE),
         'bagging_temperature': make_log_space('bagging_temperature', model['bagging_temperature'], BAGGING_RANGE)}
