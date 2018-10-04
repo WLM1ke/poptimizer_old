@@ -67,7 +67,7 @@ def make_model_space(params: dict):
         'one_hot_max_size': make_choice_space('one_hot_max_size', ONE_HOT_SIZE),
         'ignored_features': model['ignored_features'],
         'learning_rate': make_log_space('learning_rate', model['learning_rate'], LEARNING_RATE_RANGE),
-        'depth': make_choice_space('depth', list(range(1, MAX_DEPTH + 1))),
+        'depth': make_choice_space('depth', range(1, MAX_DEPTH + 1)),
         'l2_leaf_reg': make_log_space('l2_leaf_reg', model['l2_leaf_reg'], L2_RANGE),
         'random_strength': make_log_space('rand_strength', model['random_strength'], RAND_STRENGTH_RANGE),
         'bagging_temperature': make_log_space('bagging_temperature', model['bagging_temperature'], BAGGING_RANGE)}
@@ -121,10 +121,10 @@ def cv_model(params: dict, positions: tuple, date: pd.Timestamp, data_pool_func)
         ключ 'loss' - нормированная RMSE на кросс-валидации (для hyperopt),
         ключ 'status' - успешного прохождения (для hyperopt),
         ключ 'std' - RMSE на кросс-валидации,
-        ключ 'r2' - нормированная RMSE на кросс-валидации,
+        ключ 'r2' - 1- нормированная RMSE на кросс-валидации в квадрате,
         ключ 'data' - параметры данных,
         ключ 'model' - параметры модели, в которые добавлено оптимальное количество итераций градиентного бустинга на
-        кросс-валидации и вспомогательные настройки
+        кросс-валидации и общие настройки
     """
     data_params = params['data']
     data = data_pool_func(positions, date, **data_params)
@@ -148,7 +148,7 @@ def cv_model(params: dict, positions: tuple, date: pd.Timestamp, data_pool_func)
 
 
 def optimize_hyper(base_params: dict, positions: tuple, date: pd.Timestamp, data_pool_func, data_space: dict):
-    """Ищет и  возвращает лучший набор гиперпараметров без количества итераций
+    """Ищет и  возвращает лучший набор гиперпараметров без количества итераций в окрестности базового набора параметров
 
     Parameters
     ----------
@@ -176,6 +176,7 @@ def optimize_hyper(base_params: dict, positions: tuple, date: pd.Timestamp, data
                          algo=hyperopt.tpe.suggest,
                          max_evals=MAX_SEARCHES,
                          rstate=np.random.RandomState(SEED))
+    # Преобразование из внутреннего представление в исходное пространство
     best_params = hyperopt.space_eval(param_space, best)
     check_model_bounds(best_params, base_params)
     return best_params

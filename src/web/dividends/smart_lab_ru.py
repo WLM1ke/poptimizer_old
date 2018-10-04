@@ -17,7 +17,7 @@ TH_VALUE = 'дивиденд,руб'
 TICKER_COLUMN = 1
 DATE_COLUMN = 4
 VALUE_COLUMN = 7
-DATE_PATTERN = '\d{2}\.\d{2}\.\d{4}'
+DATE_PATTERN = r'\d{2}\.\d{2}\.\d{4}'
 
 
 class RowParserSmartLab(RowParserDohod):

@@ -64,16 +64,9 @@ class DividendsModel(AbstractModel):
 
 
 if __name__ == '__main__':
-    PARAMS = {'data': {'freq': Freq.yearly,
-                       'lags_range': 1},
-              'model': {'bagging_temperature': 1.3463876077482095,
-                        'depth': 3,
-                        'l2_leaf_reg': 1.8578444629373057,
-                        'learning_rate': 0.09300426944876264,
-                        'one_hot_max_size': 2,
-                        'random_strength': 1.0464151963029267}}
+    from trading import POSITIONS, DATE
 
-    pred = DividendsModel(('CHMF', 'MSTT', 'PMSBP', 'SNGSP', 'NLMK'), pd.Timestamp('2018-09-05'))
+    pred = DividendsModel(tuple(sorted(POSITIONS)), pd.Timestamp(DATE))
     print(pred)
     pred.find_better_model()
 
