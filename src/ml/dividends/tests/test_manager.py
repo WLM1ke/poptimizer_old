@@ -36,14 +36,13 @@ def test_manager_change_positions():
 
 
 def test_manager_change_params(monkeypatch):
-    fake_params = copy.deepcopy(model._PARAMS)
-    fake_params['data']['lags_range'] = model._PARAMS['data']['lags_range'] + 1
-    test_lags = model._PARAMS['data']['lags_range'] + 1
-    monkeypatch.setattr(model, 'PARAMS', fake_params)
+    fake_params = copy.deepcopy(model.DividendsModel.PARAMS)
+    fake_params['data']['lags'] += 1
+    monkeypatch.setattr(model.DividendsModel, 'PARAMS', fake_params)
     positions = tuple(['PRTK', 'MVID', 'CHMF', 'MTSS', 'PMSBP'])
     date = pd.Timestamp('2018-09-06')
     data = manager.DividendsMLDataManager(positions, date)
-    assert data.value.params['data']['lags_range'] == test_lags
+    assert data.value.params['data']['lags'] == fake_params['data']['lags']
     assert data.value.params == model.DividendsModel(positions, date).params
 
 

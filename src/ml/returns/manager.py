@@ -41,9 +41,10 @@ class ReturnsMLDataManager(AbstractDataManager):
         """Время следующего планового обновления данных - arrow в часовом поясе MOEX"""
         if self._positions != self.value.positions or self._date != self.value.date:
             return arrow.now().shift(days=-1)
-        for outer_key in model.PARAMS:
-            for inner_key in model.PARAMS[outer_key]:
-                if model.PARAMS[outer_key][inner_key] != self.value.params[outer_key][inner_key]:
+        model_params = model.ReturnsModel.PARAMS
+        for outer_key in model_params:
+            for inner_key in model_params[outer_key]:
+                if model_params[outer_key][inner_key] != self.value.params[outer_key][inner_key]:
                     return arrow.now().shift(days=-1)
         return super().next_update
 
