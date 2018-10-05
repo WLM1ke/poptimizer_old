@@ -33,7 +33,7 @@ LEARNING_RATE_RANGE = 0.1
 MAX_DEPTH = 9
 
 # Диапазон поиска параметра L2-регуляризации
-L2_RANGE = 1.3
+L2_RANGE = 1.4
 
 # Диапазон поиска случайности разбиений
 RAND_STRENGTH_RANGE = 1.0
