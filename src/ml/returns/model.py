@@ -46,14 +46,14 @@ class ReturnsModel(AbstractModel):
 
     def _make_data_space(self):
         """Пространство поиска параметров данных модели"""
-        space = {'ew_lags': hp.uniform('ew_lags', *ew_lags(self._PARAMS)),
+        space = {'ew_lags': hp.uniform('ew_lags', *ew_lags(self.PARAMS)),
                  'returns_lags': hyper.make_choice_space('returns_lags', returns_lags())}
         return space
 
     def _check_data_space_bounds(self, params: dict):
         """Проверка, что параметры лежал не около границы вероятностного пространства"""
         lags = params['data']['ew_lags']
-        lags_range = ew_lags(self._PARAMS, 0.9)
+        lags_range = ew_lags(self.PARAMS, 0.9)
         if lags < lags_range[0] or lags_range[1] < lags:
             print(f'\nНеобходимо увеличить EW_LAGS_RANGE до {EW_LAGS_RANGE + 0.1:0.1f}')
         lag = params['data']['returns_lags']

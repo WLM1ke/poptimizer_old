@@ -1,5 +1,4 @@
 """Генерация кейсов для обучения и валидации моделей"""
-
 import catboost
 import numpy as np
 import pandas as pd
@@ -58,7 +57,7 @@ class DividendsCasesIterator:
             months_in_period = MONTH_IN_YEAR * self._years
             base_index = - 1
         cpi_index = self._cpi_index(date, months_in_period, base_index)
-        agg_dividends = self._aggregated_real_after_tax_dividends(self._tickers, date, months_in_period, cpi_index)
+        agg_dividends = self._aggregated_real_after_tax_dividends(date, months_in_period, cpi_index)
         base_date = cpi_index.index[base_index]
         price = self._prices.reindex(index=[base_date], method='ffill').iloc[0]
         yields = agg_dividends.div(price, axis='columns')
@@ -74,16 +73,20 @@ class DividendsCasesIterator:
         cpi_index = cum_cpi.iat[base_index] / cum_cpi
         return cpi_index
 
-    def _aggregated_real_after_tax_dividends(self, tickers, date, months, cpi_index):
+    def _aggregated_real_after_tax_dividends(self, date, months, cpi_index):
         """Дивиденды за определенное число months до date агрегированные до нужной частоты и переведенные"""
-        pre_tax_dividends = dividends.monthly_dividends(tickers, date).iloc[-months:, :]
+        pre_tax_dividends = dividends.monthly_dividends(self._tickers, date).iloc[-months:, :]
         after_tax_dividends = pre_tax_dividends * AFTER_TAX
         real_after_tax_dividends = after_tax_dividends.mul(cpi_index, axis='index')
         agg_dividends = real_after_tax_dividends.groupby(by=self._freq.aggregation_func(date)).sum()
         return agg_dividends
 
     def cases(self, date: pd.Timestamp, predicted: bool = True):
-        """Возвращает кейсы для заданной даты и частоты"""
+        """Возвращает кейсы для заданной даты и частоты в формате DataFrame
+
+        Первый столбец содержит тикер, далее столбцы с дивидендной доходность необходимой частоты за lag лет, а в
+        последнем столбце годовая доходность в прогнозном году
+        """
         cases = self._real_dividends_yields(date, predicted)
         if predicted:
             y = cases.iloc[:, -self._freq.times_in_year:].sum(axis='columns')
