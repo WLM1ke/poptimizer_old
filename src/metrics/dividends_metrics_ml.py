@@ -29,12 +29,10 @@ class MLDividendsMetrics(AbstractDividendsMetrics):
 
 
 if __name__ == '__main__':
-    try:
-        from trading import POSITIONS, DATE, CASH
-    except ModuleNotFoundError:
-        POSITIONS = ['AKRN']
-        DATE = '2018-09-06'
+    from trading import POSITIONS, DATE, CASH
+
     port = Portfolio(date=DATE,
                      cash=CASH,
                      positions=POSITIONS)
-    print(MLDividendsMetrics(port))
+    metrics = MLDividendsMetrics(port)
+    print(metrics)
