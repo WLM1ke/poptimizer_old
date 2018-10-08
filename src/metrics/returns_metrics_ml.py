@@ -18,7 +18,7 @@ class MLReturnsMetrics(AbstractReturnsMetrics):
     def returns(self):
         """Доходности составляющих портфеля и самого портфеля"""
         portfolio = self._portfolio
-        returns = cases.log_returns_with_div(portfolio.positions[:-2], pd.Timestamp(portfolio.date)).fillna(0)
+        returns = cases.log_returns_with_div(portfolio.positions[:-2], pd.Timestamp(portfolio.date))
         returns = returns.reindex(columns=self._portfolio.positions)
         returns[CASH] = 0
         weight = self._portfolio.weight.iloc[:-2].transpose()

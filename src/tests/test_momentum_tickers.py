@@ -21,8 +21,8 @@ def test_all_securities():
     df = all_securities()
     assert isinstance(df, pd.DataFrame)
     assert len(df) > 200
-    assert df.index[0] == 'ABBN'
-    assert df[REG_NUMBER].iat[0] is None
+    assert df.index[0] == 'ABRD'
+    assert df[REG_NUMBER].iat[0] == '1-02-12500-A'
     assert df.index[-1] == 'ZVEZ'
     assert df[REG_NUMBER].iat[-1] == '1-01-00169-D'
     assert 'YNDX' in df.index
