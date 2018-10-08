@@ -1,11 +1,9 @@
 """Поиск бумаг высоким momentum и с низкой корреляцией с текущим портфелем"""
-
 import random
 
 import metrics
 import settings
-from metrics.portfolio import CASH, Portfolio
-from metrics.returns_metrics_base import BaseReturnsMetrics
+from metrics import CASH, Portfolio
 from web import moex
 from web.labels import REG_NUMBER
 
@@ -16,8 +14,7 @@ RESULT_ALIMENT = 70
 def all_securities():
     """Возвращает данные по всем торгуемым бумагам и печатает их количество"""
     df = moex.securities_info()
-    print()
-    print('Общее количество торгуемых бумаг'.ljust(RESULT_ALIMENT), f'{len(df)}')
+    print('\nОбщее количество торгуемых бумаг'.ljust(RESULT_ALIMENT), f'{len(df)}')
     return df
 
 
@@ -111,5 +108,3 @@ if __name__ == '__main__':
                      positions=dict(GAZP=682, VSMO=145, TTLK=123),
                      value=3_699_111.41)
     print(port.volume_factor)
-    metrics = BaseReturnsMetrics(port)
-    print(metrics.gradient / metrics.std_at_draw_down)

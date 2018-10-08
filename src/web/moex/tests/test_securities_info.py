@@ -42,10 +42,10 @@ def test_all_security_info():
     df = securities_info(tuple())
     assert isinstance(df, pd.DataFrame)
     assert len(df) > 200
-    assert df.index[0] == 'ABBN'
-    assert df[COMPANY_NAME].iat[0] == 'БанкАстаны'
-    assert df[REG_NUMBER].iat[0] is None
-    assert df[LOT_SIZE].iat[0] == 10
+    assert df.index[0] == 'ABRD'
+    assert df[COMPANY_NAME].iat[0] == 'АбрауДюрсо'
+    assert df[REG_NUMBER].iat[0] == '1-02-12500-A'
+    assert df[LOT_SIZE].iat[0] == 100
     assert df[COMPANY_NAME].iat[-1] == 'ЗВЕЗДА ао'
     assert df[REG_NUMBER].iat[-1] == '1-01-00169-D'
     assert df[LOT_SIZE].iat[-1] == 1000
