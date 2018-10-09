@@ -3,15 +3,16 @@ import catboost
 import numpy as np
 import pandas as pd
 
-from local.moex.iss_quotes_t2 import log_returns_with_div
+from local import moex
 
 
 class ReturnsCasesIterator:
     def __init__(self, tickers: tuple, last_date: pd.Timestamp, ew_lags: float, returns_lags: int):
         """Генератор кейсов для обучения
 
-        Обучающие кейсы состоят из тикера, экспоненциально сглаженного СКО и нескольких последних доходностей,
-        нормированных на СКО
+        Обучающие кейсы состоят из тикера, экспоненциально сглаженного СКО и среднего и нескольких последних
+        доходностей. Среднее и доходности нормируются на экспоненциальное СКО, а доходности также центрируются по
+        экспоненциальному среднему
 
         Parameters
         ----------
@@ -28,13 +29,13 @@ class ReturnsCasesIterator:
         self._last_date = last_date
         self._ew_lags = ew_lags
         self._lags = returns_lags
-        self._returns = log_returns_with_div(tickers, last_date)
+        self._returns = moex.log_returns_with_div(tickers, last_date)
         ewm = self._returns.ewm(alpha=1 / ew_lags, min_periods=ew_lags)
         self._ew_mean = ewm.mean()
         self._ew_std = ewm.std()
 
     def __iter__(self):
-        for date in self._returns.index[self._lags:]:
+        for date in self._returns.index[self._ew_lags:]:
             yield self.cases(date)
 
     def cases(self, date: pd.Timestamp, labels: bool = True):
@@ -52,6 +53,7 @@ class ReturnsCasesIterator:
 
         std = self._ew_std.iloc[first_index + lags - 1, :]
         cases = cases.div(std, axis=1)
+
         cases = cases.T
 
         mean = mean.div(std)
@@ -127,6 +129,10 @@ def predict_pool(tickers: tuple, last_date: pd.Timestamp, ew_lags: float, return
 
 
 if __name__ == '__main__':
-    from trading import POSITIONS, DATE
+    # print(pd.concat(ReturnsCasesIterator(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), 7, 0), ignore_index=True))
 
-    print(pd.concat(ReturnsCasesIterator(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), 7, 0), ignore_index=True))
+    ret = moex.log_returns_with_div(('LSNGP', 'MTSS', 'PRTK', 'GMKN', 'AKRN'), pd.Timestamp('2018-10-08'))
+
+    print(ret)
+    print(ret.ewm(alpha=1 / 9, min_periods=9).std())
+    print(ret.ewm(alpha=1 / 9, min_periods=9).mean())
