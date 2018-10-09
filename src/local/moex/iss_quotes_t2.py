@@ -112,7 +112,9 @@ def t2_shift(date, index):
     if date <= index[-1]:
         position = index.get_loc(date, 'ffill')
         return index[position - T2]
-    return date - T2 * offsets.BDay()
+    # Выходной гарантированно заменяем бизнес днем
+    next_b_day = date + offsets.BDay()
+    return next_b_day - (T2 + 1) * offsets.BDay()
 
 
 def log_returns_with_div(tickers: tuple, last_date: pd.Timestamp):

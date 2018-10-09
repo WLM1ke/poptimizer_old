@@ -6,7 +6,7 @@ import pytest
 
 import settings
 from local import moex
-from local.moex.iss_quotes_t2 import QuotesT2DataManager
+from local.moex.iss_quotes_t2 import QuotesT2DataManager, t2_shift
 from web.labels import CLOSE_PRICE, VOLUME
 
 
@@ -76,3 +76,16 @@ def test_volumes_t2():
     assert df.shape[0] > 1000
     assert df.loc['2018-09-07', 'GMKN'] == 100714
     assert df.loc['2018-09-10', 'AKRN'] == 4631
+
+
+def test_t2_shift():
+    index = moex.prices_t2(('NLMK',)).loc[:pd.Timestamp('2018-10-08')].index
+    assert pd.Timestamp('2018-05-14') == t2_shift(pd.Timestamp('2018-05-15'), index)
+    assert pd.Timestamp('2018-07-05') == t2_shift(pd.Timestamp('2018-07-08'), index)
+    assert pd.Timestamp('2018-09-28') == t2_shift(pd.Timestamp('2018-10-01'), index)
+    assert pd.Timestamp('2018-10-09') == t2_shift(pd.Timestamp('2018-10-10'), index)
+    assert pd.Timestamp('2018-10-11') == t2_shift(pd.Timestamp('2018-10-12'), index)
+    assert pd.Timestamp('2018-10-11') == t2_shift(pd.Timestamp('2018-10-13'), index)
+    assert pd.Timestamp('2018-10-11') == t2_shift(pd.Timestamp('2018-10-14'), index)
+    assert pd.Timestamp('2018-10-12') == t2_shift(pd.Timestamp('2018-10-15'), index)
+    assert pd.Timestamp('2018-10-17') == t2_shift(pd.Timestamp('2018-10-18'), index)
