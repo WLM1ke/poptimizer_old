@@ -2,39 +2,8 @@
 import catboost
 import numpy as np
 import pandas as pd
-from pandas.tseries import offsets
 
-from local import moex, dividends
-from utils import aggregation
-
-T2 = 1
-
-
-def log_returns_with_div(tickers: tuple, last_date: pd.Timestamp):
-    prices = moex.prices_t2(tickers).fillna(method='ffill', axis='index')
-    monthly_prices = prices.groupby(by=aggregation.monthly_aggregation_func(last_date)).last()
-    monthly_prices = monthly_prices.loc[:last_date]
-
-    def t2_shift(x):
-        """Рассчитывает T-2 дату
-
-        Если дата не содержится индексе цен, то необходимо найти предыдущую из индекса цен. После этого взять
-        сдвинутую на 1 назад дату. Если дата находится в будущем за пределом истории котировок, то достаточно
-        сдвинуть на 1 бизнес дня назад - упрощенный подход, который может не корректно работать из-за праздников
-        """
-        if x <= prices.index[-1]:
-            index = prices.index.get_loc(x, 'ffill')
-            return prices.index[index - T2]
-        return x - T2 * offsets.BDay()
-
-    div = dividends.dividends(tickers).loc[monthly_prices.index[0]:, :]
-    div.index = div.index.map(t2_shift)
-    monthly_dividends = div.groupby(by=aggregation.monthly_aggregation_func(last_date)).sum()
-    # В некоторые месяцы не платятся дивиденды - без этого буду NaN при расчете доходностей
-    monthly_dividends = monthly_dividends.reindex(index=monthly_prices.index, fill_value=0)
-    returns = (monthly_prices + monthly_dividends) / monthly_prices.shift(1)
-    returns = returns.apply(np.log)
-    return returns
+from local.moex.iss_quotes_t2 import log_returns_with_div
 
 
 class ReturnsCasesIterator:
@@ -160,18 +129,4 @@ def predict_pool(tickers: tuple, last_date: pd.Timestamp, ew_lags: float, return
 if __name__ == '__main__':
     from trading import POSITIONS, DATE
 
-    # 9 7 126 1.00 4.16%
-
-    print(pd.concat(ReturnsCasesIterator(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), 13, 4)))
-
-    best = 0
-    data = []
-    lags_ = list(range(3, 13))
-    for lags_std in lags_:
-        pool = learn_pool(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), lags_std, 0)
-        data.append(pd.Series(pool.get_label()).describe())
-
-    result = pd.concat(data, axis=1)
-    result.columns = lags_
-    print(result)
-    print(result.iloc[1:2, :].values / result.iloc[2:3, :].values)
+    print(pd.concat(ReturnsCasesIterator(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), 7, 0), ignore_index=True))

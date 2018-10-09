@@ -2,9 +2,9 @@
 import numpy as np
 import pandas as pd
 
+import local.moex.iss_quotes_t2
 from metrics.portfolio import CASH, PORTFOLIO, Portfolio
 from metrics.returns_metrics import AbstractReturnsMetrics
-from ml.returns import cases
 from ml.returns.manager import ReturnsMLDataManager
 
 
@@ -18,7 +18,7 @@ class MLReturnsMetrics(AbstractReturnsMetrics):
     def returns(self):
         """Доходности составляющих портфеля и самого портфеля"""
         portfolio = self._portfolio
-        returns = cases.log_returns_with_div(portfolio.positions[:-2], pd.Timestamp(portfolio.date))
+        returns = local.moex.iss_quotes_t2.log_returns_with_div(portfolio.positions[:-2], pd.Timestamp(portfolio.date))
         returns = returns.reindex(columns=self._portfolio.positions)
         returns[CASH] = 0
         weight = self._portfolio.weight.iloc[:-2].transpose()

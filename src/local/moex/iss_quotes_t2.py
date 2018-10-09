@@ -1,14 +1,20 @@
 """Сохранение и обновление локальных данных о котировках в режиме  T+2"""
 import functools
 
+import numpy as np
 import pandas as pd
+from pandas.tseries import offsets
 
 import local
-from utils import data_manager
+from local import moex, dividends
+from utils import data_manager, aggregation
 from web import moex
 from web.labels import VOLUME, CLOSE_PRICE, DATE, TICKER
 
 QUOTES_CATEGORY = 'quotes_t2'
+
+# Количество дней между отсечкой и эксдивидендной датой
+T2 = 1
 
 
 class QuotesT2DataManager(data_manager.AbstractDataManager):
@@ -94,6 +100,47 @@ def volumes_t2(tickers: tuple):
     df = pd.concat([quotes_t2(ticker)[VOLUME] for ticker in tickers], axis=1)
     df.columns = tickers
     return df
+
+
+def t2_shift(date, index):
+    """Рассчитывает эксдивидендную дату для режима T-2 на основании даты закрытия реестра
+
+    Если дата не содержится индексе цен, то необходимо найти предыдущую из индекса цен. После этого взять
+    сдвинутую на 1 назад дату. Если дата находится в будущем за пределом истории котировок, то достаточно
+    сдвинуть на 1 бизнес дня назад - упрощенный подход, который может не корректно работать из-за праздников
+    """
+    if date <= index[-1]:
+        position = index.get_loc(date, 'ffill')
+        return index[position - T2]
+    return date - T2 * offsets.BDay()
+
+
+def log_returns_with_div(tickers: tuple, last_date: pd.Timestamp):
+    """Ряды логарифмов месячных доходностей с учетом дивидендов для набора тикеров до указанной даты
+
+    Parameters
+    ----------
+    tickers
+        Кортеж тикеров
+    last_date
+        Последняя дата
+
+    Returns
+    -------
+    pd.DataFrame
+        Столбцы - тикеры
+        Строки - логарифмы месячных доходностей с учетом дивидендов
+    """
+    prices = prices_t2(tickers).fillna(method='ffill', axis='index')
+    monthly_prices = prices.groupby(by=aggregation.monthly_aggregation_func(last_date)).last()
+    monthly_prices = monthly_prices.loc[:last_date]
+    div = dividends.dividends(tickers).loc[monthly_prices.index[0]:, :]
+    div.index = div.index.map(functools.partial(t2_shift, index=prices.index))
+    monthly_dividends = div.groupby(by=aggregation.monthly_aggregation_func(last_date)).sum()
+    # В некоторые месяцы не платятся дивиденды - без этого буду NaN при расчете доходностей
+    monthly_dividends = monthly_dividends.reindex(index=monthly_prices.index, fill_value=0)
+    returns = (monthly_prices + monthly_dividends) / monthly_prices.shift(1)
+    return returns.apply(np.log)
 
 
 if __name__ == '__main__':
