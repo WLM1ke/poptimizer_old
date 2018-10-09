@@ -146,4 +146,4 @@ def log_returns_with_div(tickers: tuple, last_date: pd.Timestamp):
 
 
 if __name__ == '__main__':
-    print(prices_t2(('UPRO',)).columns)
+    print(log_returns_with_div(('GMKN', 'RTKMP', 'MTSS'), pd.Timestamp('2018-10-06')))

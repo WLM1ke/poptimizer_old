@@ -6,7 +6,7 @@ import pytest
 
 import settings
 from local import moex
-from local.moex.iss_quotes_t2 import QuotesT2DataManager, t2_shift
+from local.moex.iss_quotes_t2 import QuotesT2DataManager, t2_shift, log_returns_with_div
 from web.labels import CLOSE_PRICE, VOLUME
 
 
@@ -89,3 +89,22 @@ def test_t2_shift():
     assert pd.Timestamp('2018-10-11') == t2_shift(pd.Timestamp('2018-10-14'), index)
     assert pd.Timestamp('2018-10-12') == t2_shift(pd.Timestamp('2018-10-15'), index)
     assert pd.Timestamp('2018-10-17') == t2_shift(pd.Timestamp('2018-10-18'), index)
+
+
+def test_log_returns_with_div():
+    data = log_returns_with_div(('GMKN', 'RTKMP', 'MTSS'), pd.Timestamp('2018-10-06'))
+    assert isinstance(data, pd.DataFrame)
+    assert list(data.columns) == ['GMKN', 'RTKMP', 'MTSS']
+    assert data.index[-13] == pd.Timestamp('2017-10-06')
+    assert data.index[-1] == pd.Timestamp('2018-10-06')
+
+    assert data.loc['2018-10-06', 'MTSS'] == pytest.approx(np.log(((275.1 + 0) / 256.1)))
+    assert data.loc['2018-10-06', 'GMKN'] == pytest.approx(np.log(((11292 + 776.02) / 11206)))
+    assert data.loc['2018-08-06', 'RTKMP'] == pytest.approx(np.log(((61.81 + 0) / 62)))
+    assert data.loc['2018-07-06', 'RTKMP'] == pytest.approx(np.log(((62 + 5.045825249373) / 64)))
+
+    data = log_returns_with_div(('GMKN', 'RTKMP', 'MTSS'), pd.Timestamp('2018-10-07'))
+    assert data.loc['2018-10-07', 'MTSS'] == pytest.approx(np.log(((275.1 + 0) / 256)))
+
+    data = log_returns_with_div(('GMKN', 'RTKMP', 'MTSS'), pd.Timestamp('2018-10-08'))
+    assert data.loc['2018-10-08', 'MTSS'] == pytest.approx(np.log(((269.9 + 2.6) / 256)))
