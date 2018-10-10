@@ -6,19 +6,19 @@ from ml import hyper
 from ml.model_base import AbstractModel
 from ml.returns import cases
 
-PARAMS = {'data': {'ew_lags': 6.233742042960047,
-                   'returns_lags': 0},
-          'model': {'bagging_temperature': 0.9863959486221914,
-                    'depth': 1,
+PARAMS = {'data': {'ew_lags': 12.041177030185002,
+                   'returns_lags': 9},
+          'model': {'bagging_temperature': 0.48595060499353715,
+                    'depth': 5,
                     'ignored_features': (),
-                    'l2_leaf_reg': 6.14947842523461,
-                    'learning_rate': 0.0659659581339985,
-                    'one_hot_max_size': 2,
-                    'random_strength': 0.06874732175500674}}
+                    'l2_leaf_reg': 2.4299237626848478,
+                    'learning_rate': 0.03575006496157844,
+                    'one_hot_max_size': 100,
+                    'random_strength': 2.704125901214795}}
 
 # Диапазон лагов относительно базового, для которого осуществляется поиск оптимальной ML-модели
-EW_LAGS_RANGE = 0.2
-MAX_RETURNS_LAGS = 7
+EW_LAGS_RANGE = 0.01
+MAX_RETURNS_LAGS = 12
 
 
 def ew_lags(base_params: dict, cut=1.0):
@@ -55,7 +55,7 @@ class ReturnsModel(AbstractModel):
         lags = params['data']['ew_lags']
         lags_range = ew_lags(self.PARAMS, 0.9)
         if lags < lags_range[0] or lags_range[1] < lags:
-            print(f'\nНеобходимо увеличить EW_LAGS_RANGE до {EW_LAGS_RANGE + 0.1:0.1f}')
+            print(f'\nНеобходимо увеличить EW_LAGS_RANGE до {EW_LAGS_RANGE + 0.01:0.1f}')
         lag = params['data']['returns_lags']
         if lag == MAX_RETURNS_LAGS:
             print(f'\nНеобходимо увеличить MAX_RETURNS_LAGS до {MAX_RETURNS_LAGS + 1}')
@@ -65,10 +65,9 @@ class ReturnsModel(AbstractModel):
         """pd.Series с прогнозом дивидендов"""
         data_pool = self._predict_pool_func(tickers=self.positions, last_date=self.date, **self._cv_result['data'])
 
-        mean = pd.DataFrame(data_pool.get_features(), list(self.positions)).iloc[:, 2]
         std = pd.DataFrame(data_pool.get_features(), list(self.positions)).iloc[:, 1]
 
-        return (pd.Series(self._clf.predict(data_pool), list(self.positions)) + mean) * std
+        return pd.Series(self._clf.predict(data_pool), list(self.positions)) * std
 
     @property
     def prediction_std(self):

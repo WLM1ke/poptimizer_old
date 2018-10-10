@@ -27,16 +27,16 @@ MAX_SEARCHES = 100
 ONE_HOT_SIZE = [2, 100]
 
 # Диапазон поиска скорости обучения
-LEARNING_RATE_RANGE = 0.1
+LEARNING_RATE_RANGE = 0.2
 
 # Ограничение на максимальную глубину деревьев
-MAX_DEPTH = 9
+MAX_DEPTH = 7
 
 # Диапазон поиска параметра L2-регуляризации
-L2_RANGE = 1.4
+L2_RANGE = 0.1
 
 # Диапазон поиска случайности разбиений
-RAND_STRENGTH_RANGE = 1.0
+RAND_STRENGTH_RANGE = 0.6
 
 # Диапазон поиска интенсивности бегинга
 BAGGING_RANGE = 0.7

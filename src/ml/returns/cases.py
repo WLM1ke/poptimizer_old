@@ -11,8 +11,7 @@ class ReturnsCasesIterator:
         """Генератор кейсов для обучения
 
         Обучающие кейсы состоят из тикера, экспоненциально сглаженного СКО и среднего и нескольких последних
-        доходностей. Среднее и доходности нормируются на экспоненциальное СКО, а доходности также центрируются по
-        экспоненциальному среднему
+        доходностей. Среднее и доходности нормируются на экспоненциальное СКО
 
         Parameters
         ----------
@@ -35,7 +34,7 @@ class ReturnsCasesIterator:
         self._ew_std = ewm.std()
 
     def __iter__(self):
-        for date in self._returns.index[self._ew_lags:]:
+        for date in self._returns.index[1 + max(int(self._ew_lags), self._lags):]:
             yield self.cases(date)
 
     def cases(self, date: pd.Timestamp, labels: bool = True):
@@ -48,14 +47,12 @@ class ReturnsCasesIterator:
             first_index += 1
         cases = returns.iloc[first_index:last_index + 1, :]
 
-        mean = self._ew_mean.iloc[first_index + lags - 1, :]
-        cases = cases.sub(mean, axis=1)
-
         std = self._ew_std.iloc[first_index + lags - 1, :]
         cases = cases.div(std, axis=1)
 
         cases = cases.T
 
+        mean = self._ew_mean.iloc[first_index + lags - 1, :]
         mean = mean.div(std)
         cases.insert(0, 'mean', mean.T)
 
@@ -71,8 +68,8 @@ class ReturnsCasesIterator:
 def learn_pool(tickers: tuple, last_date: pd.Timestamp, ew_lags: float, returns_lags: int):
     """Возвращает обучающие кейсы до указанной даты включительно в формате Pool
 
-    Обучающие кейсы состоят из тикера, экспоненциально сглаженного СКО и нескольких последних доходностей,
-    нормированных на СКО
+    Обучающие кейсы состоят из тикера, экспоненциально сглаженного СКО и среднего и нескольких последних доходностей,
+    нормированных на СКО по скользящему среднему
 
     Parameters
     ----------
@@ -101,8 +98,8 @@ def learn_pool(tickers: tuple, last_date: pd.Timestamp, ew_lags: float, returns_
 def predict_pool(tickers: tuple, last_date: pd.Timestamp, ew_lags: float, returns_lags: int):
     """Возвращает кейсы предсказания до указанной даты включительно в формате Pool
 
-    Обучающие кейсы состоят из тикера, экспоненциально сглаженного СКО и нескольких последних доходностей,
-    нормированных на СКО
+    Обучающие кейсы состоят из тикера, экспоненциально сглаженного СКО и среднего и нескольких последних доходностей,
+    нормированных на СКО по скользящему среднему
 
     Parameters
     ----------
@@ -129,10 +126,14 @@ def predict_pool(tickers: tuple, last_date: pd.Timestamp, ew_lags: float, return
 
 
 if __name__ == '__main__':
-    # print(pd.concat(ReturnsCasesIterator(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), 7, 0), ignore_index=True))
+    """
+    from trading import POSITIONS, DATE
 
-    ret = moex.log_returns_with_div(('LSNGP', 'MTSS', 'PRTK', 'GMKN', 'AKRN'), pd.Timestamp('2018-10-08'))
+    print(pd.concat(learn_pool(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), 7, 0), ignore_index=True))
+
+    """
+    ret = moex.log_returns_with_div(('LSNGP', 'MTSS', 'VSMO', 'GMKN', 'AKRN'), pd.Timestamp('2018-10-09'))
 
     print(ret)
-    print(ret.ewm(alpha=1 / 9, min_periods=9).std())
-    print(ret.ewm(alpha=1 / 9, min_periods=9).mean())
+    print(ret.ewm(alpha=1 / 10, min_periods=10).std())
+    print(ret.ewm(alpha=1 / 10, min_periods=10).mean())
