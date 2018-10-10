@@ -126,14 +126,10 @@ def predict_pool(tickers: tuple, last_date: pd.Timestamp, ew_lags: float, return
 
 
 if __name__ == '__main__':
-    """
-    from trading import POSITIONS, DATE
+    from trading import DATE
 
-    print(pd.concat(learn_pool(tuple(sorted(POSITIONS)), pd.Timestamp(DATE), 7, 0), ignore_index=True))
-
-    """
-    ret = moex.log_returns_with_div(('LSNGP', 'MTSS', 'VSMO', 'GMKN', 'AKRN'), pd.Timestamp('2018-10-09'))
+    ret = moex.log_returns_with_div(('AKRN', 'MTSS', 'VSMO', 'GMKN', 'AKRN'), pd.Timestamp(DATE))
 
     print(ret)
-    print(ret.ewm(alpha=1 / 10, min_periods=10).std())
-    print(ret.ewm(alpha=1 / 10, min_periods=10).mean())
+    print(ret.ewm(alpha=1 / 12, min_periods=12).std())
+    print(ret.ewm(alpha=1 / 12, min_periods=12).mean())

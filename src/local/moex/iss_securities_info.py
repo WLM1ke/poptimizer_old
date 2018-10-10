@@ -13,6 +13,7 @@ class SecuritiesInfoDataManager(AbstractDataManager):
 
     Вся информация загружается одним запросом для сокращения числа обращений к серверу MOEX
     """
+    update_from_scratch = True
 
     def __init__(self):
         super().__init__(None, SECURITIES_INFO_MANE)
