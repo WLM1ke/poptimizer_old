@@ -8,16 +8,16 @@ from utils.aggregation import Freq
 
 PARAMS = {'data': {'freq': Freq.yearly,
                    'lags': 1},
-          'model': {'bagging_temperature': 0.7958960346108515,
-                    'depth': 6,
+          'model': {'bagging_temperature': 0.45047231856875075,
+                    'depth': 9,
                     'ignored_features': (),
-                    'l2_leaf_reg': 0.8447144126965855,
-                    'learning_rate': 0.09913123734148285,
+                    'l2_leaf_reg': 0.717297890052193,
+                    'learning_rate': 0.08790472331204824,
                     'one_hot_max_size': 100,
-                    'random_strength': 2.4093033638987555}}
+                    'random_strength': 1.0740739543034008}}
 
 # Максимальное количество лагов, для которого осуществляется поиск оптимальной ML-модели
-MAX_LAGS = 3
+MAX_LAGS = 4
 
 
 def lags():

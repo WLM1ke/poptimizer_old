@@ -6,15 +6,15 @@ from ml import hyper
 from ml.model_base import AbstractModel
 from ml.returns import cases
 
-PARAMS = {'data': {'ew_lags': 12.041177030185002,
-                   'returns_lags': 9},
-          'model': {'bagging_temperature': 0.48595060499353715,
-                    'depth': 5,
+PARAMS = {'data': {'ew_lags': 12.166882847847372,
+                   'returns_lags': 5},
+          'model': {'bagging_temperature': 1.5889359773128047,
+                    'depth': 2,
                     'ignored_features': (),
-                    'l2_leaf_reg': 2.4299237626848478,
-                    'learning_rate': 0.03575006496157844,
-                    'one_hot_max_size': 100,
-                    'random_strength': 2.704125901214795}}
+                    'l2_leaf_reg': 3.0691833972589424,
+                    'learning_rate': 0.04230361495762283,
+                    'one_hot_max_size': 2,
+                    'random_strength': 3.6085599262888683}}
 
 # Диапазон лагов относительно базового, для которого осуществляется поиск оптимальной ML-модели
 EW_LAGS_RANGE = 0.01

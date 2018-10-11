@@ -27,19 +27,19 @@ MAX_SEARCHES = 100
 ONE_HOT_SIZE = [2, 100]
 
 # Диапазон поиска скорости обучения
-LEARNING_RATE_RANGE = 0.2
+LEARNING_RATE_RANGE = 0.3
 
 # Ограничение на максимальную глубину деревьев
-MAX_DEPTH = 7
+MAX_DEPTH = 9
 
 # Диапазон поиска параметра L2-регуляризации
-L2_RANGE = 0.1
+L2_RANGE = 0.3
 
 # Диапазон поиска случайности разбиений
-RAND_STRENGTH_RANGE = 0.6
+RAND_STRENGTH_RANGE = 0.7
 
 # Диапазон поиска интенсивности бегинга
-BAGGING_RANGE = 0.7
+BAGGING_RANGE = 1.0
 
 
 def log_limits(middle: float, percent_range: float):
