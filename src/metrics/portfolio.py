@@ -133,39 +133,9 @@ class Portfolio:
 
 
 if __name__ == '__main__':
-    port = Portfolio(date='2018-04-19',
-                     cash=596_156 + 470_259 + 481_849,
-                     positions=dict(BANEP=200,
-                                    MFON=55,
-                                    SNGSP=235,
-                                    RTKM=0,
-                                    MAGN=0,
-                                    MSTT=4435,
-                                    KBTK=9,
-                                    MOEX=0,
-                                    RTKMP=1475 + 312 + 39,
-                                    NMTP=0,
-                                    TTLK=0,
-                                    LSRG=561 + 0 + 80,
-                                    LSNGP=81,
-                                    PRTK=70,
-                                    MTSS=749,
-                                    AKRN=795,
-                                    MRKC=0 + 0 + 36,
-                                    GAZP=0,
-                                    AFLT=0,
-                                    MSRS=699,
-                                    UPRO=1267,
-                                    PMSBP=1188 + 322 + 219,
-                                    CHMF=0,
-                                    GMKN=166 + 28,
-                                    VSMO=73,
-                                    RSTIP=87,
-                                    PHOR=0,
-                                    MRSB=0,
-                                    LKOH=123,
-                                    ENRU=319 + 148,
-                                    MVID=264 + 62))
-    print(port.price)
-    print(port.price_old)
-    print(port.price - port.price_old)
+    import trading
+
+    port = Portfolio(cash=trading.CASH,
+                     date=trading.DATE,
+                     positions=trading.POSITIONS)
+    # port.weight.to_excel('weights.xlsx')
