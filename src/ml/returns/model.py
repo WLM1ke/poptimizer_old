@@ -22,11 +22,16 @@ MAX_RETURNS_LAGS = 12
 
 
 def ew_lags(base_params: dict, cut=1.0):
+    """Формирует границы интервала поиска ew_lags
+
+    Параметр cut (0.0, 1.0) сужает границы, что используется в функции проверки границ диапазона
+    """
     lags = base_params['data']['ew_lags']
     return lags / (1 + cut * EW_LAGS_RANGE), lags * (1 + cut * EW_LAGS_RANGE)
 
 
 def returns_lags():
+    """Формирует список допустимых лагов доходности"""
     return [lag for lag in range(0, MAX_RETURNS_LAGS + 1)]
 
 
@@ -55,25 +60,26 @@ class ReturnsModel(AbstractModel):
         lags = params['data']['ew_lags']
         lags_range = ew_lags(self.PARAMS, 0.9)
         if lags < lags_range[0] or lags_range[1] < lags:
-            print(f'\nНеобходимо увеличить EW_LAGS_RANGE до {EW_LAGS_RANGE + 0.01:0.1f}')
+            print(f'\nНеобходимо увеличить EW_LAGS_RANGE до {EW_LAGS_RANGE + 0.01:0.2f}')
         lag = params['data']['returns_lags']
         if lag == MAX_RETURNS_LAGS:
             print(f'\nНеобходимо увеличить MAX_RETURNS_LAGS до {MAX_RETURNS_LAGS + 1}')
 
     @property
     def prediction_mean(self):
-        """pd.Series с прогнозом дивидендов"""
-        data_pool = self._predict_pool_func(tickers=self.positions, last_date=self.date, **self._cv_result['data'])
+        """pd.Series с прогнозом дивидендов
 
-        std = pd.DataFrame(data_pool.get_features(), list(self.positions)).iloc[:, 1]
-
-        return pd.Series(self._clf.predict(data_pool), list(self.positions)) * std
+        Так как данные нормированы по СКО прогноз умножается на СКО данных
+        """
+        return self._prediction * self._prediction_data['std']
 
     @property
     def prediction_std(self):
-        """pd.Series с прогнозом дивидендов"""
-        data_pool = self._predict_pool_func(tickers=self.positions, last_date=self.date, **self._cv_result['data'])
-        return pd.DataFrame(data_pool.get_features(), list(self.positions)).iloc[:, 1] * self.std
+        """pd.Series с прогнозом дивидендов
+
+        Так как данные нормированы по СКО прогнозное СКО умножается на СКО данных
+        """
+        return self.std * self._prediction_data['std']
 
 
 if __name__ == '__main__':

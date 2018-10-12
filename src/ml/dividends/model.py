@@ -54,8 +54,7 @@ class DividendsModel(AbstractModel):
     @property
     def prediction_mean(self):
         """pd.Series с прогнозом дивидендов"""
-        data_pool = self._predict_pool_func(tickers=self.positions, last_date=self.date, **self._cv_result['data'])
-        return pd.Series(self._clf.predict(data_pool), list(self.positions))
+        return self._prediction
 
     @property
     def prediction_std(self):

@@ -24,9 +24,15 @@ class AbstractModel(ABC):
         self._positions = positions
         self._date = date
         self._cv_result = hyper.cv_model(self.PARAMS, positions, date, self._learn_pool_func)
-        self._clf = catboost.CatBoostRegressor(**self._cv_result['model'])
+        clf = catboost.CatBoostRegressor(**self._cv_result['model'])
         learn_data = self._learn_pool_func(tickers=positions, last_date=date, **self._cv_result['data'])
-        self._clf.fit(learn_data)
+        clf.fit(learn_data)
+        self._feature_importances = pd.Series(clf.feature_importances_, learn_data.get_feature_names())
+        predict_data = self._predict_pool_func(tickers=positions, last_date=date, **self._cv_result['data'])
+        self._prediction = pd.Series(clf.predict(predict_data), list(self.positions))
+        self._prediction_data = pd.DataFrame(predict_data.get_features(),
+                                             index=list(self.positions),
+                                             columns=predict_data.get_feature_names())
 
     def __str__(self):
         prediction = pd.concat([self.prediction_mean, self.prediction_std], axis=1)
@@ -34,7 +40,7 @@ class AbstractModel(ABC):
         return (f'СКО - {self.std:0.4%}'
                 f'\nR2 - {self.r2:0.4%}'
                 f'\n\nПрогноз:\n{prediction}'
-                f'\n\nВажность признаков: {self._clf.feature_importances_}'
+                f'\n\nВажность признаков:\n{self._feature_importances}'
                 f'\n\nМодель:\n{self.params}')
 
     @staticmethod
