@@ -32,7 +32,7 @@ def ew_lags(base_params: dict, cut=1.0):
 
 def returns_lags():
     """Формирует список допустимых лагов доходности"""
-    return [lag for lag in range(0, MAX_RETURNS_LAGS + 1)]
+    return list(range(MAX_RETURNS_LAGS + 1))
 
 
 class ReturnsModel(AbstractModel):
@@ -85,6 +85,6 @@ class ReturnsModel(AbstractModel):
 if __name__ == '__main__':
     from trading import POSITIONS, DATE
 
-    pred = ReturnsModel(tuple(sorted(POSITIONS)), pd.Timestamp(DATE))
+    pred = ReturnsModel(POSITIONS, pd.Timestamp(DATE))
     print(pred)
     pred.find_better_model()
