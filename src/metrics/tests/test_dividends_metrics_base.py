@@ -33,10 +33,11 @@ def test_std(div):
 
 
 def test_beta(div):
-    mean = div.beta
-    assert mean['LSRG'] == pytest.approx(0.209672686516287)
-    assert mean[CASH] == pytest.approx(0)
-    assert mean[PORTFOLIO] == pytest.approx(1)
+    beta = div.beta
+    assert beta['LSRG'] == pytest.approx(0.209672686516287)
+    assert beta[CASH] == pytest.approx(0)
+    assert beta[PORTFOLIO] == pytest.approx(1)
+    assert (beta * div._portfolio.weight).iloc[:-1].sum() == pytest.approx(1.0)
 
 
 def test_lower_bound(div):

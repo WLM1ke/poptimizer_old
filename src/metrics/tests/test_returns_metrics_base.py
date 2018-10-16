@@ -45,6 +45,7 @@ def test_beta(returns):
     assert beta['GMKN'] == pytest.approx(0.686600110203995)
     assert beta[CASH] == pytest.approx(0.0)
     assert beta[PORTFOLIO] == pytest.approx(1.0)
+    assert (beta * returns._portfolio.weight).iloc[:-1].sum() == pytest.approx(1.0)
 
 
 def test_draw_down(returns):
