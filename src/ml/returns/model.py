@@ -85,6 +85,6 @@ class ReturnsModel(AbstractModel):
 if __name__ == '__main__':
     from trading import POSITIONS, DATE
 
-    pred = ReturnsModel(POSITIONS, pd.Timestamp(DATE))
+    pred = ReturnsModel(tuple(sorted(POSITIONS)), pd.Timestamp(DATE))
     print(pred)
     pred.find_better_model()
