@@ -14,6 +14,9 @@ class MLReturnsMetrics(AbstractReturnsMetrics):
         manager = ReturnsMLDataManager(portfolio.positions[:-2], pd.Timestamp(portfolio.date))
         self._ml_data = manager.value
 
+    def __str__(self):
+        return super().__str__() + f'\n\nСредняя корреляция - {self._mean_corr:.2%}'
+
     @property
     def returns(self):
         """Доходности составляющих портфеля и самого портфеля"""
@@ -45,15 +48,24 @@ class MLReturnsMetrics(AbstractReturnsMetrics):
         return super().std * self._ml_data.std
 
     @property
-    def beta(self):
+    def _mean_corr(self):
+        """Усредненная корреляция между позициями"""
         weighted_std = self.std * self._portfolio.weight
         std_portfolio = weighted_std[PORTFOLIO]
         std_positions = weighted_std.iloc[:-1].values
         std_matrix = np.matmul(std_positions.reshape(-1, 1), std_positions.reshape(1, -1))
         trace = np.trace(std_matrix)
-        mean_corr = (std_portfolio ** 2 - trace) / (np.sum(std_matrix) - trace)
+        return (std_portfolio ** 2 - trace) / (np.sum(std_matrix) - trace)
+
+    @property
+    def beta(self):
+        """Бета рассчитывается на основе усредненной корреляции между отдельными позициями"""
+        weighted_std = self.std * self._portfolio.weight
+        std_portfolio = weighted_std[PORTFOLIO]
+        std_positions = weighted_std.iloc[:-1].values
         beta = np.matmul(self.std.iloc[:-1].values.reshape(-1, 1), std_positions.reshape(1, -1))
         std_diag = np.diag(np.diag(beta))
+        mean_corr = self._mean_corr
         beta = np.sum(((beta - std_diag) * mean_corr + std_diag) / std_portfolio ** 2, axis=1)
         beta = pd.Series(beta, index=weighted_std.index[:-1])
         beta[PORTFOLIO] = 1
