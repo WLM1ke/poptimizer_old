@@ -1,7 +1,5 @@
 pandas
-xlrd
 bs4
-lxml
 arrow
 numpy
 scipy

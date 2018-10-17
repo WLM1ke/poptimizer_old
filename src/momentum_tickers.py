@@ -14,7 +14,8 @@ RESULT_ALIMENT = 70
 def all_securities():
     """Возвращает данные по всем торгуемым бумагам и печатает их количество"""
     df = moex.securities_info()
-    print('\nОбщее количество торгуемых бумаг'.ljust(RESULT_ALIMENT), f'{len(df)}')
+    print()
+    print('Общее количество торгуемых бумаг'.ljust(RESULT_ALIMENT), f'{len(df)}')
     return df
 
 
