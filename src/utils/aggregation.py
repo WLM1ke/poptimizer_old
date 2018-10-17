@@ -128,6 +128,9 @@ class Freq(Enum):
         self._aggregation_func = aggregation_func
         self._times_in_year = times_in_year
 
+    def __str__(self):
+        return f'{self.__class__.__name__}.{self.name}'
+
     @property
     def aggregation_func(self):
         """Функция агригации"""
@@ -140,13 +143,5 @@ class Freq(Enum):
 
 
 if __name__ == '__main__':
-    func = quarterly_aggregation_func(pd.Timestamp('2018-08-20'))
-    print(func(pd.Timestamp('2018-08-18')))
-    print(func(pd.Timestamp('2018-08-20')))
-    print(func(pd.Timestamp('2018-08-21')))
-    print(func(pd.Timestamp('2018-07-21')))
-    print(func(pd.Timestamp('2018-06-21')))
-    print(func(pd.Timestamp('2018-05-21')))
-    print(func(pd.Timestamp('2018-04-21')))
-    print(func(pd.Timestamp('2018-03-21')))
-    print(func(pd.Timestamp('2018-12-21')))
+    mon = Freq.monthly
+    print(mon)
