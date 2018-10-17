@@ -1,10 +1,15 @@
 """Загружает котировки и объемы торгов для тикеров с http://iss.moex.com"""
 import json
+import time
 from urllib import request
+from urllib.error import URLError
 
 import pandas as pd
 
 from web.labels import CLOSE_PRICE, DATE, VOLUME
+
+# Время ожидания для повторной загрузки при невозможности получить данные
+TIMEOUT = 60
 
 
 class Quotes:
@@ -41,8 +46,17 @@ class Quotes:
 
     def get_json_data(self, block_position):
         """Загружает и проверяет json с данными"""
-        with request.urlopen(self.url(block_position)) as response:
-            json_data = json.load(response)
+        try:
+            with request.urlopen(self.url(block_position)) as response:
+                json_data = json.load(response)
+        except URLError as error:
+            if isinstance(error.args[0], TimeoutError):
+                print(f'Время ожидания загрузки данных для регистрационного номера {self._ticker} превышено')
+                print(f'Новая попытка через {TIMEOUT} секунд')
+                time.sleep(TIMEOUT)
+                json_data = self.get_json_data(self, block_position)
+            else:
+                raise error
         self._validate_response(block_position, json_data)
         return {key: json_data['history'][key] for key in ['data', 'columns']}
 
