@@ -49,7 +49,11 @@ def make_new_portfolio(portfolio: Portfolio, new_ticker: str):
 
 def valid_volume(portfolio: Portfolio, ticker: str):
     """Распечатывает фактор оборота и проверяет, что он больше нуля"""
-    volume = portfolio.volume_factor[ticker]
+    try:
+        volume = portfolio.volume_factor[ticker]
+    except ValueError as error:
+        if 'Пустой ответ. Проверьте запрос:' in error.args[0]:
+            volume = 0
     print('Фактор оборота'.ljust(RESULT_ALIMENT), f'{volume: .4f} - ', end='')
     if volume > 0:
         print('OK')

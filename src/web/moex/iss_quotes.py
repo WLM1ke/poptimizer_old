@@ -54,7 +54,7 @@ class Quotes:
                 print(f'Время ожидания загрузки данных для регистрационного номера {self._ticker} превышено')
                 print(f'Новая попытка через {TIMEOUT} секунд')
                 time.sleep(TIMEOUT)
-                json_data = self.get_json_data(self, block_position)
+                json_data = self.get_json_data(block_position)
             else:
                 raise error
         self._validate_response(block_position, json_data)
@@ -104,6 +104,4 @@ def quotes(ticker, start=None):
 
 
 if __name__ == '__main__':
-    z = quotes('AKRN', start=pd.to_datetime('2017-10-02'))
-    print(z.head())
-    print(z.tail())
+    print(quotes('GTSS'))
