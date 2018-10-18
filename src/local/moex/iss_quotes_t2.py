@@ -27,8 +27,9 @@ class QuotesT2DataManager(data_manager.AbstractDataManager):
 
         Если на одну дату приходится несколько результатов торгов, то выбирается с максимальным оборотом
         """
-        df = pd.concat(self._yield_aliases_quotes_history())
-        return df.loc[df.groupby(DATE)[VOLUME].idxmax()]
+        df = pd.concat(self._yield_aliases_quotes_history()).reset_index()
+        df = df.loc[df.groupby(DATE)[VOLUME].idxmax()]
+        return df.set_index(DATE)
 
     def _yield_aliases_quotes_history(self):
         """Генерирует истории котировок для все тикеров аналогов заданного тикера"""
@@ -41,7 +42,7 @@ class QuotesT2DataManager(data_manager.AbstractDataManager):
         """Загружает историю котировок в режиме T+2 начиная с последней имеющейся даты"""
         ticker = self.data_name
         last_date = self.value.index[-1]
-        return moex.quotes(ticker, last_date)
+        return moex.quotes_t2(ticker, last_date)
 
 
 @functools.lru_cache(maxsize=None)
