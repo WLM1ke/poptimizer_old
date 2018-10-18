@@ -22,8 +22,9 @@ class QuotesDataManager(AbstractDataManager):
 
         Если на одну дату приходится несколько результатов торгов, то выбирается с максимальным оборотом
         """
-        df = pd.concat(self._yield_aliases_quotes_history())
-        return df.loc[df.groupby(DATE)[VOLUME].idxmax()]
+        df = pd.concat(self._yield_aliases_quotes_history()).reset_index()
+        df = df.loc[df.groupby(DATE)[VOLUME].idxmax()]
+        return df.set_index(DATE)
 
     def _yield_aliases_quotes_history(self):
         """Генерирует истории котировок для все тикеров аналогов заданного тикера"""
@@ -102,4 +103,4 @@ def volumes(tickers: tuple):
 
 
 if __name__ == '__main__':
-    print(quotes('VZRZP').to_excel('data.xlsx'))
+    print(quotes('PRMB'))
