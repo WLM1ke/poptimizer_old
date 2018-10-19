@@ -5,6 +5,7 @@ numpy
 scipy
 reportlab
 matplotlib
+xlrd
 lxml
 openpyxl
 sklearn
