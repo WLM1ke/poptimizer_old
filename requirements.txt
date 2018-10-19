@@ -5,6 +5,7 @@ numpy
 scipy
 reportlab
 matplotlib
+lxml
 openpyxl
 sklearn
 catboost
