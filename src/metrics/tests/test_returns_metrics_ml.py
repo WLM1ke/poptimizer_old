@@ -16,11 +16,24 @@ POSITIONS = dict(AKRN=563,
 DATE = '2018-10-15'
 TEST_CASH = 23_437
 
+PARAMS = {'data': {'ew_lags': 12.166882847847372,
+                   'returns_lags': 5},
+          'model': {'bagging_temperature': 1.5889359773128047,
+                    'depth': 2,
+                    'ignored_features': (),
+                    'l2_leaf_reg': 3.0691833972589424,
+                    'learning_rate': 0.04230361495762283,
+                    'one_hot_max_size': 2,
+                    'random_strength': 3.6085599262888683}}
+
 
 @pytest.fixture(scope='module', name='data')
 def make_metrics():
+    saved_params = model.ReturnsModel.PARAMS
+    model.ReturnsModel.PARAMS = PARAMS
     portfolio = metrics.Portfolio(DATE, TEST_CASH, POSITIONS)
-    return metrics.MLReturnsMetrics(portfolio)
+    yield metrics.returns_metrics_ml.MLReturnsMetrics(portfolio)
+    model.ReturnsModel.PARAMS = saved_params
 
 
 def test_returns(data):
@@ -38,7 +51,7 @@ def test_returns(data):
 
 
 def test_decay(data):
-    assert data.decay == 1 - 1 / model.PARAMS['data']['ew_lags']
+    assert data.decay == 1 - 1 / model.ReturnsModel.PARAMS['data']['ew_lags']
 
 
 def test_mean(data):
