@@ -2,7 +2,6 @@
 import random
 
 import metrics
-import settings
 from metrics import CASH, Portfolio
 from web import moex
 from web.labels import REG_NUMBER
@@ -54,6 +53,8 @@ def valid_volume(portfolio: Portfolio, ticker: str):
     except ValueError as error:
         if 'Пустой ответ. Проверьте запрос:' in error.args[0]:
             volume = 0
+        else:
+            raise
     print('Фактор оборота'.ljust(RESULT_ALIMENT), f'{volume: .4f} - ', end='')
     if volume > 0:
         print('OK')
@@ -65,8 +66,7 @@ def valid_volume(portfolio: Portfolio, ticker: str):
 
 def valid_return_gradient(portfolio: Portfolio, ticker: str, t_score: float):
     """Проверяет, что градиент доходности больше t_score СКО в момент просадки с поправкой на оборот"""
-    returns_metrics_class = getattr(metrics, settings.RETURNS_METRICS)
-    returns_metrics = returns_metrics_class(portfolio)
+    returns_metrics = metrics.ReturnsMetrics(portfolio)
     std = returns_metrics.std_at_draw_down
     gradient = returns_metrics.gradient[ticker]
     volume = portfolio.volume_factor[ticker]
