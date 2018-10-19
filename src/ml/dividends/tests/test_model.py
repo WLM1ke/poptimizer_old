@@ -92,12 +92,12 @@ def test_find_better_model(data, capsys):
     assert 'ЛУЧШАЯ МОДЕЛЬ - Базовая модель' in captured.out
     assert 'R2 - 37.8509%' in captured.out
     assert 'Количество итераций - 50' in captured.out
-    assert "{'data': {'freq': <Freq.yearly" in captured.out
+    assert "{'data': {'freq': Freq.yearly" in captured.out
 
     assert 'Найденная модель' in captured.out
     assert 'R2 - 17.7351%' in captured.out
     assert 'Количество итераций - 57' in captured.out
-    assert "{'data': {'freq': <Freq.quarterly" in captured.out
+    assert "{'data': {'freq': Freq.quarterly" in captured.out
 
 
 def test_find_better_model_fake_std(data, capsys, monkeypatch):
@@ -116,12 +116,12 @@ def test_find_better_model_fake_std(data, capsys, monkeypatch):
     assert 'Базовая модель' in captured.out
     assert 'R2 - 37.8509%' in captured.out
     assert 'Количество итераций - 50' in captured.out
-    assert "{'data': {'freq': <Freq.yearly" in captured.out
+    assert "{'data': {'freq': Freq.yearly" in captured.out
 
     assert 'ЛУЧШАЯ МОДЕЛЬ - Найденная модель' in captured.out
     assert 'R2 - 17.7351%' in captured.out
     assert 'Количество итераций - 57' in captured.out
-    assert "{'data': {'freq': <Freq.quarterly" in captured.out
+    assert "{'data': {'freq': Freq.quarterly" in captured.out
 
 
 def test_check_data_space_bounds(data, monkeypatch, capsys):

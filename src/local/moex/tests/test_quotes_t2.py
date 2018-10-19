@@ -32,7 +32,7 @@ def test_quotes_t2_manager_update():
     df = manager.download_update()
     assert isinstance(df, pd.DataFrame)
     assert df.shape == (1, 2)
-    assert df.equals(last_row)
+    assert np.allclose(df, last_row)
 
 
 def test_quotes_t2():

@@ -1,8 +1,11 @@
 import pytest
 
+import metrics
 import optimizer
 from metrics import portfolio
+from metrics.dividends_metrics_base import BaseDividendsMetrics
 from metrics.portfolio import Portfolio
+from metrics.returns_metrics_base import BaseReturnsMetrics
 from optimizer import Optimizer
 from settings import AFTER_TAX
 
@@ -31,18 +34,18 @@ def case_optimizer():
                      positions=pos)
     save_max_trade = optimizer.MAX_TRADE
     save_cut_off = portfolio.VOLUME_CUT_OFF
-    save_dividends_metrics = optimizer.DIVIDENDS_METRICS
-    save_returns_metrics = optimizer.RETURNS_METRICS
+    save_dividends_metrics = metrics.DividendsMetrics
+    save_returns_metrics = metrics.ReturnsMetrics
     optimizer.MAX_TRADE = 0.006
     portfolio.VOLUME_CUT_OFF = 2.9 * optimizer.MAX_TRADE
-    optimizer.DIVIDENDS_METRICS = 'BaseDividendsMetrics'
-    optimizer.RETURNS_METRICS = 'BaseReturnsMetrics'
+    metrics.DividendsMetrics = BaseDividendsMetrics
+    metrics.ReturnsMetrics = BaseReturnsMetrics
     opt = Optimizer(port)
     yield opt
     optimizer.MAX_TRADE = save_max_trade
     portfolio.VOLUME_CUT_OFF = save_cut_off
-    optimizer.DIVIDENDS_METRICS = save_dividends_metrics
-    optimizer.RETURNS_METRICS = save_returns_metrics
+    optimizer.DividendsMetrics = save_dividends_metrics
+    optimizer.ReturnsMetrics = save_returns_metrics
 
 
 def test_dividends_gradient_growth(opt):
