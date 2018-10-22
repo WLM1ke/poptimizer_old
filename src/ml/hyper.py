@@ -3,9 +3,14 @@ import functools
 
 import catboost
 import hyperopt
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from hyperopt import hp
+from sklearn import model_selection
+
+# Размер графика с кривой обучения
+FIG_SIZE = 8
 
 # Базовые настройки catboost
 MAX_ITERATIONS = 900
@@ -98,12 +103,18 @@ def check_model_bounds(params: dict, base_params: dict):
         print(f'\nНеобходимо увеличить BAGGING_RANGE до {BAGGING_RANGE + 0.1:0.1f}')
 
 
+def make_model_params(params):
+    """Объединяет технические и конкретные параметры модели"""
+    model_params = {}
+    model_params.update(TECH_PARAMS)
+    model_params.update(params['model'])
+    return model_params
+
+
 def cv_model(params: dict, positions: tuple, date: pd.Timestamp, data_pool_func):
     """Кросс-валидирует модель по RMSE, нормированному на СКО набора данных
-
     Осуществляется проверка, что не достигнут максимум итераций, возвращается RMSE, R2 и параметры модели с оптимальным
     количеством итераций в формате целевой функции hyperopt
-
     Parameters
     ----------
     params
@@ -129,9 +140,7 @@ def cv_model(params: dict, positions: tuple, date: pd.Timestamp, data_pool_func)
     data_params = params['data']
     data = data_pool_func(positions, date, **data_params)
     pool_std = np.array(data.get_label()).std()
-    model_params = {}
-    model_params.update(TECH_PARAMS)
-    model_params.update(params['model'])
+    model_params = make_model_params(params)
     scores = catboost.cv(pool=data,
                          params=model_params,
                          fold_count=FOLDS_COUNT)
@@ -145,6 +154,53 @@ def cv_model(params: dict, positions: tuple, date: pd.Timestamp, data_pool_func)
                 r2=1 - (scores.loc[index, 'test-RMSE-mean'] / pool_std) ** 2,
                 data=data_params,
                 model=model_params)
+
+
+def learning_curve(params: dict, positions: tuple, date: pd.Timestamp, data_pool_params, fractions: tuple):
+    """Рисует кривую обучения для train_sizes долей от общего Pool данных
+
+    Перед построением кривой обучения данные переставляются случайным образом
+
+    Parameters
+    ----------
+    params
+        Словарь с параметрами модели: ключ 'data' - параметры данных, ключ 'model' - параметры модели, который должен
+        содержать количество итераций
+    positions
+        Кортеж тикеров, для которых необходимо построить кривую обучения
+    date
+        Дата, для которой необходимо построить кривую обучения
+    data_pool_params
+        Функция для получения catboost.Pool с данными
+    fractions
+        Список с возрастающими долями от общей выборки, которые будут использоваться для построения кривой обучения
+    """
+    data_params = params['data']
+    data = data_pool_params(positions, date, **data_params)
+    model_params = make_model_params(params)
+    model_params['cat_features'] = data['cat_features']
+    train_sizes, train_scores, test_scores = model_selection.learning_curve(
+        catboost.CatBoostRegressor(**model_params),
+        data['data'],
+        data['label'],
+        train_sizes=list(fractions),
+        cv=FOLDS_COUNT,
+        scoring='neg_mean_squared_error',
+        shuffle=True,
+        random_state=SEED)
+    fig, ax = plt.subplots(figsize=(FIG_SIZE, FIG_SIZE))
+    fig.tight_layout(pad=3, h_pad=5)
+    ax.set_title(f'Learning curve')
+    ax.set_xlabel('Training examples')
+    train_scores_mean = (-np.mean(train_scores, axis=1)) ** 0.5
+    test_scores_mean = (-np.mean(test_scores, axis=1)) ** 0.5
+    ax.grid()
+    ax.plot(train_sizes, train_scores_mean, 'o-', color="r",
+            label="Training score")
+    ax.plot(train_sizes, test_scores_mean, 'o-', color="g",
+            label="Cross-validation score")
+    ax.legend(loc="best")
+    plt.show()
 
 
 def optimize_hyper(base_params: dict, positions: tuple, date: pd.Timestamp, data_pool_func, data_space: dict):

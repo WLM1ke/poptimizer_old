@@ -45,6 +45,12 @@ class AbstractModel(ABC):
 
     @staticmethod
     @abstractmethod
+    def _learn_pool_params(*args, **kwargs):
+        """Параметры для создания catboost.Pool для обучения"""
+        raise NotImplementedError
+
+    @staticmethod
+    @abstractmethod
     def _learn_pool_func(*args, **kwargs):
         """catboost.Pool с данными для обучения"""
         raise NotImplementedError
@@ -99,7 +105,7 @@ class AbstractModel(ABC):
 
     @property
     def params(self):
-        """Ключевые параметры модели"""
+        """Ключевые параметры модели с количеством итераций"""
         return dict(data=self._cv_result['data'],
                     model=self._cv_result['model'])
 
@@ -130,3 +136,7 @@ class AbstractModel(ABC):
             print(f"R2 - {base_cv_results['r2']:0.4%}"
                   f"\nКоличество итераций - {base_cv_results['model']['iterations']}"
                   f"\n{self.PARAMS}")
+
+    def learning_curve(self, fractions: tuple = tuple(1.1 ** i for i in range(-10, 1))):
+        """Рисует кривую обучения для заданных долей от общего количества данных"""
+        hyper.learning_curve(self.params, self.positions, self.date, self._learn_pool_params, fractions)

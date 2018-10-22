@@ -30,6 +30,11 @@ class DividendsModel(AbstractModel):
     PARAMS = PARAMS
 
     @staticmethod
+    def _learn_pool_params(*args, **kwargs):
+        """Параметры для создания catboost.Pool для обучения"""
+        return cases.learn_pool_params(*args, **kwargs)
+
+    @staticmethod
     def _learn_pool_func(*args, **kwargs):
         """catboost.Pool с данными для обучения"""
         return cases.learn_pool(*args, **kwargs)
@@ -68,5 +73,6 @@ if __name__ == '__main__':
     pred = DividendsModel(tuple(sorted(POSITIONS)), pd.Timestamp(DATE))
     print(pred)
     pred.find_better_model()
+    pred.learning_curve()
 
     # СКО - 3.9547%

@@ -98,6 +98,16 @@ class DividendsCasesIterator:
         return cases
 
 
+def learn_pool_params(tickers, last_date, freq, lags):
+    """Параметры для создания catboost.Pool для обучения"""
+    learn_cases = pd.concat(DividendsCasesIterator(tickers, last_date, freq, lags))
+    pool_params = dict(data=learn_cases.iloc[:, :-1],
+                       label=learn_cases.iloc[:, -1],
+                       cat_features=[0],
+                       feature_names=learn_cases.columns[:-1])
+    return pool_params
+
+
 def learn_pool(tickers: tuple, last_date: pd.Timestamp, freq: Freq, lags: int = 5):
     """Возвращает обучающие кейсы до указанной даты включительно в формате Pool
 
@@ -120,12 +130,8 @@ def learn_pool(tickers: tuple, last_date: pd.Timestamp, freq: Freq, lags: int = 
     catboost.Pool
         Кейсы для обучения
     """
-    learn_cases = pd.concat(DividendsCasesIterator(tickers, last_date, freq, lags))
-    learn = catboost.Pool(data=learn_cases.iloc[:, :-1],
-                          label=learn_cases.iloc[:, -1],
-                          cat_features=[0],
-                          feature_names=learn_cases.columns[:-1])
-    return learn
+    pool_params = learn_pool_params(tickers, last_date, freq, lags)
+    return catboost.Pool(**pool_params)
 
 
 def predict_pool(tickers: tuple, last_date: pd.Timestamp, freq: Freq, lags: int = 5):
@@ -163,4 +169,4 @@ if __name__ == '__main__':
                      BANEP=488,
                      CHMF=234)
     it = learn_pool(tuple(key for key in POSITIONS), pd.Timestamp('2018-08-17'), Freq.yearly, 4)
-    print(it.get_label())
+    print(it.get_features())
