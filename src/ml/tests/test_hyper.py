@@ -1,9 +1,11 @@
 import hyperopt
+import numpy as np
 import pandas as pd
 import pytest
 
 from ml import hyper
 from ml.dividends import cases
+from ml.dividends.cases import learn_pool_params
 from utils.aggregation import Freq
 
 BASE_PARAMS = {
@@ -138,3 +140,25 @@ def test_optimize_hyper(monkeypatch):
     assert result['model']['learning_rate'] == pytest.approx(0.10806709959509389)
     assert result['model']['one_hot_max_size'] == 100
     assert result['model']['random_strength'] == pytest.approx(1.0813796592585887)
+
+
+def test_learning_curve(monkeypatch):
+    params = {'data': {'freq': Freq.yearly,
+                       'lags': 1},
+              'model': {'bagging_temperature': 0.4568657818003243,
+                        'depth': 3,
+                        'iterations': 20,
+                        'ignored_features': (),
+                        'l2_leaf_reg': 1.3880804412474392,
+                        'learning_rate': 0.07366147620032211,
+                        'one_hot_max_size': 100,
+                        'random_strength': 1.4731903200987282}}
+    pos = ('CHMF', 'RTKMP', 'SNGSP', 'LSNGP', 'LKOH')
+    date = pd.Timestamp('2018-09-03')
+    fractions = (0.5, 0.8, 1.0)
+    monkeypatch.setattr(hyper.plt, 'show', object)
+    train_sizes, train_scores, test_scores = hyper.learning_curve(params, pos, date, learn_pool_params, fractions)
+    print(train_sizes, train_scores, test_scores)
+    assert np.allclose(train_sizes, [16, 26, 33])
+    assert np.allclose(train_scores, [0.05153206, 0.05238434, 0.05219597])
+    assert np.allclose(test_scores, [0.06292444, 0.05833155, 0.05949058])

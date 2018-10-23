@@ -159,8 +159,6 @@ def cv_model(params: dict, positions: tuple, date: pd.Timestamp, data_pool_func)
 def learning_curve(params: dict, positions: tuple, date: pd.Timestamp, data_pool_params, fractions: tuple):
     """Рисует кривую обучения для train_sizes долей от общего Pool данных
 
-    Перед построением кривой обучения данные переставляются случайным образом
-
     Parameters
     ----------
     params
@@ -171,18 +169,18 @@ def learning_curve(params: dict, positions: tuple, date: pd.Timestamp, data_pool
     date
         Дата, для которой необходимо построить кривую обучения
     data_pool_params
-        Функция для получения catboost.Pool с данными
+        Функция для получения параметров для построения catboost.Pool с данными
     fractions
         Список с возрастающими долями от общей выборки, которые будут использоваться для построения кривой обучения
     """
     data_params = params['data']
-    data = data_pool_params(positions, date, **data_params)
+    pool_params = data_pool_params(positions, date, **data_params)
     model_params = make_model_params(params)
-    model_params['cat_features'] = data['cat_features']
+    model_params['cat_features'] = pool_params['cat_features']
     train_sizes, train_scores, test_scores = model_selection.learning_curve(
         catboost.CatBoostRegressor(**model_params),
-        data['data'],
-        data['label'],
+        pool_params['data'],
+        pool_params['label'],
         train_sizes=list(fractions),
         cv=FOLDS_COUNT,
         scoring='neg_mean_squared_error',
@@ -201,6 +199,7 @@ def learning_curve(params: dict, positions: tuple, date: pd.Timestamp, data_pool
             label="Cross-validation score")
     ax.legend(loc="best")
     plt.show()
+    return train_sizes, train_scores_mean, test_scores_mean
 
 
 def optimize_hyper(base_params: dict, positions: tuple, date: pd.Timestamp, data_pool_func, data_space: dict):
