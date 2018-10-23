@@ -49,11 +49,10 @@ class AbstractModel(ABC):
         """Параметры для создания catboost.Pool для обучения"""
         raise NotImplementedError
 
-    @staticmethod
-    @abstractmethod
-    def _learn_pool_func(*args, **kwargs):
+    @property
+    def _learn_pool_func(self):
         """catboost.Pool с данными для обучения"""
-        raise NotImplementedError
+        return lambda *args, **kwargs: catboost.Pool(**self._learn_pool_params(*args, **kwargs))
 
     @staticmethod
     @abstractmethod

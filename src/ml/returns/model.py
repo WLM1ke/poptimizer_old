@@ -45,11 +45,6 @@ class ReturnsModel(AbstractModel):
         return cases.learn_pool_params(*args, **kwargs)
 
     @staticmethod
-    def _learn_pool_func(*args, **kwargs):
-        """catboost.Pool с данными для обучения"""
-        return cases.learn_pool(*args, **kwargs)
-
-    @staticmethod
     def _predict_pool_func(*args, **kwargs):
         """catboost.Pool с данными для предсказания"""
         return cases.predict_pool(*args, **kwargs)
@@ -92,5 +87,5 @@ if __name__ == '__main__':
 
     pred = ReturnsModel(tuple(sorted(POSITIONS)), pd.Timestamp(DATE))
     print(pred)
-    pred.find_better_model()
+    # pred.find_better_model()
     pred.learning_curve()
