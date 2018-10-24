@@ -35,4 +35,7 @@ if __name__ == '__main__':
                      cash=CASH,
                      positions=POSITIONS)
     metrics = MLDividendsMetrics(port)
-    print(metrics)
+    dsr = (metrics.mean - metrics.beta * metrics.mean.iloc[-1]) / metrics.std.iloc[-1]
+    print(dsr.sort_values(ascending=False))
+
+    print(metrics.mean.iloc[-1] / metrics.std.iloc[-1])

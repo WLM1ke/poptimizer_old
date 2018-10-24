@@ -79,4 +79,13 @@ if __name__ == '__main__':
                      cash=trading.CASH,
                      positions=trading.POSITIONS)
     metrics = MLReturnsMetrics(port)
-    print(metrics)
+    dsr = (metrics.mean - metrics.beta * metrics.mean.iloc[-1]) / metrics.std.iloc[-1]
+    print(dsr.sort_values(ascending=False))
+
+    print(metrics.mean.iloc[-1] / metrics.std.iloc[-1])
+    t = 2 / (12 ** 0.5)
+    mean_gradient = metrics.mean - metrics.mean.iloc[-1]
+    risk_gradient = metrics.std.iloc[-1] * (metrics.beta - 1)
+    gr = (mean_gradient - t * risk_gradient) / (t * metrics.std.iloc[-1])
+    print(t)
+    print(gr.sort_values(ascending=False))

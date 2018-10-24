@@ -2,6 +2,7 @@
 from abc import ABC, abstractmethod
 
 import catboost
+import numpy as np
 import pandas as pd
 
 from ml import hyper
@@ -136,6 +137,6 @@ class AbstractModel(ABC):
                   f"\nКоличество итераций - {base_cv_results['model']['iterations']}"
                   f"\n{self.PARAMS}")
 
-    def learning_curve(self, fractions: tuple = tuple(1.1 ** i for i in range(-10, 1))):
+    def learning_curve(self, fractions=np.linspace(0.1, 1.0, 10)):
         """Рисует кривую обучения для заданных долей от общего количества данных"""
         hyper.learning_curve(self.params, self.positions, self.date, self._learn_pool_params, fractions)
