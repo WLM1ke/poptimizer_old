@@ -1,4 +1,6 @@
 """Основные метрики доходности на базе ML-модели"""
+from functools import lru_cache
+
 import numpy as np
 import pandas as pd
 
@@ -18,6 +20,7 @@ class MLReturnsMetrics(AbstractReturnsMetrics):
         return super().__str__() + f'\n\nСредняя корреляция - {self._mean_corr:.2%}'
 
     @property
+    @lru_cache(maxsize=1)
     def returns(self):
         """Доходности составляющих портфеля и самого портфеля"""
         portfolio = self._portfolio
