@@ -1,4 +1,5 @@
 """Класс проводит оптимизацию по Парето на основе метрик доходности и дивидендов"""
+from functools import lru_cache
 
 import pandas as pd
 
@@ -119,6 +120,7 @@ class Optimizer:
         """Метрики доходности, оптимизируемого портфеля"""
         return self._returns_metrics
 
+    @lru_cache(maxsize=1)
     def _dividends_growth_matrix(self):
         """Матрица увеличения градиента дивидендов при замене бумаги в строке на бумагу в столбце
 
@@ -134,6 +136,7 @@ class Optimizer:
         dividends_growth[dividends_growth <= 0] = 0
         return dividends_growth
 
+    @lru_cache(maxsize=1)
     def _drawdown_growth_matrix(self):
         """Матрица увеличения градиента просадки при замене бумаги в строке на бумагу в столбце
 

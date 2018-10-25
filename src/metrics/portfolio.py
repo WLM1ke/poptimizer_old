@@ -108,6 +108,7 @@ class Portfolio:
         return price
 
     @property
+    @lru_cache(maxsize=1)
     def value(self):
         """Стоимость отдельных позиций"""
         df = self.shares * self.price
@@ -116,7 +117,8 @@ class Portfolio:
     @property
     def weight(self):
         """Вес отдельных позиций в стоимости портфеля"""
-        df = self.value / self.value[PORTFOLIO]
+        value = self.value
+        df = value / value[PORTFOLIO]
         return df
 
     @property

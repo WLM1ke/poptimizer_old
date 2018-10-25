@@ -46,6 +46,7 @@ class MLReturnsMetrics(AbstractReturnsMetrics):
         return mean
 
     @property
+    @lru_cache(maxsize=1)
     def std(self):
         """Series СКО доходности"""
         return super().std * self._ml_data.std
