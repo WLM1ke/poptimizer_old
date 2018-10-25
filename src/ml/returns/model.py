@@ -6,19 +6,19 @@ from ml import hyper
 from ml.model_base import AbstractModel
 from ml.returns import cases
 
-PARAMS = {'data': {'ew_lags': 11.924399917922836,
-                   'returns_lags': 10},
-          'model': {'bagging_temperature': 0.22032647086791493,
-                    'depth': 9,
+PARAMS = {'data': {'ew_lags': 11.973040836963504,
+                   'returns_lags': 9},
+          'model': {'bagging_temperature': 0.2471097402517502,
+                    'depth': 6,
                     'ignored_features': (),
-                    'l2_leaf_reg': 6.299936240847009,
-                    'learning_rate': 0.07965840553417641,
-                    'one_hot_max_size': 2,
-                    'random_strength': 2.0387993039913535}}
+                    'l2_leaf_reg': 3.9883868073811213,
+                    'learning_rate': 0.0579607453775271,
+                    'one_hot_max_size': 100,
+                    'random_strength': 3.4258265586749226}}
 
 # Диапазон лагов относительно базового, для которого осуществляется поиск оптимальной ML-модели
 EW_LAGS_RANGE = 0.01
-MAX_RETURNS_LAGS = 13
+MAX_RETURNS_LAGS = 14
 
 
 def ew_lags(base_params: dict, cut=1.0):

@@ -13,7 +13,7 @@ from sklearn import model_selection
 FIG_SIZE = 8
 
 # Базовые настройки catboost
-MAX_ITERATIONS = 900
+MAX_ITERATIONS = 1000
 SEED = 284704
 FOLDS_COUNT = 20
 TECH_PARAMS = dict(iterations=MAX_ITERATIONS,
@@ -32,10 +32,10 @@ MAX_SEARCHES = 100
 ONE_HOT_SIZE = [2, 100]
 
 # Диапазон поиска скорости обучения
-LEARNING_RATE_RANGE = 0.4
+LEARNING_RATE_RANGE = 0.5
 
 # Ограничение на максимальную глубину деревьев
-MAX_DEPTH = 10
+MAX_DEPTH = 9
 
 # Диапазон поиска параметра L2-регуляризации
 L2_RANGE = 0.6
