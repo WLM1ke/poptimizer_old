@@ -15,9 +15,13 @@ class DohodDataManager(AbstractDataManager):
         super().__init__(DOHOD_CATEGORY, ticker)
 
     def download_all(self):
+        """загружаются все данные
+
+        Несколько выплат в одну дату объединяются для уникальности индекса и удобства сопоставления"""
         return dividends.dohod(self.data_name).groupby(DATE).sum()
 
     def download_update(self):
+        """Нет возможности загрузить данные частично"""
         super().download_update()
 
 
