@@ -47,8 +47,9 @@ class Quotes:
     def get_json_data(self, block_position):
         """Загружает и проверяет json с данными"""
         try:
-            req = request.Request(self.url(block_position))
-            with request.urlopen(req) as response:
+            opener = request.OpenerDirector()
+            opener.add_handler(request.HTTPSHandler())
+            with opener.open(self.url(block_position)) as response:
                 json_data = json.load(response)
         except URLError as error:
             if isinstance(error.args[0], TimeoutError):
