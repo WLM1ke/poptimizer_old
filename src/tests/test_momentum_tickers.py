@@ -1,9 +1,10 @@
 import pandas as pd
 import pytest
 
+import metrics
 import momentum_tickers
-import settings
 from metrics.portfolio import CASH, Portfolio
+from metrics.returns_metrics_base import BaseReturnsMetrics
 from momentum_tickers import all_securities, all_securities_with_reg_number
 from momentum_tickers import non_portfolio_securities, make_new_portfolio, valid_volume
 from momentum_tickers import valid_return_gradient
@@ -12,13 +13,13 @@ from web.labels import REG_NUMBER
 
 @pytest.fixture(scope='module', autouse=True, name='port')
 def make_test_portfolio():
-    save_class = settings.RETURNS_METRICS
-    settings.RETURNS_METRICS = 'BaseReturnsMetrics'
+    save_class = metrics.ReturnsMetrics
+    metrics.ReturnsMetrics = BaseReturnsMetrics
     port = Portfolio(date='2018-03-19',
                      cash=1000.21,
                      positions=dict(GAZP=682, VSMO=145, TTLK=123))
     yield port
-    settings.RETURNS_METRICS = save_class
+    metrics.ReturnsMetrics = save_class
 
 
 def test_all_securities():
