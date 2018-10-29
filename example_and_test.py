@@ -43,7 +43,7 @@ def trading():
     print(optimizer)
 
 
-def speed_test():
+def speed_test(*args):
     """Функция тестирования скорости
 
     Используется реалистичный портфель и комплексные функции распечатки метрик портфеля
@@ -55,8 +55,9 @@ def speed_test():
 
     pr.disable()
     ps = pstats.Stats(pr).sort_stats('cumulative')
-    ps.print_stats()
+    print()
+    ps.print_stats(*args)
 
 
 if __name__ == '__main__':
-    speed_test()
+    speed_test(10, 'PortfolioOptimizer')
