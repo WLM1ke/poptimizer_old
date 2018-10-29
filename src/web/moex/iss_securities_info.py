@@ -7,6 +7,8 @@ import pandas as pd
 
 from web.labels import LAST_PRICE, LOT_SIZE, COMPANY_NAME, REG_NUMBER, TICKER
 
+MIN_TICKERS_AMOUNT = 200
+
 
 def make_url(tickers: tuple):
     """Формирует url для запроса информации на http://iss.moex.com"""
@@ -39,11 +41,11 @@ def validate_response(data, tickers: tuple):
         if len(data['marketdata']['data']) != n:
             raise ValueError(msg)
     else:
-        min_tickers_amount = 200
-        msg = f'Ошибка загрузки - количество торгуемых тикеров должно быть больше {min_tickers_amount}'
-        if len(data['securities']['data']) < min_tickers_amount:
+
+        msg = f'Ошибка загрузки - количество торгуемых тикеров должно быть больше {MIN_TICKERS_AMOUNT}'
+        if len(data['securities']['data']) < MIN_TICKERS_AMOUNT:
             raise ValueError(msg)
-        if len(data['marketdata']['data']) < min_tickers_amount:
+        if len(data['marketdata']['data']) < MIN_TICKERS_AMOUNT:
             raise ValueError(msg)
 
 
