@@ -1,12 +1,16 @@
 """Загрузка данных о дивидендах с https://www.conomy.ru/"""
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.firefox import options
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support import wait
 
 # Драйвер и время ожидания загрузки
-WEB_DRIVER = webdriver.Safari
+DRIVER_OPTIONS = options.Options()
+DRIVER_OPTIONS.headless = True
+WEB_DRIVER = webdriver.Firefox
 WAITING_TIME = 10
 
 # Параметры поиска страницы эмитента
@@ -46,11 +50,15 @@ def load_dividends_table(driver):
 
 def get_html(ticker: str):
     """Возвращает html код страницы с данными по дивидендам"""
-    with WEB_DRIVER() as driver:
+    with WEB_DRIVER(options=DRIVER_OPTIONS) as driver:
         load_ticker_page(ticker, driver)
         return load_dividends_table(driver)
 
 
 if __name__ == '__main__':
     ticker_ = 'AKRN'
-    print(get_html(ticker_))
+    html = get_html(ticker_)
+    soup = BeautifulSoup(html, 'lxml')
+    for table in soup.find_all('table'):
+        print('*' * 50)
+        print(table)
