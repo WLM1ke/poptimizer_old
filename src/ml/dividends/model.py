@@ -67,7 +67,7 @@ if __name__ == '__main__':
 
     pred = DividendsModel(tuple(sorted(POSITIONS)), pd.Timestamp(DATE))
     print(pred)
-    pred.find_better_model()
+    # pred.find_better_model()
     pred.learning_curve()
 
     # СКО - 3.9547%
