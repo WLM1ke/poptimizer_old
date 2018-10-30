@@ -7,10 +7,7 @@ from selenium.webdriver.firefox import options
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support import wait
 
-# Драйвер и время ожидания загрузки
-DRIVER_OPTIONS = options.Options()
-DRIVER_OPTIONS.headless = True
-WEB_DRIVER = webdriver.Firefox
+# Время ожидания загрузки
 WAITING_TIME = 10
 
 # Параметры поиска страницы эмитента
@@ -41,18 +38,20 @@ def load_ticker_page(ticker: str, driver):
 
 
 def load_dividends_table(driver):
-    """Выбирает на странице эмитента меню дивиденды, дожидается загрузки таблицы и возвращает html код страницы"""
+    """Выбирает на странице эмитента меню дивиденды и загружает таблицу с ними"""
     element = xpath_await_find(driver, DIVIDENDS_MENU)
     element.click()
-    xpath_await_find(driver, DIVIDENDS_TABLE)
-    return driver.page_source
 
 
 def get_html(ticker: str):
     """Возвращает html код страницы с данными по дивидендам"""
-    with WEB_DRIVER(options=DRIVER_OPTIONS) as driver:
+    driver_options = options.Options()
+    driver_options.headless = True
+    with webdriver.Firefox(options=driver_options) as driver:
         load_ticker_page(ticker, driver)
-        return load_dividends_table(driver)
+        load_dividends_table(driver)
+        xpath_await_find(driver, DIVIDENDS_TABLE)
+        return driver.page_source
 
 
 if __name__ == '__main__':
