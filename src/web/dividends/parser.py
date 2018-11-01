@@ -1,5 +1,15 @@
 """Парсер html-таблиц"""
+from typing import NamedTuple, Callable
+
 import bs4
+import pandas as pd
+
+
+class DataColumn(NamedTuple):
+    """Описание колонки с данными"""
+    index: int
+    validation_dict: dict
+    parser_func: Callable
 
 
 class HTMLTableParser:
@@ -61,3 +71,30 @@ class HTMLTableParser:
         while col_pos >= len(parse_table[row_pos]):
             parse_table[row_pos].append(None)
         parse_table[row_pos][col_pos] = value
+
+    def make_df(self, columns=None, drop_header=0, drop_footer=0):
+        """Преобразует таблицу в DataFrame
+
+        Если передан список колонок, то они валидируются, а значения преобразуются
+        """
+        if columns:
+            self._validate_columns(columns)
+        table = self._yield_rows(columns, drop_header, drop_footer)
+        return pd.DataFrame(table)
+
+    def _validate_columns(self, columns):
+        """Проверка значений в колонках"""
+        table = self.parsed_table
+        for column in columns:
+            for row, value in column.validation_dict.items():
+                if table[row][column.index] != value:
+                    raise ValueError(f'Значение в таблице "{table[row][column.index]}" - должно быть "{value}"')
+
+    def _yield_rows(self, columns, drop_header, drop_footer):
+        """Генерирует строки с избранными колонками со значениями после парсинга"""
+        table = self.parsed_table
+        if drop_footer >= 0:
+            drop_footer = len(table) - drop_footer
+        table = table[drop_header:drop_footer]
+        for row in table:
+            yield [column.parser_func(row[column.index]) for column in columns]
