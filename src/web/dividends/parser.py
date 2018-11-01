@@ -32,7 +32,7 @@ class HTMLTableParser:
 
     @property
     def parsed_table(self):
-        """Распарсенная таблица"""
+        """Распарсенная html-таблица в виде списка списков ячеек"""
         if self._parsed_table:
             return self._parsed_table
         table = self._table
@@ -72,16 +72,28 @@ class HTMLTableParser:
             parse_table[row_pos].append(None)
         parse_table[row_pos][col_pos] = value
 
-    def make_df(self, columns=None, drop_header=0, drop_footer=0):
+    def make_df(self, columns: list, drop_header: int = 0, drop_footer: int = 0):
         """Преобразует таблицу в DataFrame
 
-        Если передан список колонок, то они валидируются, а значения преобразуются
+        Валидирует и преобразует данные на основе описания колонок
+
+        Parameters
+        ----------
+        columns
+            Список колонок в формате DataColumn, которые нужно проверить и оставить в DataFrame
+        drop_header
+            Сколько строк сверху нужно отбросить из таблицы при формировании DataFrame
+        drop_footer
+            Сколько строк снизу нужно отбросить из таблицы при формировании DataFrame
+
+        Returns
+        -------
+        pd.DataFrame
+            Данные преобразованные в соответствии с описание
         """
-        if columns:
-            self._validate_columns(columns)
-            table = self._yield_rows(columns, drop_header, drop_footer)
-            return pd.DataFrame(table)
-        return pd.DataFrame(self.parsed_table)
+        self._validate_columns(columns)
+        parsed_rows = self._yield_rows(columns, drop_header, drop_footer)
+        return pd.DataFrame(parsed_rows)
 
     def _validate_columns(self, columns):
         """Проверка значений в колонках"""
@@ -93,9 +105,13 @@ class HTMLTableParser:
 
     def _yield_rows(self, columns, drop_header, drop_footer):
         """Генерирует строки с избранными колонками со значениями после парсинга"""
-        table = self.parsed_table
-        if drop_footer >= 0:
-            drop_footer = len(table) - drop_footer
-        table = table[drop_header:drop_footer]
+        table = self._crop_table(drop_header, drop_footer)
         for row in table:
             yield [column.parser_func(row[column.index]) for column in columns]
+
+    def _crop_table(self, drop_header, drop_footer):
+        """Отбрасывает строки в начале и конце таблицы"""
+        table = self.parsed_table
+        drop_footer = len(table) - drop_footer
+        table = table[drop_header:drop_footer]
+        return table

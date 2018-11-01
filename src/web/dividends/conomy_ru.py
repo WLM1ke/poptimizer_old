@@ -102,9 +102,9 @@ def is_common(ticker: str):
     """Определяет является ли акция обыкновенной"""
     if len(ticker) == COMMON_TICKER_LENGTH:
         return True
-    elif len(ticker) == COMMON_TICKER_LENGTH + 1 and ticker[COMMON_TICKER_LENGTH] == 'PREFERRED_TICKER_ENDING':
+    elif len(ticker) == COMMON_TICKER_LENGTH + 1 and ticker[COMMON_TICKER_LENGTH] == PREFERRED_TICKER_ENDING:
         return False
-    raise ValueError('Некорректный тикер {ticker}')
+    raise ValueError(f'Некорректный тикер {ticker}')
 
 
 def dividends_conomy(ticker: str):
@@ -136,6 +136,4 @@ def dividends_conomy(ticker: str):
 
 
 if __name__ == '__main__':
-    print(dividends_conomy('SNGSP'))
-    print()
-    print(dividends_conomy('SNGS'))
+    print(dividends_conomy('NKHP'))
