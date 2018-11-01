@@ -79,8 +79,9 @@ class HTMLTableParser:
         """
         if columns:
             self._validate_columns(columns)
-        table = self._yield_rows(columns, drop_header, drop_footer)
-        return pd.DataFrame(table)
+            table = self._yield_rows(columns, drop_header, drop_footer)
+            return pd.DataFrame(table)
+        return pd.DataFrame(self.parsed_table)
 
     def _validate_columns(self, columns):
         """Проверка значений в колонках"""

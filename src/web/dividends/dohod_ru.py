@@ -93,8 +93,7 @@ def make_df(ticker, parsed_rows):
 
 
 def dividends_dohod(ticker: str) -> pd.Series:
-    """
-    Возвращает Series с дивидендами упорядоченными по возрастанию даты закрытия реестра
+    """Возвращает Series с дивидендами упорядоченными по возрастанию даты закрытия реестра
 
     Parameters
     ----------

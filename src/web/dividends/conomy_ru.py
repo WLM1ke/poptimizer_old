@@ -9,10 +9,10 @@ from selenium.webdriver.firefox import options
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support import wait
 
-# Время ожидания загрузки
-from web.dividends.table_parser import AbstractTableParser, DataColumn
+from web.dividends import parser
 from web.labels import DATE
 
+# Время ожидания загрузки
 WAITING_TIME = 10
 
 # Параметры поиска страницы эмитента
@@ -23,15 +23,42 @@ SEARCH_FIELD = '//*[@id="issuer_search"]'
 DIVIDENDS_MENU = '//*[@id="page-wrapper"]/div/nav/ul/li[5]/a'
 DIVIDENDS_TABLE = '//*[@id="page-container"]/div[2]/div/div[1]'
 
+# Параметры парсинга таблицы с дивидендами
 TABLE_INDEX = 1
-
-ORDINARY = 'ORDINARY'
-PREFERRED = 'PREFERRED'
-
-# Параметры парсинга
 NO_VALUE = '-'
 DIV_PATTERN = r'.*\d'
 DATE_PATTERN = r'\d{2}\.\d{2}\.\d{4}'
+
+
+def div_parser(data: str):
+    if data == NO_VALUE:
+        return 0.0
+    data = re.search(DIV_PATTERN, data).group(0)
+    data = data.replace(',', '.')
+    return float(data)
+
+
+def date_parser(data: str):
+    if data == NO_VALUE:
+        return None
+    date = re.search(DATE_PATTERN, data).group(0)
+    return pd.to_datetime(date, dayfirst=True)
+
+
+DATE_COLUMN = parser.DataColumn(5,
+                                {0: 'Дата закрытия реестра акционеров',
+                                 1: 'Под выплату дивидендов'},
+                                date_parser)
+
+COMMON_COLUMN = parser.DataColumn(7,
+                                  {0: 'Размер дивидендов\nна одну акцию, руб.',
+                                   1: 'АОИ'},
+                                  div_parser)
+
+PREFERRED_COLUMN = parser.DataColumn(8,
+                                     {0: 'Размер дивидендов\nна одну акцию, руб.',
+                                      1: 'АПИ'},
+                                     div_parser)
 
 
 def xpath_await_find(driver, xpath: str, waiting_time: int = WAITING_TIME):
@@ -60,49 +87,53 @@ def load_dividends_table(driver):
 
 
 def get_html(ticker: str):
-    """Возвращает html код страницы с данными по дивидендам и ее url"""
+    """Возвращает html код страницы с данными по дивидендам"""
     driver_options = options.Options()
     driver_options.headless = True
     with webdriver.Firefox(options=driver_options) as driver:
         load_ticker_page(ticker, driver)
         load_dividends_table(driver)
-        return driver.page_source, driver.current_url
+        return driver.page_source
 
 
-def div_parser(data: str):
-    if data == NO_VALUE:
-        return 0.0
-    data = re.search(DIV_PATTERN, data).group(0)
-    data = data.replace(',', '.')
-    return float(data)
+def is_common(ticker: str):
+    """Определяет является ли акция обыкновенной"""
+    if len(ticker) == 4:
+        return True
+    elif ticker[4] == 'P':
+        return False
+    raise ValueError('Некорректный тикер {ticker}')
 
 
-def date_parser(data: str):
-    if data == NO_VALUE:
-        return None
-    date = re.search(DATE_PATTERN, data).group(0)
-    return pd.to_datetime(date, dayfirst=True)
+def dividends_conomy(ticker: str):
+    """Возвращает Series с дивидендами упорядоченными по возрастанию даты закрытия реестра
 
+    Parameters
+    ----------
+    ticker
+        Тикер
 
-class ConomyTableParser(AbstractTableParser):
-    """Парсер таблиц с дивидендами с https://www.conomy.ru/"""
-    TABLE_INDEX = TABLE_INDEX
-    HEADER_TITLES = [[None, None, None, 'Дата закрытия реестра акционеров', None,
-                      'Размер дивидендов\nна одну акцию, руб.'],
-                     [None, None, None, None, 'Под выплату дивидендов', 'АОИ', 'АПИ']]
-    FOOTER_TITLES = []
-    DATA_COLUMNS = [DataColumn(DATE, 5, date_parser),
-                    DataColumn(ORDINARY, 7, div_parser),
-                    DataColumn(PREFERRED, 8, div_parser)]
-
-    def __init__(self, ticker: str):
-        self._ticker = ticker
-
-    def get_html(self):
-        return get_html(self._ticker)
+    Returns
+    -------
+    pandas.Series
+        Строки - даты закрытия реестра упорядоченные по возрастанию
+        Значения - дивиденды
+    """
+    table = parser.HTMLTableParser(get_html(ticker), TABLE_INDEX)
+    columns = [DATE_COLUMN]
+    if is_common(ticker):
+        columns.append(COMMON_COLUMN)
+    else:
+        columns.append(PREFERRED_COLUMN)
+    df = table.make_df(columns, 2)
+    df.dropna(inplace=True)
+    df.columns = [DATE, ticker]
+    df.set_index(DATE, inplace=True)
+    df.sort_index(inplace=True)
+    return df[ticker]
 
 
 if __name__ == '__main__':
-    ticker_ = 'AKRN'
-    table = ConomyTableParser(ticker_)
-    print(table.df)
+    print(dividends_conomy('SNGSP'))
+    print()
+    print(dividends_conomy('SNGS'))
