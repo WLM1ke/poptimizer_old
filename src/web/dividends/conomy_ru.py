@@ -25,6 +25,7 @@ DIVIDENDS_TABLE = '//*[@id="page-container"]/div[2]/div/div[1]'
 
 # Параметры парсинга таблицы с дивидендами
 TABLE_INDEX = 1
+HEADER_SIZE = 2
 NO_VALUE = '-'
 DIV_PATTERN = r'.*\d'
 DATE_PATTERN = r'\d{2}\.\d{2}\.\d{4}'
@@ -50,11 +51,12 @@ DATE_COLUMN = parser.DataColumn(5,
                                  1: 'Под выплату дивидендов'},
                                 date_parser)
 
+COMMON_TICKER_LENGTH = 4
 COMMON_COLUMN = parser.DataColumn(7,
                                   {0: 'Размер дивидендов\nна одну акцию, руб.',
                                    1: 'АОИ'},
                                   div_parser)
-
+PREFERRED_TICKER_ENDING = 'P'
 PREFERRED_COLUMN = parser.DataColumn(8,
                                      {0: 'Размер дивидендов\nна одну акцию, руб.',
                                       1: 'АПИ'},
@@ -98,9 +100,9 @@ def get_html(ticker: str):
 
 def is_common(ticker: str):
     """Определяет является ли акция обыкновенной"""
-    if len(ticker) == 4:
+    if len(ticker) == COMMON_TICKER_LENGTH:
         return True
-    elif ticker[4] == 'P':
+    elif len(ticker) == COMMON_TICKER_LENGTH + 1 and ticker[COMMON_TICKER_LENGTH] == 'PREFERRED_TICKER_ENDING':
         return False
     raise ValueError('Некорректный тикер {ticker}')
 
@@ -125,7 +127,7 @@ def dividends_conomy(ticker: str):
         columns.append(COMMON_COLUMN)
     else:
         columns.append(PREFERRED_COLUMN)
-    df = table.make_df(columns, 2)
+    df = table.make_df(columns, HEADER_SIZE)
     df.dropna(inplace=True)
     df.columns = [DATE, ticker]
     df.set_index(DATE, inplace=True)
