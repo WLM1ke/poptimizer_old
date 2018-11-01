@@ -1,79 +1,63 @@
-"""Абстрактный парсер html таблиц"""
-from abc import ABC, abstractmethod
-from typing import NamedTuple, Callable
-
+"""Парсер html-таблиц"""
 import bs4
-import pandas as pd
 
 
-class DataColumn(NamedTuple):
-    """Описание колонки с данными"""
-    name: str
-    index: int
-    parser_func: Callable = pd.to_numeric
+class HTMLTableParser:
+    """Парсер html-таблиц - если таблица содержит tbody, то парсится только tbody
 
+    По номеру таблицы на странице формирует представление ее ячеек в виде списка списков. Ячейки с rowspan colspan
+    представляются в виде набора атомарных ячеек с одинаковыми значениями
+    """
 
-class AbstractTableParser(ABC):
-    """Абстрактный парсер html таблиц"""
-    TABLE_INDEX = None
-    # Каждая строка заголовка отдельный массив срок. Если проверка наименования строки не нужно, то None
-    HEADER_TITLES = []
-    FOOTER_TITLES = []
-    DATA_COLUMNS = []
-
-    def __iter__(self):
-        """Возвращает строки таблицы в виде списков"""
-        table = self.get_html_table()
-        rows = table.find_all(name='tr')
-        header = len(self.HEADER_TITLES)
-        self._validate_table(rows[:header], self.HEADER_TITLES)
-        footer = len(rows) - len(self.FOOTER_TITLES)
-        self._validate_table(rows[footer:], self.FOOTER_TITLES)
-        for row in rows[header:footer]:
-            yield self._parse_row(row)
-
-    @abstractmethod
-    def get_html(self):
-        """Возвращает html код страницы"""
-        raise NotImplementedError
-
-    def get_html_table(self):
-        """Возвращает html таблицу в формате bs4"""
-        html, url = self.get_html()
+    def __init__(self, html: str, table_index: int):
         soup = bs4.BeautifulSoup(html, 'lxml')
-        index = self.TABLE_INDEX
         try:
-            table = soup.find_all('table')[index]
+            self._table = soup.find_all('table')[table_index]
         except IndexError:
-            raise IndexError(f'На странице {url} нет таблицы {index}')
-        table_body = table.find('tbody')
+            raise IndexError(f'На странице нет таблицы {table_index}')
+        table_body = self._table.find('tbody')
         if table_body:
-            return table_body
-        return table
-
-    @staticmethod
-    def _validate_table(rows, titles):
-        """Проверяет корректность наименований"""
-        for row, row_titles in zip(rows, titles):
-            cells = row.find_all()
-            if len(cells) != len(row_titles):
-                raise ValueError(f'Длинна строки с наименованиями {len(cells)} - должна быть {len(row_titles)}')
-            for cell, title in zip(cells, row_titles):
-                if (title is not None) and (cell.text != title):
-                    raise ValueError(f'Наименования в таблице "{cell.text}" - должно быть "{title}"')
-
-    def _parse_row(self, row):
-        """Выбирает столбцы с данными и  преобразует значения"""
-        cells = row.find_all()
-        return [column.parser_func(cells[column.index].text) for column in self.DATA_COLUMNS]
-
-    def _get_columns_names(self):
-        """Возвращает список с названиями столбцов с данными"""
-        return [column.name for column in self.DATA_COLUMNS]
+            self._table = table_body
+        self._parsed_table = []
 
     @property
-    def df(self):
-        """DataFrame с таблицей"""
-        columns = self._get_columns_names()
-        data = iter(self)
-        return pd.DataFrame(data=data, columns=columns)
+    def parsed_table(self):
+        """Распарсенная таблица"""
+        if self._parsed_table:
+            return self._parsed_table
+        table = self._table
+        row_pos = 0
+        col_pos = 0
+        for row in table.find_all('tr'):
+            for cell in row.find_all():
+                col_pos = self._find_empty_cell(row_pos, col_pos)
+                row_span = int(cell.get('rowspan', 1))
+                col_span = int(cell.get('colspan', 1))
+                self._insert_cells(cell.text, row_pos, col_pos, row_span, col_span)
+            row_pos += 1
+            col_pos = 0
+        return self._parsed_table
+
+    def _find_empty_cell(self, row_pos, col_pos):
+        """Ищет первую незаполненную ячейку в ряду и возвращает ее координату"""
+        parse_table = self._parsed_table
+        if row_pos >= len(parse_table):
+            return col_pos
+        while col_pos < len(parse_table[row_pos]) and parse_table[row_pos][col_pos] is not None:
+            col_pos += 1
+        return col_pos
+
+    def _insert_cells(self, value, row, col, row_span, col_span):
+        """Заполняет таблицу значениями с учетом rowspan и colspan ячейки"""
+        for row_pos in range(row, row + row_span):
+            for col_pos in range(col, col + col_span):
+                self._insert_cell(value, row_pos, col_pos)
+
+    def _insert_cell(self, value, row_pos, col_pos):
+        """Заполняет значение, при необходимости расширяя таблицу"""
+        parse_table = self._parsed_table
+        while row_pos >= len(parse_table):
+            parse_table.append([None])
+        while col_pos >= len(parse_table[row_pos]):
+            parse_table[row_pos].append(None)
+        parse_table[row_pos][col_pos] = value
