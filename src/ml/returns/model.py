@@ -6,15 +6,15 @@ from ml import hyper
 from ml.model_base import AbstractModel
 from ml.returns import cases
 
-PARAMS = {'data': {'ew_lags': 11.973040836963504,
-                   'returns_lags': 9},
-          'model': {'bagging_temperature': 0.2471097402517502,
-                    'depth': 6,
+PARAMS = {'data': {'ew_lags': 11.964781668298329,
+                   'returns_lags': 13},
+          'model': {'bagging_temperature': 0.11454531833845656,
+                    'depth': 4,
                     'ignored_features': (),
-                    'l2_leaf_reg': 3.9883868073811213,
-                    'learning_rate': 0.0579607453775271,
+                    'l2_leaf_reg': 1.9485135134647873,
+                    'learning_rate': 0.05689944065376725,
                     'one_hot_max_size': 100,
-                    'random_strength': 3.4258265586749226}}
+                    'random_strength': 7.60118712489675}}
 
 # Диапазон лагов относительно базового, для которого осуществляется поиск оптимальной ML-модели
 EW_LAGS_RANGE = 0.01
@@ -87,5 +87,5 @@ if __name__ == '__main__':
 
     pred = ReturnsModel(tuple(sorted(POSITIONS)), pd.Timestamp(DATE))
     print(pred)
-    # pred.find_better_model()
+    pred.find_better_model()
     pred.learning_curve()

@@ -60,16 +60,20 @@ def dividends_status(ticker: str):
     result = []
     for source in DIVIDENDS_SOURCES:
         print(f'\nСРАВНЕНИЕ ОСНОВНЫХ ДАННЫХ С {source.__name__}\n')
-        source_df = source(ticker)
-        source_df = source_df[source_df.index >= pd.Timestamp(STATISTICS_START)]
-        source_df.name = source.__name__
-        compare_df = pd.concat([df, source_df], axis='columns')
-        compare_df['STATUS'] = 'ERROR'
-        compare_df.loc[np.isclose(compare_df[ticker].values, compare_df[source.__name__].values), 'STATUS'] = ''
-        print(compare_df)
-        result.append(compare_df)
+        try:
+            source_df = source(ticker)
+        except IndexError as error:
+            print(error.args[0])
+        else:
+            source_df = source_df[source_df.index >= pd.Timestamp(STATISTICS_START)]
+            source_df.name = source.__name__
+            compare_df = pd.concat([df, source_df], axis='columns')
+            compare_df['STATUS'] = 'ERROR'
+            compare_df.loc[np.isclose(compare_df[ticker].values, compare_df[source.__name__].values), 'STATUS'] = ''
+            print(compare_df)
+            result.append(compare_df)
     return result
 
 
 if __name__ == '__main__':
-    dividends_status('DSKY')
+    dividends_status('KZOS')

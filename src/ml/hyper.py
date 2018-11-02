@@ -38,10 +38,10 @@ LEARNING_RATE_RANGE = 0.5
 MAX_DEPTH = 9
 
 # Диапазон поиска параметра L2-регуляризации
-L2_RANGE = 0.6
+L2_RANGE = 0.8
 
 # Диапазон поиска случайности разбиений
-RAND_STRENGTH_RANGE = 0.7
+RAND_STRENGTH_RANGE = 0.9
 
 # Диапазон поиска интенсивности бегинга
 BAGGING_RANGE = 1.1

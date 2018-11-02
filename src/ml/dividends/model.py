@@ -6,15 +6,15 @@ from ml.dividends import cases
 from ml.model_base import AbstractModel
 from utils.aggregation import Freq
 
-PARAMS = {'data': {'freq': Freq.yearly,
-                   'lags': 1},
-          'model': {'bagging_temperature': 0.5087241681794389,
-                    'depth': 7,
+PARAMS = {'data': {'freq': Freq.monthly,
+                   'lags': 2},
+          'model': {'bagging_temperature': 0.28148365366060546,
+                    'depth': 1,
                     'ignored_features': (),
-                    'l2_leaf_reg': 2.1014413112126262,
-                    'learning_rate': 0.3522658766225547,
+                    'l2_leaf_reg': 6.316640413226863,
+                    'learning_rate': 0.6484452952770052,
                     'one_hot_max_size': 100,
-                    'random_strength': 0.6902198786073341}}
+                    'random_strength': 1.1805833422952592}}
 
 # Максимальное количество лагов, для которого осуществляется поиск оптимальной ML-модели
 MAX_LAGS = 4
@@ -67,7 +67,7 @@ if __name__ == '__main__':
 
     pred = DividendsModel(tuple(sorted(POSITIONS)), pd.Timestamp(DATE))
     print(pred)
-    # pred.find_better_model()
+    pred.find_better_model()
     pred.learning_curve()
 
     # СКО - 3.9547%
