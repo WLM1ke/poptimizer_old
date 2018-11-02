@@ -6,7 +6,18 @@ import pandas as pd
 
 
 class DataColumn(NamedTuple):
-    """Описание колонки с данными"""
+    """Описание столбца с данными
+
+    Используется для выбора определенных столбцов из html-таблицы для построения DataFrame, проверки ожидаемых значений
+    (обычно в заголовках и нижней части таблицы) и преобразования из строчных значений в нужный формат
+
+    index
+        Индекс столбца в таблице
+    validation_dict
+        Словарь должен содержать индекс строки и ожидаемое значение
+    parser_func
+        Функция для преобразования значений с одним аргументом str
+    """
     index: int
     validation_dict: dict
     parser_func: Callable
@@ -53,7 +64,8 @@ class HTMLTableParser:
         parse_table = self._parsed_table
         if row_pos >= len(parse_table):
             return col_pos
-        while col_pos < len(parse_table[row_pos]) and parse_table[row_pos][col_pos] is not None:
+        row = parse_table[row_pos]
+        while col_pos < len(row) and row[col_pos] is not None:
             col_pos += 1
         return col_pos
 
@@ -68,9 +80,10 @@ class HTMLTableParser:
         parse_table = self._parsed_table
         while row_pos >= len(parse_table):
             parse_table.append([None])
-        while col_pos >= len(parse_table[row_pos]):
-            parse_table[row_pos].append(None)
-        parse_table[row_pos][col_pos] = value
+        row = parse_table[row_pos]
+        while col_pos >= len(row):
+            row.append(None)
+        row[col_pos] = value
 
     def make_df(self, columns: list, drop_header: int = 0, drop_footer: int = 0):
         """Преобразует таблицу в DataFrame
