@@ -1,31 +1,32 @@
-"""Реализация менеджера данных по дивидендам с dohod.ru"""
+"""Организация хранения локальных данных с https://www.conomy.ru"""
 from utils.data_manager import AbstractDataManager
 from web import dividends
 from web.labels import DATE
 
-DOHOD_CATEGORY = 'dohod.ru'
+CONOMY_NAME = 'conomy'
 
 
-class DohodDataManager(AbstractDataManager):
+class ConomyDataManager(AbstractDataManager):
     """Организация создания, обновления и предоставления локальных DataFrame
 
-    Данные загружаются с сайта dohod.ru
+    Данные загружаются с сайта https://www.conomy.ru
     """
+
     def __init__(self, ticker: str):
-        super().__init__(DOHOD_CATEGORY, ticker)
+        super().__init__(CONOMY_NAME, ticker)
 
     def download_all(self):
         """Загружаются все данные
 
         Несколько выплат в одну дату объединяются для уникальности индекса и удобства сопоставления"""
-        return dividends.dohod(self.data_name).groupby(DATE).sum()
+        return dividends.conomy(self.data_name).groupby(DATE).sum()
 
     def download_update(self):
         """Нет возможности загрузить данные частично"""
         super().download_update()
 
 
-def dividends_dohod(ticker: str):
+def dividends_conomy(ticker: str):
     """Сохраняет, при необходимости обновляет и возвращает дивиденды для тикеров
 
     Parameters
@@ -38,9 +39,9 @@ def dividends_dohod(ticker: str):
         В строках - даты выплаты дивидендов
         Значения - выплаченные дивиденды
     """
-    data = DohodDataManager(ticker)
+    data = ConomyDataManager(ticker)
     return data.value
 
 
 if __name__ == '__main__':
-    print(dividends_dohod('MFON'))
+    print(dividends_conomy('SNGSP'))
