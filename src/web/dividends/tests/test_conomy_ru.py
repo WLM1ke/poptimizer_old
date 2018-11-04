@@ -73,7 +73,7 @@ def test_is_common():
 def test_dividends_conomy_common():
     df = conomy_ru.dividends_conomy('SBER')
     assert isinstance(df, pd.Series)
-    assert df.size == 9
+    assert df.size >= 9
     assert df.index[0] == pd.Timestamp('2010-04-16')
     assert df['2011-04-15'] == 0.92
 
@@ -81,6 +81,6 @@ def test_dividends_conomy_common():
 def test_dividends_conomy_preferred():
     df = conomy_ru.dividends_conomy('SBERP')
     assert isinstance(df, pd.Series)
-    assert df.size == 9
+    assert df.size >= 9
     assert df.index[0] == pd.Timestamp('2010-04-16')
     assert df['2012-04-12'] == 2.59
