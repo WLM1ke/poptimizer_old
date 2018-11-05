@@ -23,10 +23,27 @@ def test_smart_lab_status(monkeypatch):
     assert result[1][1] == 'NLMK'
 
 
-def test_dividends_status():
+def test_dividends_status(capsys):
     result = dividends_status('ENRU')
+    captured = capsys.readouterr()
+
     assert isinstance(result, list)
-    assert len(result) == 2
+    assert len(result) == 3
+
     assert result[0].shape >= (4, 3)
     assert result[0].iloc[0, 2] == ''
     assert result[0].iloc[3, 2] == 'ERROR'
+    assert 'СРАВНЕНИЕ ОСНОВНЫХ ДАННЫХ С dividends_dohod' in captured.out
+
+    assert result[1].shape >= (4, 3)
+    assert result[1].iloc[2, 2] == ''
+    assert result[1].iloc[1, 2] == 'ERROR'
+    assert 'СРАВНЕНИЕ ОСНОВНЫХ ДАННЫХ С dividends_conomy' in captured.out
+
+    assert 'СРАВНЕНИЕ ОСНОВНЫХ ДАННЫХ С dividends_smart_lab' in captured.out
+
+
+def test_dividends_status_no_table(capsys):
+    dividends_status('NKHP')
+    captured = capsys.readouterr()
+    assert 'На странице http://www.dohod.ru/ik/analytics/dividend/nkhp нет таблицы с дивидендами.' in captured.out

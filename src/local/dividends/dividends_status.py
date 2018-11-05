@@ -2,11 +2,12 @@
 import numpy as np
 import pandas as pd
 
-from local.dividends import smart_lab_ru, dohod_ru
+from local.dividends import smart_lab_ru, dohod_ru, comony_ru
 from local.dividends.sqlite import DividendsDataManager, STATISTICS_START
 from web.labels import TICKER, DIVIDENDS
 
 DIVIDENDS_SOURCES = [dohod_ru.dividends_dohod,
+                     comony_ru.dividends_conomy,
                      smart_lab_ru.dividends_smart_lab]
 
 
@@ -76,4 +77,4 @@ def dividends_status(ticker: str):
 
 
 if __name__ == '__main__':
-    dividends_status('KZOS')
+    dividends_status('NKHP')
