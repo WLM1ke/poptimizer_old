@@ -7,21 +7,6 @@ from selenium.webdriver.firefox import options
 from web.dividends import conomy_ru
 
 
-def test_date_parser():
-    assert conomy_ru.date_parser('-') is None
-    assert conomy_ru.date_parser('30.11.2018 (рек.)') == pd.Timestamp('2018-11-30')
-    assert conomy_ru.date_parser('19.07.2017') == pd.Timestamp('2017-07-19')
-
-
-def test_div_parser():
-    assert conomy_ru.div_parser('2.23') == 2.23
-    assert conomy_ru.div_parser('30,4') == 30.4
-    assert conomy_ru.div_parser('4') == 4
-    assert conomy_ru.div_parser('66.8 (рек.)') == 66.8
-    assert conomy_ru.div_parser('78,9 (прогноз)') == 78.9
-    assert conomy_ru.div_parser('-') == 0.0
-
-
 def test_xpath_await():
     driver_options = options.Options()
     driver_options.headless = True
