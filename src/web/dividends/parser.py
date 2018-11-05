@@ -5,7 +5,6 @@ from typing import NamedTuple, Callable
 import bs4
 import pandas as pd
 
-NO_VALUE = '-'
 DIV_PATTERN = r'.*\d'
 DATE_PATTERN = r'\d{2}\.\d{2}\.\d{4}'
 
@@ -30,19 +29,20 @@ class DataColumn(NamedTuple):
 
 def date_parser(data: str):
     """Функция парсинга значений в колонке с датами закрытия реестра"""
-    if data == NO_VALUE:
-        return None
-    date = re.search(DATE_PATTERN, data).group(0)
-    return pd.to_datetime(date, dayfirst=True)
+    result = re.search(DATE_PATTERN, data)
+    if result:
+        return pd.to_datetime(result.group(0), dayfirst=True)
+    return None
 
 
 def div_parser(data: str):
     """Функция парсинга значений в колонке с дивидендами"""
-    if data == NO_VALUE:
-        return 0.0
-    data = re.search(DIV_PATTERN, data).group(0)
-    data = data.replace(',', '.')
-    return float(data)
+    result = re.search(DIV_PATTERN, data)
+    if result:
+        result = result.group(0)
+        result = result.replace(',', '.')
+        return float(result)
+    return None
 
 
 class HTMLTableParser:

@@ -1,7 +1,6 @@
 import pandas as pd
 import pytest
 
-from web.dividends import conomy_ru
 from web.dividends import parser
 
 HTML = """
@@ -52,6 +51,21 @@ DF_DATA = [[1.1, 2.2, 3.0, 3.0, 4.0],
            [66.6, 7.0, 7.0, 7.0, 4.0]]
 
 
+def test_date_parser():
+    assert parser.date_parser('-') is None
+    assert parser.date_parser('30.11.2018 (рек.)') == pd.Timestamp('2018-11-30')
+    assert parser.date_parser('19.07.2017') == pd.Timestamp('2017-07-19')
+
+
+def test_div_parser():
+    assert parser.div_parser('2.23') == 2.23
+    assert parser.div_parser('30,4') == 30.4
+    assert parser.div_parser('4') == 4
+    assert parser.div_parser('66.8 (рек.)') == 66.8
+    assert parser.div_parser('78,9 (прогноз)') == 78.9
+    assert parser.div_parser('-') is None
+
+
 def test_parse_tbody():
     table = parser.HTMLTableParser(HTML, 0)
     assert table.parsed_table == RESULT0
@@ -83,21 +97,21 @@ def test_make_df():
 
 def test_make_df_with_parsed_data():
     table = parser.HTMLTableParser(HTML, 1)
-    columns = [parser.DataColumn(i, {}, conomy_ru.div_parser) for i in range(5)]
+    columns = [parser.DataColumn(i, {}, parser.div_parser) for i in range(5)]
     df = pd.DataFrame(DF_DATA)
     assert df.equals(table.make_df(columns))
 
 
 def test_make_df_drop():
     table = parser.HTMLTableParser(HTML, 1)
-    columns = [parser.DataColumn(i, {}, conomy_ru.div_parser) for i in range(5)]
+    columns = [parser.DataColumn(i, {}, parser.div_parser) for i in range(5)]
     df = pd.DataFrame(DF_DATA[1:2])
     assert df.equals(table.make_df(columns, 1, 1))
 
 
 def test_make_df_validate():
     table = parser.HTMLTableParser(HTML, 1)
-    columns = [parser.DataColumn(i, {0: RESULT1[0][i]}, conomy_ru.div_parser) for i in range(5)]
+    columns = [parser.DataColumn(i, {0: RESULT1[0][i]}, parser.div_parser) for i in range(5)]
     df = pd.DataFrame(DF_DATA[1:])
     assert df.equals(table.make_df(columns, 1))
 
