@@ -1,7 +1,5 @@
 """Загрузка данных о дивидендах с https://www.conomy.ru/"""
-import re
 
-import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -10,6 +8,7 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support import wait
 
 from web.dividends import parser
+from web.dividends.parser import date_parser, div_parser
 from web.labels import DATE
 
 # Время ожидания загрузки
@@ -26,33 +25,11 @@ DIVIDENDS_TABLE = '//*[@id="page-container"]/div[2]/div/div[1]'
 # Параметры парсинга таблицы с дивидендами
 TABLE_INDEX = 1
 HEADER_SIZE = 2
-NO_VALUE = '-'
-DIV_PATTERN = r'.*\d'
-DATE_PATTERN = r'\d{2}\.\d{2}\.\d{4}'
-
-
-def date_parser(data: str):
-    """Функция парсинга значений в колонке с датами закрытия реестра"""
-    if data == NO_VALUE:
-        return None
-    date = re.search(DATE_PATTERN, data).group(0)
-    return pd.to_datetime(date, dayfirst=True)
-
 
 DATE_COLUMN = parser.DataColumn(5,
                                 {0: 'Дата закрытия реестра акционеров',
                                  1: 'Под выплату дивидендов'},
                                 date_parser)
-
-
-def div_parser(data: str):
-    """Функция парсинга значений в колонке с дивидендами"""
-    if data == NO_VALUE:
-        return 0.0
-    data = re.search(DIV_PATTERN, data).group(0)
-    data = data.replace(',', '.')
-    return float(data)
-
 
 COMMON_TICKER_LENGTH = 4
 COMMON_COLUMN = parser.DataColumn(7,

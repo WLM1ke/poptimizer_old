@@ -1,8 +1,13 @@
 """Парсер html-таблиц"""
+import re
 from typing import NamedTuple, Callable
 
 import bs4
 import pandas as pd
+
+NO_VALUE = '-'
+DIV_PATTERN = r'.*\d'
+DATE_PATTERN = r'\d{2}\.\d{2}\.\d{4}'
 
 
 class DataColumn(NamedTuple):
@@ -21,6 +26,23 @@ class DataColumn(NamedTuple):
     index: int
     validation_dict: dict
     parser_func: Callable
+
+
+def date_parser(data: str):
+    """Функция парсинга значений в колонке с датами закрытия реестра"""
+    if data == NO_VALUE:
+        return None
+    date = re.search(DATE_PATTERN, data).group(0)
+    return pd.to_datetime(date, dayfirst=True)
+
+
+def div_parser(data: str):
+    """Функция парсинга значений в колонке с дивидендами"""
+    if data == NO_VALUE:
+        return 0.0
+    data = re.search(DIV_PATTERN, data).group(0)
+    data = data.replace(',', '.')
+    return float(data)
 
 
 class HTMLTableParser:
@@ -50,7 +72,7 @@ class HTMLTableParser:
         row_pos = 0
         col_pos = 0
         for row in table.find_all('tr'):
-            for cell in row.find_all():
+            for cell in row.find_all(['th', 'td']):
                 col_pos = self._find_empty_cell(row_pos, col_pos)
                 row_span = int(cell.get('rowspan', 1))
                 col_span = int(cell.get('colspan', 1))
@@ -114,7 +136,7 @@ class HTMLTableParser:
         for column in columns:
             for row, value in column.validation_dict.items():
                 if table[row][column.index] != value:
-                    raise ValueError(f'Значение в таблице "{table[row][column.index]}" - должно быть "{value}"')
+                    raise ValueError(f'Значение в таблице {table[row][column.index]!r} - должно быть {value!r}')
 
     def _yield_rows(self, columns, drop_header, drop_footer):
         """Генерирует строки с избранными колонками со значениями после парсинга"""
