@@ -46,4 +46,4 @@ def test_dividends_status(capsys):
 def test_dividends_status_no_table(capsys):
     dividends_status('NKHP')
     captured = capsys.readouterr()
-    assert 'На странице http://www.dohod.ru/ik/analytics/dividend/nkhp нет таблицы с дивидендами.' in captured.out
+    assert 'На странице нет таблицы 2' in captured.out
