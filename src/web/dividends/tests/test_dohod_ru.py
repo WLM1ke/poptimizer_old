@@ -1,4 +1,3 @@
-import datetime
 import urllib.error
 
 import pytest
@@ -19,11 +18,11 @@ def test_wrong_url():
 
 def test_get_dividends():
     df = dividends_dohod('VSMO')
-    assert df.loc[datetime.date(2017, 10, 19)] == 762.68
-    assert df.loc[datetime.date(2004, 3, 29)] == 11
+    assert df.loc['2017-10-19'] == 762.68
+    assert df.loc['2004-03-29'] == 11
 
 
 def test_no_dividends_table_in_html():
     with pytest.raises(IndexError) as error:
         dividends_dohod('MSRS')
-    assert 'нет таблицы с дивидендами.' in str(error.value)
+    assert 'На странице нет таблицы 2' == str(error.value)
