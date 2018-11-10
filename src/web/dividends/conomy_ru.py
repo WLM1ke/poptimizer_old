@@ -12,7 +12,7 @@ from web.dividends.parser import date_parser, div_parser
 from web.labels import DATE
 
 # Время ожидания загрузки
-WAITING_TIME = 10
+WAITING_TIME = 20
 
 # Параметры поиска страницы эмитента
 SEARCH_URL = 'https://www.conomy.ru/search'

@@ -8,13 +8,13 @@ from utils.aggregation import Freq
 
 PARAMS = {'data': {'freq': Freq.monthly,
                    'lags': 2},
-          'model': {'bagging_temperature': 0.28148365366060546,
-                    'depth': 1,
+          'model': {'bagging_temperature': 0.17997463735833555,
+                    'depth': 8,
                     'ignored_features': (),
-                    'l2_leaf_reg': 6.316640413226863,
-                    'learning_rate': 0.6484452952770052,
+                    'l2_leaf_reg': 22.816407923315186,
+                    'learning_rate': 0.1912494613317426,
                     'one_hot_max_size': 100,
-                    'random_strength': 1.1805833422952592}}
+                    'random_strength': 0.8242164333501883}}
 
 # Максимальное количество лагов, для которого осуществляется поиск оптимальной ML-модели
 MAX_LAGS = 4
@@ -67,7 +67,7 @@ if __name__ == '__main__':
 
     pred = DividendsModel(tuple(sorted(POSITIONS)), pd.Timestamp(DATE))
     print(pred)
-    # pred.find_better_model()
+    pred.find_better_model()
     pred.learning_curve()
 
     # СКО - 3.9547%

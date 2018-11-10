@@ -24,7 +24,7 @@ AFTER_TAX = 1 - 0.13
 MAX_TRADE = 0.01
 
 # Минимальный оборот акции - преимущества акции квадратичо снижаются при приближении оборота к данному уровню
-VOLUME_CUT_OFF = 2.2 * MAX_TRADE
+VOLUME_CUT_OFF = 2.1 * MAX_TRADE
 
 # Какой класс используется для метрик дивидендов BaseDividendsMetrics или MLDividendsMetrics
 DIVIDENDS_METRICS = 'MLDividendsMetrics'
