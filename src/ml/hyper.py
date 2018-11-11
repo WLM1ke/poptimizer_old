@@ -31,8 +31,9 @@ MAX_SEARCHES = 100
 # OneHot кодировка - учитывая количество акций в портфеле используется cat-кодировка или OneHot-кодировка
 ONE_HOT_SIZE = [2, 100]
 
-# Диапазон поиска скорости обучения
-LEARNING_RATE_RANGE = 0.3
+# Диапазон поиска скорости обучения - catboost не поддерживает скорость обучения больше 1
+LR_RANGE = 0.3
+LR_UPPER_LIMIT = 1.0
 
 # Ограничение на максимальную глубину деревьев
 MAX_DEPTH = 7
@@ -47,16 +48,18 @@ RAND_STRENGTH_RANGE = 1.0
 BAGGING_RANGE = 1.2
 
 
-def log_limits(middle: float, percent_range: float):
+def log_limits(middle: float, percent_range: float, upper_limit: float = None):
     """Логарифмический интервал"""
     log_x = np.log(middle)
     log_delta = np.log1p(percent_range)
+    if upper_limit:
+        return log_x - log_delta, min(log_x + log_delta, upper_limit)
     return log_x - log_delta, log_x + log_delta
 
 
-def make_log_space(space_name: str, middle: float, percent_range: float):
+def make_log_space(space_name: str, middle: float, percent_range: float, upper_limit: float = None):
     """Создает логарифмическое вероятностное пространство"""
-    lower, upper = log_limits(middle, percent_range)
+    lower, upper = log_limits(middle, percent_range, upper_limit)
     return hp.loguniform(space_name, lower, upper)
 
 
@@ -71,7 +74,7 @@ def make_model_space(params: dict):
     space = {
         'one_hot_max_size': make_choice_space('one_hot_max_size', ONE_HOT_SIZE),
         'ignored_features': model['ignored_features'],
-        'learning_rate': make_log_space('learning_rate', model['learning_rate'], LEARNING_RATE_RANGE),
+        'learning_rate': make_log_space('learning_rate', model['learning_rate'], LR_RANGE, LR_UPPER_LIMIT),
         'depth': make_choice_space('depth', range(1, MAX_DEPTH + 1)),
         'l2_leaf_reg': make_log_space('l2_leaf_reg', model['l2_leaf_reg'], L2_RANGE),
         'random_strength': make_log_space('rand_strength', model['random_strength'], RAND_STRENGTH_RANGE),
@@ -87,8 +90,8 @@ def check_model_bounds(params: dict, base_params: dict):
     """
     model = params['model']
     base_model = base_params['model']
-    if abs(np.log(model['learning_rate'] / base_model['learning_rate'])) / np.log1p(LEARNING_RATE_RANGE) > 0.9:
-        print(f'\nНеобходимо увеличить LEARNING_RATE_RANGE до {LEARNING_RATE_RANGE + 0.1:0.1f}')
+    if abs(np.log(model['learning_rate'] / base_model['learning_rate'])) / np.log1p(LR_RANGE) > 0.9:
+        print(f'\nНеобходимо увеличить LR_RANGE до {LR_RANGE + 0.1:0.1f}')
 
     if model['depth'] == MAX_DEPTH:
         print(f'\nНеобходимо увеличить MAX_DEPTH до {MAX_DEPTH + 1}')

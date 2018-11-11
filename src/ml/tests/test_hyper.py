@@ -41,14 +41,14 @@ def test_check_model_bounds_no_checks(capsys):
 def test_check_model_upper_bound(capsys):
     params = {
         'model': {
-            'learning_rate': 0.1 * (1 + 0.91 * hyper.LEARNING_RATE_RANGE),
+            'learning_rate': 0.1 * (1 + 0.91 * hyper.LR_RANGE),
             'depth': hyper.MAX_DEPTH,
             'l2_leaf_reg': 3 * (1 + 0.91 * hyper.L2_RANGE),
             'random_strength': 1 * (1 + 0.91 * hyper.RAND_STRENGTH_RANGE),
             'bagging_temperature': 1 * (1 + 0.91 * hyper.BAGGING_RANGE)}}
     hyper.check_model_bounds(params, BASE_PARAMS)
     captured = capsys.readouterr()
-    assert 'Необходимо увеличить LEARNING_RATE_RANGE' in captured.out
+    assert 'Необходимо увеличить LR_RANGE' in captured.out
     assert 'Необходимо увеличить MAX_DEPTH' in captured.out
     assert 'Необходимо увеличить L2_RANGE' in captured.out
     assert 'Необходимо увеличить RAND_STRENGTH_RANGE' in captured.out
@@ -58,14 +58,14 @@ def test_check_model_upper_bound(capsys):
 def test_check_model_lower_bound(capsys):
     space = {
         'model': {
-            'learning_rate': 0.1 / (1 + 0.91 * hyper.LEARNING_RATE_RANGE),
+            'learning_rate': 0.1 / (1 + 0.91 * hyper.LR_RANGE),
             'depth': 1,
             'l2_leaf_reg': 3 / (1 + 0.91 * hyper.L2_RANGE),
             'random_strength': 1 / (1 + 0.91 * hyper.RAND_STRENGTH_RANGE),
             'bagging_temperature': 1 / (1 + 0.91 * hyper.BAGGING_RANGE)}}
     hyper.check_model_bounds(space, BASE_PARAMS)
     captured = capsys.readouterr()
-    assert 'Необходимо увеличить LEARNING_RATE_RANGE' in captured.out
+    assert 'Необходимо увеличить LR_RANGE' in captured.out
     assert 'Необходимо увеличить L2_RANGE' in captured.out
     assert 'Необходимо увеличить RAND_STRENGTH_RANGE' in captured.out
     assert 'Необходимо увеличить BAGGING_RANGE' in captured.out
