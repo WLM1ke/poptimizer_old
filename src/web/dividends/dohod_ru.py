@@ -1,4 +1,5 @@
 """Загружает дивиденды и даты закрытия с сайта www.dohod.ru"""
+import ssl
 import urllib.error
 import urllib.request
 
@@ -28,7 +29,7 @@ def make_url(ticker: str):
 def get_html(url: str):
     """Получает html-код для url"""
     try:
-        with urllib.request.urlopen(url) as response:
+        with urllib.request.urlopen(url, context=ssl.SSLContext()) as response:
             return response.read()
     except urllib.error.HTTPError as error:
         if error.code == 404:
