@@ -4,11 +4,11 @@ arrow
 numpy
 scipy
 reportlab
-matplotlib
+matplotlib == 2.2.3
 xlrd
 lxml
 openpyxl
 sklearn
-catboost
+catboost == 0.10.4.1
 hyperopt
 selenium
