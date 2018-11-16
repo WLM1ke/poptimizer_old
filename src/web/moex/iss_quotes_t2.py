@@ -11,7 +11,8 @@ class QuotesT2(iss_quotes.Quotes):
     При большом запросе сервер ISS возвращает данные блоками обычно по 100 значений, поэтому класс является итератором
     Если начальная дата не указана, то загружается вся доступная история котировок
     """
-    _BASE_URL = 'https://iss.moex.com/iss/history/engines/stock/markets/shares/boards/TQBR/securities/'
+    _BASE_URL = ('https://iss.moex.com/iss/history/engines/stock/markets/shares/boards/TQBR/securities/'
+                 '{ticker}.json?{query}')
 
     def _validate_response(self, block_position, json_data):
         """Для TQBR возможны пустые ответы - проверка не нужна"""

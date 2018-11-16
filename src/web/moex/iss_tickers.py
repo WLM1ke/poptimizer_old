@@ -1,9 +1,7 @@
 """Загружает информацию о тикерах для данного регистрационного номера с http://iss.moex.com"""
 
 import json
-import time
 from urllib import request
-from urllib.error import URLError
 
 # Время ожидания для повторной загрузки при невозможности получить данные
 TIMEOUT = 60
@@ -11,18 +9,9 @@ TIMEOUT = 60
 
 def get_json(reg_number: str):
     """Получает json с http://iss.moex.com"""
-    try:
-        url = f'http://iss.moex.com/iss/securities.json?q={reg_number}'
-        with request.urlopen(url) as response:
-            data = json.load(response)
-    except URLError as error:
-        if isinstance(error.args[0], TimeoutError):
-            print(f'Время ожидания загрузки данных для регистрационного номера {reg_number} превышено')
-            print(f'Новая попытка через {TIMEOUT} секунд')
-            time.sleep(TIMEOUT)
-            data = get_json(reg_number)
-        else:
-            raise error
+    url = f'http://iss.moex.com/iss/securities.json?q={reg_number}'
+    with request.urlopen(url, timeout=TIMEOUT) as response:
+        data = json.load(response)
     return data
 
 

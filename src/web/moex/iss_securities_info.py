@@ -1,7 +1,5 @@
 """Загружает информацию о тикерах с http://iss.moex.com"""
-
 import json
-import ssl
 from urllib import request
 
 import pandas as pd
@@ -21,7 +19,7 @@ def make_url(tickers: tuple):
 def get_json(tickers: tuple):
     """Загружает и проверяет json"""
     url = make_url(tickers)
-    with request.urlopen(url, context=ssl.SSLContext()) as response:
+    with request.urlopen(url) as response:
         data = json.load(response)
     validate_response(data, tickers)
     return data

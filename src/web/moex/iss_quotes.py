@@ -1,9 +1,6 @@
 """Загружает котировки и объемы торгов для тикеров с http://iss.moex.com"""
 import json
-import ssl
-import time
-from urllib import request
-from urllib.error import URLError
+from urllib import request, parse
 
 import pandas as pd
 
@@ -19,7 +16,8 @@ class Quotes:
     При большом запросе сервер ISS возвращает данные блоками обычно по 100 значений, поэтому класс является итератором
     Если начальная дата не указана, то загружается вся доступная история котировок
     """
-    _BASE_URL = 'https://iss.moex.com/iss/history/engines/stock/markets/shares/securities/'
+    _BASE_URL = ('https://iss.moex.com/iss/history/engines/stock/markets/shares/securities/'
+                 '{ticker}.json?{query}')
 
     def __init__(self, ticker: str, start_date):
         self._ticker, self._start_date = ticker, start_date
@@ -36,28 +34,17 @@ class Quotes:
 
     def url(self, block_position):
         """Создает url для запроса к серверу http://iss.moex.com"""
-        url = self._BASE_URL + f'{self._ticker}.json'
-        query_args = [f'start={block_position}']
+        query_args = dict(start=block_position)
         if self._start_date:
             if not isinstance(self._start_date, pd.Timestamp):
                 raise TypeError(self._start_date)
-            query_args.append(f"from={self._start_date:%Y-%m-%d}")
-        arg_str = '&'.join(query_args)
-        return f'{url}?{arg_str}'
+            query_args['from'] = self._start_date.date()
+        return self._BASE_URL.format(ticker=self._ticker, query=parse.urlencode(query_args))
 
     def get_json_data(self, block_position):
         """Загружает и проверяет json с данными"""
-        try:
-            with request.urlopen(self.url(block_position), context=ssl.SSLContext()) as response:
-                json_data = json.load(response)
-        except URLError as error:
-            if isinstance(error.args[0], TimeoutError):
-                print(f'Время ожидания загрузки данных для регистрационного номера {self._ticker} превышено')
-                print(f'Новая попытка через {TIMEOUT} секунд')
-                time.sleep(TIMEOUT)
-                json_data = self.get_json_data(block_position)
-            else:
-                raise error
+        with request.urlopen(self.url(block_position), timeout=TIMEOUT) as response:
+            json_data = json.load(response)
         self._validate_response(block_position, json_data)
         return {key: json_data['history'][key] for key in ['data', 'columns']}
 
@@ -105,4 +92,4 @@ def quotes(ticker, start=None):
 
 
 if __name__ == '__main__':
-    print(quotes('MSTT'))
+    print(quotes('MSTT', pd.Timestamp('2018-09-01')))
