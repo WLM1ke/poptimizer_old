@@ -4,7 +4,7 @@ arrow
 numpy
 scipy
 reportlab
-matplotlib == 2.2.3
+matplotlib
 xlrd
 lxml
 openpyxl
