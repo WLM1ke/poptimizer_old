@@ -63,6 +63,7 @@ def test_div_parser():
     assert parser.div_parser('4') == 4
     assert parser.div_parser('66.8 (рек.)') == 66.8
     assert parser.div_parser('78,9 (прогноз)') == 78.9
+    assert parser.div_parser('2 097') == 2097.0
     assert parser.div_parser('-') is None
 
 
