@@ -36,16 +36,16 @@ LR_RANGE = 0.3
 LR_UPPER_LIMIT = 1.0
 
 # Ограничение на максимальную глубину деревьев
-MAX_DEPTH = 7
+MAX_DEPTH = 8
 
 # Диапазон поиска параметра L2-регуляризации
-L2_RANGE = 0.8
+L2_RANGE = 0.9
 
 # Диапазон поиска случайности разбиений
 RAND_STRENGTH_RANGE = 1.0
 
 # Диапазон поиска интенсивности бегинга
-BAGGING_RANGE = 1.2
+BAGGING_RANGE = 1.3
 
 
 def log_limits(middle: float, percent_range: float, upper_limit: float = None):

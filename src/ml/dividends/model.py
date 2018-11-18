@@ -7,14 +7,14 @@ from ml.model_base import AbstractModel
 from utils.aggregation import Freq
 
 PARAMS = {'data': {'freq': Freq.monthly,
-                   'lags': 2},
-          'model': {'bagging_temperature': 0.17997463735833555,
-                    'depth': 8,
+                   'lags': 3},
+          'model': {'bagging_temperature': 0.15070879731911793,
+                    'depth': 7,
                     'ignored_features': (),
-                    'l2_leaf_reg': 22.816407923315186,
-                    'learning_rate': 0.1912494613317426,
+                    'l2_leaf_reg': 47.04222307680969,
+                    'learning_rate': 0.1709888138658586,
                     'one_hot_max_size': 100,
-                    'random_strength': 0.8242164333501883}}
+                    'random_strength': 0.2300540681129558}}
 
 # Максимальное количество лагов, для которого осуществляется поиск оптимальной ML-модели
 MAX_LAGS = 4
