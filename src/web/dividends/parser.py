@@ -41,6 +41,7 @@ def div_parser(data: str):
     if result:
         result = result.group(0)
         result = result.replace(',', '.')
+        result = result.replace(' ', '')
         return float(result)
     return None
 
