@@ -32,34 +32,46 @@ MAX_SEARCHES = 100
 ONE_HOT_SIZE = [2, 100]
 
 # Диапазон поиска скорости обучения - catboost не поддерживает скорость обучения больше 1
-LR_RANGE = 0.3
-LR_UPPER_LIMIT = 1.0
+LEARNING_RATE_RANGE = 0.3
+LEARNING_RATE_UPPER_LIMIT = 1.0
 
 # Ограничение на максимальную глубину деревьев
 MAX_DEPTH = 8
 
-# Диапазон поиска параметра L2-регуляризации
+# Диапазон поиска параметра L2-регуляризации и значение по умолчанию
 L2_RANGE = 0.9
+L2_DEFAULT = 3.0
 
-# Диапазон поиска случайности разбиений
+# Диапазон поиска случайности разбиений и значение по умолчанию
 RAND_STRENGTH_RANGE = 1.0
+RAND_STRENGTH_DEFAULT = 1.0
 
-# Диапазон поиска интенсивности бегинга
+# Диапазон поиска интенсивности бегинга и значение по умолчанию
 BAGGING_RANGE = 1.3
+BAGGING_DEFAULT = 1.0
 
 
-def log_limits(middle: float, percent_range: float, upper_limit: float = None):
-    """Логарифмический интервал"""
+def log_limits(middle: float, percent_range: float, include=None, upper_limit=None):
+    """Логарифмический интервал с центром middle и процентным разбросом percent_range
+
+    Если присутствует include, то интервал расширяется до этого значения. Если присутствует upper_limit, то интервал
+    ограничивается этим значением
+    """
     log_x = np.log(middle)
     log_delta = np.log1p(percent_range)
+    lower, upper = log_x - log_delta, log_x + log_delta
+    if include:
+        include = np.log(include)
+        lower, upper = min(lower, include), max(upper, include)
     if upper_limit:
-        return log_x - log_delta, min(log_x + log_delta, upper_limit)
-    return log_x - log_delta, log_x + log_delta
+        upper_limit = np.log(upper_limit)
+        upper = min(upper, upper_limit)
+    return lower, upper
 
 
-def make_log_space(space_name: str, middle: float, percent_range: float, upper_limit: float = None):
+def make_log_space(space_name: str, middle: float, percent_range: float, include=None, upper_limit=None):
     """Создает логарифмическое вероятностное пространство"""
-    lower, upper = log_limits(middle, percent_range, upper_limit)
+    lower, upper = log_limits(middle, percent_range, include, upper_limit)
     return hp.loguniform(space_name, lower, upper)
 
 
@@ -74,11 +86,15 @@ def make_model_space(params: dict):
     space = {
         'one_hot_max_size': make_choice_space('one_hot_max_size', ONE_HOT_SIZE),
         'ignored_features': model['ignored_features'],
-        'learning_rate': make_log_space('learning_rate', model['learning_rate'], LR_RANGE, LR_UPPER_LIMIT),
+        'learning_rate': make_log_space('learning_rate', model['learning_rate'],
+                                        LEARNING_RATE_RANGE, upper_limit=LEARNING_RATE_UPPER_LIMIT),
         'depth': make_choice_space('depth', range(1, MAX_DEPTH + 1)),
-        'l2_leaf_reg': make_log_space('l2_leaf_reg', model['l2_leaf_reg'], L2_RANGE),
-        'random_strength': make_log_space('rand_strength', model['random_strength'], RAND_STRENGTH_RANGE),
-        'bagging_temperature': make_log_space('bagging_temperature', model['bagging_temperature'], BAGGING_RANGE)}
+        'l2_leaf_reg': make_log_space('l2_leaf_reg', model['l2_leaf_reg'],
+                                      L2_RANGE, include=L2_DEFAULT),
+        'random_strength': make_log_space('rand_strength', model['random_strength'],
+                                          RAND_STRENGTH_RANGE, include=RAND_STRENGTH_DEFAULT),
+        'bagging_temperature': make_log_space('bagging_temperature', model['bagging_temperature'],
+                                              BAGGING_RANGE, include=BAGGING_DEFAULT)}
     return space
 
 
@@ -90,8 +106,8 @@ def check_model_bounds(params: dict, base_params: dict):
     """
     model = params['model']
     base_model = base_params['model']
-    if abs(np.log(model['learning_rate'] / base_model['learning_rate'])) / np.log1p(LR_RANGE) > 0.9:
-        print(f'\nНеобходимо увеличить LR_RANGE до {LR_RANGE + 0.1:0.1f}')
+    if abs(np.log(model['learning_rate'] / base_model['learning_rate'])) / np.log1p(LEARNING_RATE_RANGE) > 0.9:
+        print(f'\nНеобходимо увеличить LEARNING_RATE_RANGE до {LEARNING_RATE_RANGE + 0.1:0.1f}')
 
     if model['depth'] == MAX_DEPTH:
         print(f'\nНеобходимо увеличить MAX_DEPTH до {MAX_DEPTH + 1}')

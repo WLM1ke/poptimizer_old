@@ -41,7 +41,7 @@ def test_check_model_bounds_no_checks(capsys):
 def test_check_model_upper_bound(capsys):
     params = {
         'model': {
-            'learning_rate': 0.1 * (1 + 0.91 * hyper.LR_RANGE),
+            'learning_rate': 0.1 * (1 + 0.91 * hyper.LEARNING_RATE_RANGE),
             'depth': hyper.MAX_DEPTH,
             'l2_leaf_reg': 3 * (1 + 0.91 * hyper.L2_RANGE),
             'random_strength': 1 * (1 + 0.91 * hyper.RAND_STRENGTH_RANGE),
@@ -58,7 +58,7 @@ def test_check_model_upper_bound(capsys):
 def test_check_model_lower_bound(capsys):
     space = {
         'model': {
-            'learning_rate': 0.1 / (1 + 0.91 * hyper.LR_RANGE),
+            'learning_rate': 0.1 / (1 + 0.91 * hyper.LEARNING_RATE_RANGE),
             'depth': 1,
             'l2_leaf_reg': 3 / (1 + 0.91 * hyper.L2_RANGE),
             'random_strength': 1 / (1 + 0.91 * hyper.RAND_STRENGTH_RANGE),
