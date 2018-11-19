@@ -19,6 +19,28 @@ BASE_PARAMS = {
             'bagging_temperature': 1}}
 
 
+def test_log_limits():
+    lower, upper = hyper.log_limits(2, 0.1)
+    assert lower == pytest.approx(np.log(2) - np.log1p(0.1))
+    assert upper == pytest.approx(np.log(2) + np.log1p(0.1))
+
+    lower, upper = hyper.log_limits(2, 0.1, upper_limit=2)
+    assert lower == pytest.approx(np.log(2) - np.log1p(0.1))
+    assert upper == pytest.approx(np.log(2))
+
+    lower, upper = hyper.log_limits(2, 0.1, include=1)
+    assert lower == pytest.approx(np.log(1))
+    assert upper == pytest.approx(np.log(2) + np.log1p(0.1))
+
+    lower, upper = hyper.log_limits(2, 0.1, include=3)
+    assert lower == pytest.approx(np.log(2) - np.log1p(0.1))
+    assert upper == pytest.approx(np.log(3))
+
+    lower, upper = hyper.log_limits(2, 0.1, upper_limit=2.5, include=3)
+    assert lower == pytest.approx(np.log(2) - np.log1p(0.1))
+    assert upper == pytest.approx(np.log(2.5))
+
+
 def test_make_model_space():
     space = hyper.make_model_space(BASE_PARAMS)
     assert isinstance(space, dict)
@@ -48,7 +70,7 @@ def test_check_model_upper_bound(capsys):
             'bagging_temperature': 1 * (1 + 0.91 * hyper.BAGGING_RANGE)}}
     hyper.check_model_bounds(params, BASE_PARAMS)
     captured = capsys.readouterr()
-    assert 'Необходимо увеличить LR_RANGE' in captured.out
+    assert 'Необходимо увеличить LEARNING_RATE_RANGE' in captured.out
     assert 'Необходимо увеличить MAX_DEPTH' in captured.out
     assert 'Необходимо увеличить L2_RANGE' in captured.out
     assert 'Необходимо увеличить RAND_STRENGTH_RANGE' in captured.out
@@ -65,7 +87,7 @@ def test_check_model_lower_bound(capsys):
             'bagging_temperature': 1 / (1 + 0.91 * hyper.BAGGING_RANGE)}}
     hyper.check_model_bounds(space, BASE_PARAMS)
     captured = capsys.readouterr()
-    assert 'Необходимо увеличить LR_RANGE' in captured.out
+    assert 'Необходимо увеличить LEARNING_RATE_RANGE' in captured.out
     assert 'Необходимо увеличить L2_RANGE' in captured.out
     assert 'Необходимо увеличить RAND_STRENGTH_RANGE' in captured.out
     assert 'Необходимо увеличить BAGGING_RANGE' in captured.out
