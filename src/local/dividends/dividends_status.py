@@ -1,4 +1,6 @@
 """Функции проверки статуса дивидендов"""
+from urllib.error import URLError
+
 import numpy as np
 import pandas as pd
 
@@ -63,8 +65,10 @@ def dividends_status(ticker: str):
         print(f'\nСРАВНЕНИЕ ОСНОВНЫХ ДАННЫХ С {source.__name__}\n')
         try:
             source_df = source(ticker)
-        except IndexError as error:
-            print(error.args[0])
+        except IndexError as err:
+            print(err.args[0])
+        except URLError as err:
+            print(err.args[0])
         else:
             source_df = source_df[source_df.index >= pd.Timestamp(STATISTICS_START)]
             source_df.name = source.__name__
@@ -77,4 +81,4 @@ def dividends_status(ticker: str):
 
 
 if __name__ == '__main__':
-    dividends_status('BANE')
+    dividends_status('CBOM')

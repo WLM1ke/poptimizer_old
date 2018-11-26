@@ -50,6 +50,4 @@ def quotes_t2(ticker, start=None):
 
 
 if __name__ == '__main__':
-    z = quotes_t2('AKRN', None)
-    print(z.head())
-    print(z.tail())
+    pass
