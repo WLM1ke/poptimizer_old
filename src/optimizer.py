@@ -73,7 +73,7 @@ class Optimizer:
         Покупка бьется на 5 сделок минимум по 1 лоту
         """
         portfolio = self.portfolio
-        if self.t_dividends_growth > self.t_drawdown_growth:
+        if self._choose_dividends():
             growth = self.dividends_gradient_growth
         else:
             growth = self.drawdown_gradient_growth
@@ -102,7 +102,7 @@ class Optimizer:
         pareto_metrics = pd.concat(frames, axis=1)
         pareto_metrics.columns = ['D_GRADIENT', 'R_GRADIENT', 'DOMINATED', 'VOLUME_FACTOR', 'DIVIDENDS_GROWTH',
                                   'DRAWDOWN_GROWTH']
-        pareto_metrics.sort_values('D_GRADIENT', ascending=False, inplace=True)
+        pareto_metrics.sort_values('R_GRADIENT', ascending=False, inplace=True)
         return pareto_metrics
 
     @property
@@ -196,6 +196,11 @@ class Optimizer:
         weighted_growth = (self.portfolio.weight * self.drawdown_gradient_growth)[:-2].sum()
         return weighted_growth / self.returns_metrics.std_at_draw_down
 
+    @staticmethod
+    def _choose_dividends():
+        # было self.t_dividends_growth > self.t_drawdown_growth
+        return False
+
     @property
     def dominated(self):
         """Для каждой позиции выдает доминирующую ее по Парето
@@ -203,7 +208,7 @@ class Optimizer:
         Если доминирующих несколько, то предпочтение отдается максимально увеличивающие метрику по которой наибольший
         резерв увеличения. Портфель и кэш не доминируются
         """
-        if self.t_dividends_growth > self.t_drawdown_growth:
+        if self._choose_dividends():
             matrix = self._dividends_growth_matrix().iloc[:, :-2]
         else:
             matrix = self._drawdown_growth_matrix().iloc[:, :-2]

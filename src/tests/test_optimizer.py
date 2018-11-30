@@ -72,7 +72,11 @@ def test_drawdown_gradient_growth(opt):
     assert gradient_growth['GMKN'] == pytest.approx(0.0)
 
 
-def test_dominated(opt):
+def test_dominated(opt, monkeypatch):
+    def fake_choose_dividends():
+        return opt.t_dividends_growth > opt.t_drawdown_growth
+
+    monkeypatch.setattr(opt, "_choose_dividends", fake_choose_dividends)
     dominated = opt.dominated
     assert dominated['UPRO'] == 'RTKMP'
     assert dominated['LSRG'] == ''
@@ -88,7 +92,11 @@ def test_t_drawdown_growth(opt):
     assert opt.t_drawdown_growth == pytest.approx(0.472858179816854)
 
 
-def test_best_trade(opt):
+def test_best_trade(opt, monkeypatch):
+    def fake_choose_dividends():
+        return opt.t_dividends_growth > opt.t_drawdown_growth
+
+    monkeypatch.setattr(opt, "_choose_dividends", fake_choose_dividends)
     best_string = opt._str_best_trade()
     assert 'Продать AKRN - 5 сделок по 5 лотов' in best_string
     assert 'Купить CHMF - 5 сделок по 2 лотов' in best_string
