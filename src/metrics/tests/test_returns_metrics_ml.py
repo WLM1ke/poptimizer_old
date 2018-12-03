@@ -3,7 +3,8 @@ import pandas as pd
 import pytest
 
 import metrics
-from metrics import CASH, PORTFOLIO
+from metrics import CASH
+from metrics import PORTFOLIO
 from ml.returns import model
 from ml.returns.manager import ReturnsMLDataManager
 
@@ -57,17 +58,17 @@ def test_decay(data):
 def test_mean(data):
     mean = data.mean
     manager = ReturnsMLDataManager(tuple(sorted(POSITIONS)), pd.Timestamp(DATE))
-    assert mean.iloc[:-2].equals(manager.value.prediction_mean)
+    assert mean.iloc[:-2].equals(manager.value.prediction_mean * 12)
     assert mean.iloc[-2] == 0
-    assert mean.iloc[-1] == pytest.approx(0.011457986912775303)
+    assert mean.iloc[-1] == pytest.approx(0.011457986912775303 * 12)
 
 
 def test_std(data):
     std = data.std
     manager = ReturnsMLDataManager(tuple(sorted(POSITIONS)), pd.Timestamp(DATE))
-    assert np.allclose(std.iloc[:-2], manager.value.prediction_std)
+    assert np.allclose(std.iloc[:-2], manager.value.prediction_std * 12 ** 0.5)
     assert std.iloc[-2] == 0
-    assert std.iloc[-1] == pytest.approx(0.03824804495891518)
+    assert std.iloc[-1] == pytest.approx(0.03824804495891518 * 12 ** 0.5)
 
 
 def test_beta(data):
