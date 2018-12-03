@@ -30,12 +30,13 @@ class MLReturnsMetrics(AbstractReturnsMetrics):
             self.gradient]
         df = pd.concat(frames, axis=1)
         df.columns = ['MEAN', 'STD', 'BETA', 'DRAW_DOWN', 'LOWER_BOUND', 'GRADIENT']
+        std_at_draw_down = (T_SCORE / 2) * (self.std[PORTFOLIO] ** 2 / self.mean[PORTFOLIO])
         return (f'\nКЛЮЧЕВЫЕ МЕТРИКИ ДОХОДНОСТИ'
                 f'\n'
                 f'\nКонстанта сглаживания - {self.decay:.4f}'
                 f'\nВремя до максимальной просадки - {self.time_to_draw_down:.1f}'
-                f'\nСКО стоимости портфеля около максимума просадки - {self.std_at_draw_down:.4f} /'
-                f' {self.std_at_draw_down * self._portfolio.value[PORTFOLIO]:.0f}'
+                f'\nСКО стоимости портфеля около максимума просадки - {std_at_draw_down:.4f} /'
+                f' {std_at_draw_down * self._portfolio.value[PORTFOLIO]:.0f}'
                 f'\n'
                 f'\n{df}'
                 f'\n'
@@ -135,6 +136,12 @@ class MLReturnsMetrics(AbstractReturnsMetrics):
         t = ((t_score * s) / (2 * m)) ** 2
         """
         return (self.std[PORTFOLIO] * T_SCORE / 2 / self.mean[PORTFOLIO]) ** 2 * 12
+
+    @property
+    def std_at_draw_down(self):
+        """СКО стоимости портфеля в момент оптимизации
+        """
+        return self.std[PORTFOLIO] * (MONTH_TO_OPTIMIZE / 12) ** 0.5
 
 
 if __name__ == '__main__':
