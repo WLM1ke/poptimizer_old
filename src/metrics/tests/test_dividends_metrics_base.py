@@ -1,7 +1,9 @@
 import pytest
 
 from metrics.dividends_metrics_base import BaseDividendsMetrics
-from metrics.portfolio import CASH, PORTFOLIO, Portfolio
+from metrics.portfolio import CASH
+from metrics.portfolio import PORTFOLIO
+from metrics.portfolio import Portfolio
 from settings import AFTER_TAX
 
 
@@ -41,10 +43,11 @@ def test_beta(div):
 
 
 def test_lower_bound(div):
-    mean = div.lower_bound
-    assert mean['MSTT'] / AFTER_TAX == pytest.approx(0.0234615502317854)
-    assert mean[CASH] / AFTER_TAX == pytest.approx(0.0)
-    assert mean[PORTFOLIO] / AFTER_TAX == pytest.approx(0.0295586221538169)
+    lower_bound = div.lower_bound
+    assert lower_bound['MSTT'] / AFTER_TAX == pytest.approx(0.05061428143020176)
+    assert lower_bound[CASH] / AFTER_TAX == pytest.approx(0.0)
+    assert lower_bound[PORTFOLIO] / AFTER_TAX == pytest.approx(0.0295586221538169)
+    assert sum((lower_bound * div._portfolio.weight).iloc[:-1]) == pytest.approx(lower_bound.iloc[-1])
 
 
 def test_gradient_of_lower_bound(div):

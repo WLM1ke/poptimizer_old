@@ -1,9 +1,12 @@
 """Абстрактный класс основных метрик дивидендного потока"""
-from abc import ABC, abstractmethod
+from abc import ABC
+from abc import abstractmethod
 
 import pandas as pd
 
-from metrics.portfolio import Portfolio, CASH, PORTFOLIO
+from metrics.portfolio import CASH
+from metrics.portfolio import PORTFOLIO
+from metrics.portfolio import Portfolio
 from settings import T_SCORE
 
 DIVIDENDS_YEARS = 5
@@ -81,14 +84,13 @@ class AbstractDividendsMetrics(ABC):
 
     @property
     def lower_bound(self):
-        """Рассчитывает нижнюю границу доверительного интервала для дивидендной доходности
+        """Рассчитывает вклад в нижнюю границу доверительного интервала для дивидендной доходности
 
         Используемая t-статистика берется из файла настроек
 
         Для оптимизированных портфелей, нижняя граница доверительного интервала выше, чем у отдельных позиций
         """
-        lower_bound = self.mean - T_SCORE * self.std
-        lower_bound[lower_bound < 0] = 0
+        lower_bound = self.mean - T_SCORE * self.std[PORTFOLIO] * self.beta
         return lower_bound
 
     @property
