@@ -4,9 +4,13 @@ from urllib.error import URLError
 import numpy as np
 import pandas as pd
 
-from local.dividends import smart_lab_ru, dohod_ru, comony_ru
-from local.dividends.sqlite import DividendsDataManager, STATISTICS_START
-from web.labels import TICKER, DIVIDENDS
+from local.dividends import comony_ru
+from local.dividends import dohod_ru
+from local.dividends import smart_lab_ru
+from local.dividends.sqlite import DividendsDataManager
+from local.dividends.sqlite import STATISTICS_START
+from web.labels import DIVIDENDS
+from web.labels import TICKER
 
 DIVIDENDS_SOURCES = [dohod_ru.dividends_dohod,
                      comony_ru.dividends_conomy,
@@ -81,4 +85,4 @@ def dividends_status(ticker: str):
 
 
 if __name__ == '__main__':
-    dividends_status('CBOM')
+    dividends_status('RASP')

@@ -6,15 +6,18 @@ from ml.dividends import cases
 from ml.model_base import AbstractModel
 from utils.aggregation import Freq
 
-PARAMS = {'data': {'freq': Freq.yearly,
-                   'lags': 1},
-          'model': {'bagging_temperature': 0.10077549877545217,
-                    'depth': 2,
-                    'ignored_features': (),
-                    'l2_leaf_reg': 7.179093118595081,
-                    'learning_rate': 0.11716488324407756,
-                    'one_hot_max_size': 2,
-                    'random_strength': 1.2169599694875683}}
+PARAMS = {
+    "data": {"freq": Freq.monthly, "lags": 1},
+    "model": {
+        "bagging_temperature": 0.996_665_230_670_676,
+        "depth": 8,
+        "ignored_features": (),
+        "l2_leaf_reg": 80.294_080_140_797_53,
+        "learning_rate": 0.344_588_360_075_992_3,
+        "one_hot_max_size": 100,
+        "random_strength": 0.584_387_312_588_294_6,
+    },
+}
 
 # Максимальное количество лагов, для которого осуществляется поиск оптимальной ML-модели
 MAX_LAGS = 4
@@ -27,6 +30,7 @@ def lags():
 
 class DividendsModel(AbstractModel):
     """Содержит прогноз дивидендов с помощью ML-модели"""
+
     PARAMS = PARAMS
 
     @staticmethod
@@ -41,15 +45,17 @@ class DividendsModel(AbstractModel):
 
     def _make_data_space(self):
         """Пространство поиска параметров данных модели"""
-        space = {'freq': hyper.make_choice_space('freq', Freq),
-                 'lags': hyper.make_choice_space('lags', lags())}
+        space = {
+            "freq": hyper.make_choice_space("freq", Freq),
+            "lags": hyper.make_choice_space("lags", lags()),
+        }
         return space
 
     def _check_data_space_bounds(self, params: dict):
         """Проверка, что параметры лежал не около границы вероятностного пространства"""
-        lag = params['data']['lags']
+        lag = params["data"]["lags"]
         if lag == MAX_LAGS:
-            print(f'\nНеобходимо увеличить MAX_LAGS до {MAX_LAGS + 1}')
+            print(f"\nНеобходимо увеличить MAX_LAGS до {MAX_LAGS + 1}")
 
     @property
     def prediction_mean(self):
@@ -62,7 +68,7 @@ class DividendsModel(AbstractModel):
         return pd.Series(self.std, list(self.positions))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from trading import POSITIONS, DATE
 
     pred = DividendsModel(tuple(sorted(POSITIONS)), pd.Timestamp(DATE))

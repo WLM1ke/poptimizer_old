@@ -6,19 +6,22 @@ from ml import hyper
 from ml.model_base import AbstractModel
 from ml.returns import cases
 
-PARAMS = {'data': {'ew_lags': 7.8444523314605785,
-                   'returns_lags': 11},
-          'model': {'bagging_temperature': 0.08828000849534784,
-                    'depth': 7,
-                    'ignored_features': (),
-                    'l2_leaf_reg': 16.20473079058431,
-                    'learning_rate': 0.05875351685585606,
-                    'one_hot_max_size': 2,
-                    'random_strength': 1.705322560149339}}
+PARAMS = {
+    "data": {"ew_lags": 7.879_640_094_461_975, "returns_lags": 14},
+    "model": {
+        "bagging_temperature": 0.028_351_504_660_441_403,
+        "depth": 10,
+        "ignored_features": (),
+        "l2_leaf_reg": 20.291_135_744_520_993,
+        "learning_rate": 0.085_384_007_021_829_12,
+        "one_hot_max_size": 100,
+        "random_strength": 2.227_755_489_815_28,
+    },
+}
 
 # Диапазон лагов относительно базового, для которого осуществляется поиск оптимальной ML-модели
 EW_LAGS_RANGE = 0.01
-MAX_RETURNS_LAGS = 14
+MAX_RETURNS_LAGS = 15  # 2018-12-05
 
 
 def ew_lags(base_params: dict, cut=1.0):
@@ -26,7 +29,7 @@ def ew_lags(base_params: dict, cut=1.0):
 
     Параметр cut (0.0, 1.0) сужает границы, что используется в функции проверки границ диапазона
     """
-    lags = base_params['data']['ew_lags']
+    lags = base_params["data"]["ew_lags"]
     return lags / (1 + cut * EW_LAGS_RANGE), lags * (1 + cut * EW_LAGS_RANGE)
 
 
@@ -37,6 +40,7 @@ def returns_lags():
 
 class ReturnsModel(AbstractModel):
     """Содержит прогноз доходности и его СКО"""
+
     PARAMS = PARAMS
 
     @staticmethod
@@ -51,19 +55,23 @@ class ReturnsModel(AbstractModel):
 
     def _make_data_space(self):
         """Пространство поиска параметров данных модели"""
-        space = {'ew_lags': hp.uniform('ew_lags', *ew_lags(self.PARAMS)),
-                 'returns_lags': hyper.make_choice_space('returns_lags', returns_lags())}
+        space = {
+            "ew_lags": hp.uniform("ew_lags", *ew_lags(self.PARAMS)),
+            "returns_lags": hyper.make_choice_space("returns_lags", returns_lags()),
+        }
         return space
 
     def _check_data_space_bounds(self, params: dict):
         """Проверка, что параметры лежал не около границы вероятностного пространства"""
-        lags = params['data']['ew_lags']
+        lags = params["data"]["ew_lags"]
         lags_range = ew_lags(self.PARAMS, 0.9)
         if lags < lags_range[0] or lags_range[1] < lags:
-            print(f'\nНеобходимо увеличить EW_LAGS_RANGE до {EW_LAGS_RANGE + 0.01:0.2f}')
-        lag = params['data']['returns_lags']
+            print(
+                f"\nНеобходимо увеличить EW_LAGS_RANGE до {EW_LAGS_RANGE + 0.01:0.2f}"
+            )
+        lag = params["data"]["returns_lags"]
         if lag == MAX_RETURNS_LAGS:
-            print(f'\nНеобходимо увеличить MAX_RETURNS_LAGS до {MAX_RETURNS_LAGS + 1}')
+            print(f"\nНеобходимо увеличить MAX_RETURNS_LAGS до {MAX_RETURNS_LAGS + 1}")
 
     @property
     def prediction_mean(self):
@@ -71,7 +79,7 @@ class ReturnsModel(AbstractModel):
 
         Так как данные нормированы по СКО прогноз умножается на СКО данных
         """
-        return self._prediction * self._prediction_data['std']
+        return self._prediction * self._prediction_data["std"]
 
     @property
     def prediction_std(self):
@@ -79,10 +87,10 @@ class ReturnsModel(AbstractModel):
 
         Так как данные нормированы по СКО прогнозное СКО умножается на СКО данных
         """
-        return self.std * self._prediction_data['std']
+        return self.std * self._prediction_data["std"]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from trading import POSITIONS, DATE
 
     pred = ReturnsModel(tuple(sorted(POSITIONS)), pd.Timestamp(DATE))

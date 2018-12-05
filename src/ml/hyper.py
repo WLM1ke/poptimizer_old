@@ -13,14 +13,16 @@ from sklearn import model_selection
 FIG_SIZE = 8
 
 # Базовые настройки catboost
-MAX_ITERATIONS = 1000
-SEED = 284704
+MAX_ITERATIONS = 1100
+SEED = 284_704
 FOLDS_COUNT = 20
-TECH_PARAMS = dict(iterations=MAX_ITERATIONS,
-                   random_state=SEED,
-                   od_type='Iter',
-                   verbose=False,
-                   allow_writing_files=False)
+TECH_PARAMS = dict(
+    iterations=MAX_ITERATIONS,
+    random_state=SEED,
+    od_type="Iter",
+    verbose=False,
+    allow_writing_files=False,
+)
 
 # Настройки hyperopt
 MAX_SEARCHES = 100
@@ -32,22 +34,22 @@ MAX_SEARCHES = 100
 ONE_HOT_SIZE = [2, 100]
 
 # Диапазон поиска скорости обучения - catboost не поддерживает скорость обучения больше 1
-LEARNING_RATE_RANGE = 0.3
+LEARNING_RATE_RANGE = 0.4
 LEARNING_RATE_UPPER_LIMIT = 1.0
 
 # Ограничение на максимальную глубину деревьев
-MAX_DEPTH = 8
+MAX_DEPTH = 11
 
 # Диапазон поиска параметра L2-регуляризации и значение по умолчанию
-L2_RANGE = 1.3
+L2_RANGE = 1.7
 L2_DEFAULT = 3.0
 
 # Диапазон поиска случайности разбиений и значение по умолчанию
-RAND_STRENGTH_RANGE = 1.3
+RAND_STRENGTH_RANGE = 1.4
 RAND_STRENGTH_DEFAULT = 1.0
 
 # Диапазон поиска интенсивности бегинга и значение по умолчанию
-BAGGING_RANGE = 1.6
+BAGGING_RANGE = 1.9
 BAGGING_DEFAULT = 1.0
 
 
@@ -69,7 +71,9 @@ def log_limits(middle: float, percent_range: float, include=None, upper_limit=No
     return lower, upper
 
 
-def make_log_space(space_name: str, middle: float, percent_range: float, include=None, upper_limit=None):
+def make_log_space(
+        space_name: str, middle: float, percent_range: float, include=None, upper_limit=None
+):
     """Создает логарифмическое вероятностное пространство"""
     lower, upper = log_limits(middle, percent_range, include, upper_limit)
     return hp.loguniform(space_name, lower, upper)
@@ -82,19 +86,33 @@ def make_choice_space(space_name: str, choice):
 
 def make_model_space(params: dict):
     """Создает вероятностное пространство для параметров регрессии"""
-    model = params['model']
+    model = params["model"]
     space = {
-        'one_hot_max_size': make_choice_space('one_hot_max_size', ONE_HOT_SIZE),
-        'ignored_features': model['ignored_features'],
-        'learning_rate': make_log_space('learning_rate', model['learning_rate'],
-                                        LEARNING_RATE_RANGE, upper_limit=LEARNING_RATE_UPPER_LIMIT),
-        'depth': make_choice_space('depth', range(1, MAX_DEPTH + 1)),
-        'l2_leaf_reg': make_log_space('l2_leaf_reg', model['l2_leaf_reg'],
-                                      L2_RANGE, include=L2_DEFAULT),
-        'random_strength': make_log_space('rand_strength', model['random_strength'],
-                                          RAND_STRENGTH_RANGE, include=RAND_STRENGTH_DEFAULT),
-        'bagging_temperature': make_log_space('bagging_temperature', model['bagging_temperature'],
-                                              BAGGING_RANGE, include=BAGGING_DEFAULT)}
+        "one_hot_max_size": make_choice_space("one_hot_max_size", ONE_HOT_SIZE),
+        "ignored_features": model["ignored_features"],
+        "learning_rate": make_log_space(
+            "learning_rate",
+            model["learning_rate"],
+            LEARNING_RATE_RANGE,
+            upper_limit=LEARNING_RATE_UPPER_LIMIT,
+        ),
+        "depth": make_choice_space("depth", range(1, MAX_DEPTH + 1)),
+        "l2_leaf_reg": make_log_space(
+            "l2_leaf_reg", model["l2_leaf_reg"], L2_RANGE, include=L2_DEFAULT
+        ),
+        "random_strength": make_log_space(
+            "rand_strength",
+            model["random_strength"],
+            RAND_STRENGTH_RANGE,
+            include=RAND_STRENGTH_DEFAULT,
+        ),
+        "bagging_temperature": make_log_space(
+            "bagging_temperature",
+            model["bagging_temperature"],
+            BAGGING_RANGE,
+            include=BAGGING_DEFAULT,
+        ),
+    }
     return space
 
 
@@ -104,29 +122,49 @@ def check_model_bounds(params: dict, base_params: dict):
     Для целочисленных параметров - предупреждение выдается на границе диапазона и рекомендуется увеличить диапазон на 1.
     Для реальных параметров - предупреждение выдается в 10% от границе и рекомендуется расширить границы поиска на 10%
     """
-    model = params['model']
-    base_model = base_params['model']
-    if abs(np.log(model['learning_rate'] / base_model['learning_rate'])) / np.log1p(LEARNING_RATE_RANGE) > 0.9:
-        print(f'\nНеобходимо увеличить LEARNING_RATE_RANGE до {LEARNING_RATE_RANGE + 0.1:0.1f}')
+    model = params["model"]
+    base_model = base_params["model"]
+    if (
+            abs(np.log(model["learning_rate"] / base_model["learning_rate"]))
+            / np.log1p(LEARNING_RATE_RANGE)
+            > 0.9
+    ):
+        print(
+            f"\nНеобходимо увеличить LEARNING_RATE_RANGE до {LEARNING_RATE_RANGE + 0.1:0.1f}"
+        )
 
-    if model['depth'] == MAX_DEPTH:
-        print(f'\nНеобходимо увеличить MAX_DEPTH до {MAX_DEPTH + 1}')
+    if model["depth"] == MAX_DEPTH:
+        print(f"\nНеобходимо увеличить MAX_DEPTH до {MAX_DEPTH + 1}")
 
-    if abs(np.log(model['l2_leaf_reg'] / base_model['l2_leaf_reg'])) / np.log1p(L2_RANGE) > 0.9:
-        print(f'\nНеобходимо увеличить L2_RANGE до {L2_RANGE + 0.1:0.1f}')
+    if (
+            abs(np.log(model["l2_leaf_reg"] / base_model["l2_leaf_reg"]))
+            / np.log1p(L2_RANGE)
+            > 0.9
+    ):
+        print(f"\nНеобходимо увеличить L2_RANGE до {L2_RANGE + 0.1:0.1f}")
 
-    if abs(np.log(model['random_strength'] / base_model['random_strength'])) / np.log1p(RAND_STRENGTH_RANGE) > 0.9:
-        print(f'\nНеобходимо увеличить RAND_STRENGTH_RANGE до {RAND_STRENGTH_RANGE + 0.1:0.1f}')
+    if (
+            abs(np.log(model["random_strength"] / base_model["random_strength"]))
+            / np.log1p(RAND_STRENGTH_RANGE)
+            > 0.9
+    ):
+        print(
+            f"\nНеобходимо увеличить RAND_STRENGTH_RANGE до {RAND_STRENGTH_RANGE + 0.1:0.1f}"
+        )
 
-    if abs(np.log(model['bagging_temperature'] / base_model['bagging_temperature'])) / np.log1p(BAGGING_RANGE) > 0.9:
-        print(f'\nНеобходимо увеличить BAGGING_RANGE до {BAGGING_RANGE + 0.1:0.1f}')
+    if (
+            abs(np.log(model["bagging_temperature"] / base_model["bagging_temperature"]))
+            / np.log1p(BAGGING_RANGE)
+            > 0.9
+    ):
+        print(f"\nНеобходимо увеличить BAGGING_RANGE до {BAGGING_RANGE + 0.1:0.1f}")
 
 
 def make_model_params(params):
     """Объединяет технические и конкретные параметры модели"""
     model_params = {}
     model_params.update(TECH_PARAMS)
-    model_params.update(params['model'])
+    model_params.update(params["model"])
     return model_params
 
 
@@ -156,26 +194,32 @@ def cv_model(params: dict, positions: tuple, date: pd.Timestamp, data_pool_func)
         ключ 'model' - параметры модели, в которые добавлено оптимальное количество итераций градиентного бустинга на
         кросс-валидации и общие настройки
     """
-    data_params = params['data']
+    data_params = params["data"]
     data = data_pool_func(positions, date, **data_params)
     pool_std = np.array(data.get_label()).std()
     model_params = make_model_params(params)
-    scores = catboost.cv(pool=data,
-                         params=model_params,
-                         fold_count=FOLDS_COUNT)
+    scores = catboost.cv(pool=data, params=model_params, fold_count=FOLDS_COUNT)
     if len(scores) == MAX_ITERATIONS:
-        raise ValueError(f'Необходимо увеличить MAX_ITERATIONS = {MAX_ITERATIONS}')
-    index = scores['test-RMSE-mean'].idxmin()
-    model_params['iterations'] = index + 1
-    return dict(loss=scores.loc[index, 'test-RMSE-mean'] / pool_std,
-                status=hyperopt.STATUS_OK,
-                std=scores.loc[index, 'test-RMSE-mean'],
-                r2=1 - (scores.loc[index, 'test-RMSE-mean'] / pool_std) ** 2,
-                data=data_params,
-                model=model_params)
+        raise ValueError(f"Необходимо увеличить MAX_ITERATIONS = {MAX_ITERATIONS}")
+    index = scores["test-RMSE-mean"].idxmin()
+    model_params["iterations"] = index + 1
+    return dict(
+        loss=scores.loc[index, "test-RMSE-mean"] / pool_std,
+        status=hyperopt.STATUS_OK,
+        std=scores.loc[index, "test-RMSE-mean"],
+        r2=1 - (scores.loc[index, "test-RMSE-mean"] / pool_std) ** 2,
+        data=data_params,
+        model=model_params,
+    )
 
 
-def learning_curve(params: dict, positions: tuple, date: pd.Timestamp, data_pool_params, fractions: tuple):
+def learning_curve(
+        params: dict,
+        positions: tuple,
+        date: pd.Timestamp,
+        data_pool_params,
+        fractions: tuple,
+):
     """Рисует кривую обучения для train_sizes долей от общего Pool данных
 
     Parameters
@@ -192,36 +236,43 @@ def learning_curve(params: dict, positions: tuple, date: pd.Timestamp, data_pool
     fractions
         Список с возрастающими долями от общей выборки, которые будут использоваться для построения кривой обучения
     """
-    data_params = params['data']
+    data_params = params["data"]
     pool_params = data_pool_params(positions, date, **data_params)
     model_params = make_model_params(params)
-    model_params['cat_features'] = pool_params['cat_features']
+    model_params["cat_features"] = pool_params["cat_features"]
     train_sizes, train_scores, test_scores = model_selection.learning_curve(
         catboost.CatBoostRegressor(**model_params),
-        pool_params['data'],
-        pool_params['label'],
+        pool_params["data"],
+        pool_params["label"],
         train_sizes=list(fractions),
         cv=FOLDS_COUNT,
-        scoring='neg_mean_squared_error',
+        scoring="neg_mean_squared_error",
         shuffle=True,
-        random_state=SEED)
+        random_state=SEED,
+    )
     fig, ax = plt.subplots(figsize=(FIG_SIZE, FIG_SIZE))
     fig.tight_layout(pad=3, h_pad=5)
-    ax.set_title(f'Learning curve')
-    ax.set_xlabel('Training examples')
+    ax.set_title(f"Learning curve")
+    ax.set_xlabel("Training examples")
     train_scores_mean = (-np.mean(train_scores, axis=1)) ** 0.5
     test_scores_mean = (-np.mean(test_scores, axis=1)) ** 0.5
     ax.grid()
-    ax.plot(train_sizes, train_scores_mean, 'o-', color="r",
-            label="Training score")
-    ax.plot(train_sizes, test_scores_mean, 'o-', color="g",
-            label="Cross-validation score")
+    ax.plot(train_sizes, train_scores_mean, "o-", color="r", label="Training score")
+    ax.plot(
+        train_sizes, test_scores_mean, "o-", color="g", label="Cross-validation score"
+    )
     ax.legend(loc="best")
     plt.show()
     return train_sizes, train_scores_mean, test_scores_mean
 
 
-def optimize_hyper(base_params: dict, positions: tuple, date: pd.Timestamp, data_pool_func, data_space: dict):
+def optimize_hyper(
+        base_params: dict,
+        positions: tuple,
+        date: pd.Timestamp,
+        data_pool_func,
+        data_space: dict,
+):
     """Ищет и  возвращает лучший набор гиперпараметров без количества итераций в окрестности базового набора параметров
 
     Parameters
@@ -242,14 +293,17 @@ def optimize_hyper(base_params: dict, positions: tuple, date: pd.Timestamp, data
         ключ 'data' - параметры данных,
         ключ 'model' - параметры модели без количества итераций градиентного бустинга
     """
-    objective = functools.partial(cv_model, positions=positions, date=date, data_pool_func=data_pool_func)
-    param_space = dict(data=data_space,
-                       model=make_model_space(base_params))
-    best = hyperopt.fmin(objective,
-                         space=param_space,
-                         algo=hyperopt.tpe.suggest,
-                         max_evals=MAX_SEARCHES,
-                         rstate=np.random.RandomState(SEED))
+    objective = functools.partial(
+        cv_model, positions=positions, date=date, data_pool_func=data_pool_func
+    )
+    param_space = dict(data=data_space, model=make_model_space(base_params))
+    best = hyperopt.fmin(
+        objective,
+        space=param_space,
+        algo=hyperopt.tpe.suggest,
+        max_evals=MAX_SEARCHES,
+        rstate=np.random.RandomState(SEED),
+    )
     # Преобразование из внутреннего представление в исходное пространство
     best_params = hyperopt.space_eval(param_space, best)
     check_model_bounds(best_params, base_params)
