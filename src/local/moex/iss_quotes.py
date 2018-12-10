@@ -6,7 +6,9 @@ import pandas as pd
 from local.moex.iss_securities_info import aliases
 from utils.data_manager import AbstractDataManager
 from web import moex
-from web.labels import DATE, VOLUME, CLOSE_PRICE
+from web.labels import CLOSE_PRICE
+from web.labels import DATE
+from web.labels import VOLUME
 
 QUOTES_CATEGORY = 'quotes'
 
@@ -103,4 +105,4 @@ def volumes(tickers: tuple):
 
 
 if __name__ == '__main__':
-    print(quotes('PRMB'))
+    print(quotes('VSMO').loc['2018-03-19'])

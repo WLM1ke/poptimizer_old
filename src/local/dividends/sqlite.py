@@ -8,11 +8,12 @@ from pandas.io.sql import DatabaseError
 from settings import DATA_PATH
 from utils.aggregation import monthly_aggregation_func
 from utils.data_manager import AbstractDataManager
-from web.labels import DATE, TICKER
+from web.labels import DATE
+from web.labels import TICKER
 
 DIVIDENDS_CATEGORY = 'dividends'
 STATISTICS_START = '2010-01-01'
-DATABASE = str(DATA_PATH / 'dividends.db')
+DATABASE = str(DATA_PATH / '../../poptimizer/data/dividends.db')
 
 
 class DividendsDataManager(AbstractDataManager):
@@ -85,5 +86,5 @@ def monthly_dividends(tickers: tuple, last_date: pd.Timestamp):
 
 
 if __name__ == '__main__':
-    df_ = monthly_dividends(tuple(['AKRN']), pd.Timestamp('2018-08-20'))
-    print(df_.columns.name)
+    df_ = monthly_dividends(tuple(['AKRN']), pd.Timestamp('2018-12-07'))
+    print(df_)
