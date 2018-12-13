@@ -7,15 +7,15 @@ from ml.model_base import AbstractModel
 from utils.aggregation import Freq
 
 PARAMS = {
-    "data": {"freq": Freq.monthly, "lags": 1},
+    "data": {"freq": Freq.yearly, "lags": 1},
     "model": {
-        "bagging_temperature": 0.996_665_230_670_676,
-        "depth": 8,
+        "bagging_temperature": 0.693_136_332_371_617_3,
+        "depth": 9,
         "ignored_features": (),
-        "l2_leaf_reg": 80.294_080_140_797_53,
-        "learning_rate": 0.344_588_360_075_992_3,
+        "l2_leaf_reg": 33.008_409_248_832_26,
+        "learning_rate": 0.280_123_730_430_554_6,
         "one_hot_max_size": 100,
-        "random_strength": 0.584_387_312_588_294_6,
+        "random_strength": 0.196_523_325_357_101_2,
     },
 }
 
@@ -73,5 +73,5 @@ if __name__ == "__main__":
 
     pred = DividendsModel(tuple(sorted(POSITIONS)), pd.Timestamp(DATE))
     print(pred)
-    pred.find_better_model()
+    # pred.find_better_model()
     pred.learning_curve()

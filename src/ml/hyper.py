@@ -41,15 +41,15 @@ LEARNING_RATE_UPPER_LIMIT = 1.0
 MAX_DEPTH = 11
 
 # Диапазон поиска параметра L2-регуляризации и значение по умолчанию
-L2_RANGE = 1.7
+L2_RANGE = 1.9
 L2_DEFAULT = 3.0
 
 # Диапазон поиска случайности разбиений и значение по умолчанию
-RAND_STRENGTH_RANGE = 1.4
+RAND_STRENGTH_RANGE = 1.5
 RAND_STRENGTH_DEFAULT = 1.0
 
 # Диапазон поиска интенсивности бегинга и значение по умолчанию
-BAGGING_RANGE = 1.9
+BAGGING_RANGE = 2.0
 BAGGING_DEFAULT = 1.0
 
 

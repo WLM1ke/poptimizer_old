@@ -6,10 +6,15 @@ import pandas as pd
 from pandas.tseries import offsets
 
 import local
-from local import moex, dividends
-from utils import data_manager, aggregation
+from local import dividends
+from local import moex
+from utils import aggregation
+from utils import data_manager
 from web import moex
-from web.labels import VOLUME, CLOSE_PRICE, DATE, TICKER
+from web.labels import CLOSE_PRICE
+from web.labels import DATE
+from web.labels import TICKER
+from web.labels import VOLUME
 
 QUOTES_CATEGORY = 'quotes_t2'
 
@@ -147,4 +152,4 @@ def log_returns_with_div(tickers: tuple, last_date: pd.Timestamp):
 
 
 if __name__ == '__main__':
-    print(log_returns_with_div(('GMKN', 'RTKMP', 'MTSS'), pd.Timestamp('2018-10-24')))
+    print(prices_t2(("KRSBP",)))

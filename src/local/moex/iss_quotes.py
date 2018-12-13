@@ -105,4 +105,5 @@ def volumes(tickers: tuple):
 
 
 if __name__ == '__main__':
-    print(quotes('VSMO').loc['2018-03-19'])
+
+    print(prices(("KRSBP",)))

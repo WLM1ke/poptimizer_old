@@ -12,7 +12,7 @@ from metrics.returns_metrics import AbstractReturnsMetrics
 from ml.returns.manager import ReturnsMLDataManager
 from settings import T_SCORE
 
-MONTH_TO_OPTIMIZE = 7
+MONTH_TO_OPTIMIZE = 9
 
 
 class MLReturnsMetrics(AbstractReturnsMetrics):

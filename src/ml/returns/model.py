@@ -7,20 +7,20 @@ from ml.model_base import AbstractModel
 from ml.returns import cases
 
 PARAMS = {
-    "data": {"ew_lags": 7.879_640_094_461_975, "returns_lags": 14},
+    "data": {"ew_lags": 7.972_338_443_092_346, "returns_lags": 15},
     "model": {
-        "bagging_temperature": 0.028_351_504_660_441_403,
-        "depth": 10,
+        "bagging_temperature": 0.104_794_967_222_254_47,
+        "depth": 9,
         "ignored_features": (),
-        "l2_leaf_reg": 20.291_135_744_520_993,
-        "learning_rate": 0.085_384_007_021_829_12,
-        "one_hot_max_size": 100,
-        "random_strength": 2.227_755_489_815_28,
+        "l2_leaf_reg": 32.196_964_587_556_62,
+        "learning_rate": 0.126_637_416_099_172_76,
+        "one_hot_max_size": 2,
+        "random_strength": 2.337_526_417_962_564_6,
     },
 }
 
 # Диапазон лагов относительно базового, для которого осуществляется поиск оптимальной ML-модели
-EW_LAGS_RANGE = 0.01
+EW_LAGS_RANGE = 0.02
 MAX_RETURNS_LAGS = 15  # 2018-12-05
 
 
@@ -95,5 +95,5 @@ if __name__ == "__main__":
 
     pred = ReturnsModel(tuple(sorted(POSITIONS)), pd.Timestamp(DATE))
     print(pred)
-    pred.find_better_model()
+    # pred.find_better_model()
     pred.learning_curve()
