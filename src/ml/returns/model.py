@@ -95,5 +95,5 @@ if __name__ == "__main__":
 
     pred = ReturnsModel(tuple(sorted(POSITIONS)), pd.Timestamp(DATE))
     print(pred)
-    # pred.find_better_model()
+    pred.find_better_model()
     pred.learning_curve()
